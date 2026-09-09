@@ -40,8 +40,8 @@ class ConnectivityService {
     try {
       final response = await Dio(
         BaseOptions(
-          connectTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
+          connectTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
         ),
       ).getUri(Uri.parse(healthUrl));
 
@@ -64,6 +64,6 @@ class ConnectivityService {
       return envUrl;
     }
 
-    return 'http://10.0.2.2:8000/api';
+    return 'https://silvamang-api-service.onrender.com/api';
   }
 }

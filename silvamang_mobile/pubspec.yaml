@@ -86,6 +86,7 @@ flutter:
   assets:
     - .env
     - .env.example
+    - assets/images/silvamang_logo.png
     - assets/models/class_order.json
     - assets/models/efficientnet_b0_silvamang_single.onnx
     - assets/models/efficientnet_b0_silvamang.onnx

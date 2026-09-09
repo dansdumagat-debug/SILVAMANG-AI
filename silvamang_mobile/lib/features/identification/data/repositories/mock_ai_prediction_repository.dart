@@ -364,7 +364,7 @@ class MockAiPredictionRepository {
 
     debugPrint(
       'SILVAMANG AI predict API_BASE_URL: '
-      '${dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:8000/api'}',
+      '${dotenv.env['API_BASE_URL'] ?? 'https://silvamang-api-service.onrender.com/api'}',
     );
     debugPrint('SILVAMANG AI selected image count: ${capturedImages.length}');
     debugPrint(

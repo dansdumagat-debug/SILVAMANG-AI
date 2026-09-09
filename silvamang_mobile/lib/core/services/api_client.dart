@@ -21,8 +21,8 @@ class ApiClient {
     : _dio = Dio(
         BaseOptions(
           baseUrl: _apiBaseUrl(),
-          connectTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 15),
+          connectTimeout: const Duration(seconds: 60),
+          receiveTimeout: const Duration(seconds: 60),
           headers: const {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ class ApiClient {
       return envUrl;
     }
 
-    return 'http://10.0.2.2:8000/api';
+    return 'https://silvamang-api-service.onrender.com/api';
   }
 
   Future<Response<T>> get<T>(String path, {Map<String, dynamic>? query}) async {

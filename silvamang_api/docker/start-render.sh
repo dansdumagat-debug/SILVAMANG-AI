@@ -6,13 +6,16 @@ cd /var/www/html
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database
 
 if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
-    touch "${DB_DATABASE:-/var/www/html/database/database.sqlite}"
+    DB_FILE="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
+    if [ ! -s "$DB_FILE" ]; then
+        touch "$DB_FILE"
+        php artisan migrate --force
+        php artisan db:seed --force
+    fi
 fi
 
 php artisan config:clear
 php artisan storage:link || true
-php artisan migrate --force
-php artisan db:seed --force
 php artisan config:cache
 php artisan route:cache || true
 php artisan view:cache

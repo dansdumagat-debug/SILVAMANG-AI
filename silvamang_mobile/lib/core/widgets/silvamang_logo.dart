@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_assets.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -16,12 +17,7 @@ class SilvamangLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primaryDarkGreen, AppColors.primaryGreen],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(size * 0.22),
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryDarkGreen.withValues(alpha: 0.16),
@@ -30,17 +26,22 @@ class SilvamangLogo extends StatelessWidget {
           ),
         ],
       ),
-      child: Center(
-        child: Container(
-          width: size * 0.7,
-          height: size * 0.7,
-          decoration: BoxDecoration(
-            color: AppColors.mintBackground.withValues(alpha: 0.94),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        AppAssets.logoPlaceholder,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.primaryDarkGreen, AppColors.primaryGreen],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.eco_rounded,
-            color: AppColors.primaryDarkGreen,
+            color: AppColors.mintBackground,
             size: size * 0.44,
           ),
         ),
