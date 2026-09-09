@@ -260,6 +260,124 @@ Endpoints:
 - GET /api/scan-images/{id}
 - DELETE /api/scan-images/{id}
 
+## Deployment Documentation
+
+Deployment and demo preparation guides are available in:
+
+```text
+../docs/deployment/
+```
+
+Useful backend documents:
+- Laravel backend deployment guide
+- Environment variables guide
+- Database backup and restore guide
+- Demo accounts guide
+- Pre-defense checklist
+
+## Phase 16C-B - Export Verified Images to dataset/raw/
+
+Implemented:
+- DatasetExportService
+- Safe copy of verified uploaded scan images
+- Export to dataset/raw/<species>/<plant_part>/
+- Manifest CSV update
+- Dataset export status tracking
+- Admin export action
+- Export summary counts
+- Artisan export command
+
+Export requirements:
+- dataset_status = verified
+- verified_species_id is not null
+- verified_plant_part is not null
+- image_quality = good or acceptable
+
+Important:
+Original uploaded scan images are never deleted or moved. Export copies files only.
+
+Next phase:
+Phase 16B CNN training can resume after exported images exist in dataset/raw/.
+
+## Phase 18A - AI Measurement Endpoint Preparation
+
+Laravel can call the Python /measure endpoint and fallback to Laravel mock measurement if Python is unavailable.
+
+## Phase 19A - End-to-End CNN Prediction Workflow Finalization
+
+Implemented:
+- Clean `/api/ai/predict` route
+- Existing `/api/ai/mock-predict` kept for compatibility
+- Laravel forwards image prediction to Python CNN service
+- Laravel fallback mock prediction preserved
+- Response normalized for Flutter
+
+## Phase 20A - Laravel AI Assistant Backend and Logs
+
+Implemented:
+- Rule-based mangrove assistant service
+- Assistant chat endpoint
+- Species-aware answers
+- Scan-record-aware answers
+- Intent detection
+- Assistant log storage
+- Admin assistant log visibility
+
+Endpoint:
+- POST `/api/ai/assistant/chat`
+
+Current status:
+- Rule-based prototype assistant
+- No external LLM API
+- No paid AI service
+- Future enhancement may connect to a larger NLP/LLM model
+
+Next phase:
+Phase 20B will connect the Flutter AI Assistant screen to this Laravel assistant endpoint.
+
+## Phase 22A - Reports, Analytics, and Evaluation Evidence Finalization
+
+Implemented:
+- System overview report
+- Identification analytics
+- Location validation analytics
+- Measurement summary
+- CNN baseline metrics reader
+- CNN evaluation section
+- Confusion matrix preview/link
+- Print-friendly admin report page
+
+Important:
+Reports only display actual data. Missing evaluation files are shown as unavailable, not fabricated.
+
+Next phase:
+Phase 23 will prepare formal testing, evaluation tables, and defense evidence.
+
+## Phase 16C-A - Dataset Collection and Verification Workflow
+
+Implemented:
+- Dataset verification fields for uploaded scan images
+- Admin dataset verification page
+- Dataset image review page
+- Species verification dropdown
+- Plant-part verification dropdown
+- Image quality status
+- Dataset status tracking
+- Scan record detail verification metadata
+- Dataset verification sidebar link
+
+Purpose:
+This workflow allows researchers/admins to verify uploaded scan images before using them for future CNN and YOLOv8 training.
+
+Dataset statuses:
+- pending
+- verified
+- rejected
+- exported
+
+Next phase:
+Phase 16C-B will implement safe export of verified images into dataset/raw/.
+
 ## Phase 13A - Laravel Mock AI Prediction API
 
 Implemented:

@@ -16,7 +16,7 @@ class ScanImageRepository {
   final ApiClient apiClient;
 
   Future<ScanImageModel> uploadScanImage({
-    required int scanRecordId,
+    required String scanRecordId,
     required CapturedPlantPartImage capturedImage,
   }) async {
     try {

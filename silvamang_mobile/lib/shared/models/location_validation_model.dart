@@ -1,16 +1,16 @@
 class LocationValidationModel {
   const LocationValidationModel({
     required this.result,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
     this.distanceToKnownDistributionKm,
     required this.message,
     this.validatedAt,
   });
 
   final String result;
-  final double latitude;
-  final double longitude;
+  final double? latitude;
+  final double? longitude;
   final double? distanceToKnownDistributionKm;
   final String message;
   final DateTime? validatedAt;
@@ -18,8 +18,8 @@ class LocationValidationModel {
   factory LocationValidationModel.fromJson(Map<String, dynamic> json) {
     return LocationValidationModel(
       result: _asString(json['result']),
-      latitude: _asDouble(json['latitude']),
-      longitude: _asDouble(json['longitude']),
+      latitude: _asNullableDouble(json['latitude']),
+      longitude: _asNullableDouble(json['longitude']),
       distanceToKnownDistributionKm: _asNullableDouble(
         json['distance_to_known_distribution_km'] ??
             json['distanceToKnownDistributionKm'],
@@ -42,13 +42,6 @@ class LocationValidationModel {
 
   static String _asString(Object? value) {
     return value?.toString() ?? '';
-  }
-
-  static double _asDouble(Object? value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 
   static double? _asNullableDouble(Object? value) {

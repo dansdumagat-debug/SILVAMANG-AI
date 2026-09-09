@@ -12,10 +12,12 @@ class MockIdentificationResult {
     required this.longitude,
     required this.locationName,
     required this.address,
+    this.barangay,
     required this.predictions,
     required this.heightM,
     required this.canopyWidthM,
     this.dbhCm,
+    this.measurementMethod = 'not_estimated',
     required this.measurementConfidence,
     required this.validationResult,
     required this.validationMessage,
@@ -28,14 +30,16 @@ class MockIdentificationResult {
   final int? speciesId;
   final double confidence;
   final String captureMode;
-  final double latitude;
-  final double longitude;
+  final double? latitude;
+  final double? longitude;
   final String locationName;
   final String address;
+  final String? barangay;
   final List<PredictionModel> predictions;
   final double heightM;
   final double canopyWidthM;
   final double? dbhCm;
+  final String measurementMethod;
   final double measurementConfidence;
   final String validationResult;
   final String validationMessage;
@@ -52,10 +56,12 @@ class MockIdentificationResult {
     double? longitude,
     String? locationName,
     String? address,
+    String? barangay,
     List<PredictionModel>? predictions,
     double? heightM,
     double? canopyWidthM,
     double? dbhCm,
+    String? measurementMethod,
     double? measurementConfidence,
     String? validationResult,
     String? validationMessage,
@@ -72,10 +78,12 @@ class MockIdentificationResult {
       longitude: longitude ?? this.longitude,
       locationName: locationName ?? this.locationName,
       address: address ?? this.address,
+      barangay: barangay ?? this.barangay,
       predictions: predictions ?? this.predictions,
       heightM: heightM ?? this.heightM,
       canopyWidthM: canopyWidthM ?? this.canopyWidthM,
       dbhCm: dbhCm ?? this.dbhCm,
+      measurementMethod: measurementMethod ?? this.measurementMethod,
       measurementConfidence:
           measurementConfidence ?? this.measurementConfidence,
       validationResult: validationResult ?? this.validationResult,
@@ -92,29 +100,52 @@ class MockIdentificationResult {
     double? longitude,
     String? locationName,
     String? address,
+    String? barangay,
   }) {
     final fallback = MockIdentificationResult.sample;
+    if (!response.isValidCnnResult) {
+      return MockIdentificationResult(
+        scientificName: '',
+        commonName: '',
+        speciesId: null,
+        confidence: double.nan,
+        captureMode: fallback.captureMode,
+        latitude: response.locationHint.latitude ?? latitude,
+        longitude: response.locationHint.longitude ?? longitude,
+        locationName: locationName ?? fallback.locationName,
+        address: address ?? fallback.address,
+        barangay: barangay,
+        predictions: const [],
+        heightM: response.measurement.heightM,
+        canopyWidthM: response.measurement.canopyWidthM,
+        dbhCm: response.measurement.dbhCm,
+        measurementMethod: response.measurement.measurementMethod,
+        measurementConfidence: response.measurement.confidence,
+        validationResult: fallback.validationResult,
+        validationMessage: response.warning ?? response.locationHint.message,
+        distanceToKnownDistributionKm: fallback.distanceToKnownDistributionKm,
+        explanation: response.warning ?? response.explanation,
+      );
+    }
+
     return MockIdentificationResult(
-      scientificName: response.topPrediction.scientificName.isNotEmpty
-          ? response.topPrediction.scientificName
-          : fallback.scientificName,
-      commonName: response.topPrediction.commonName.isNotEmpty
-          ? response.topPrediction.commonName
-          : fallback.commonName,
+      scientificName: _displaySpeciesName(
+        response.topPrediction.scientificName,
+      ),
+      commonName: response.topPrediction.commonName,
       speciesId: response.topPrediction.speciesId,
       confidence: response.topPrediction.confidence,
       captureMode: fallback.captureMode,
-      latitude: response.locationHint.latitude ?? latitude ?? fallback.latitude,
-      longitude:
-          response.locationHint.longitude ?? longitude ?? fallback.longitude,
+      latitude: response.locationHint.latitude ?? latitude,
+      longitude: response.locationHint.longitude ?? longitude,
       locationName: locationName ?? fallback.locationName,
       address: address ?? fallback.address,
-      predictions: response.predictions.isEmpty
-          ? fallback.predictions
-          : response.predictions,
+      barangay: barangay,
+      predictions: response.predictions,
       heightM: response.measurement.heightM,
       canopyWidthM: response.measurement.canopyWidthM,
       dbhCm: response.measurement.dbhCm,
+      measurementMethod: response.measurement.measurementMethod,
       measurementConfidence: response.measurement.confidence,
       validationResult: fallback.validationResult,
       validationMessage: response.locationHint.message,
@@ -128,10 +159,11 @@ class MockIdentificationResult {
     commonName: 'Red Mangrove',
     confidence: 92.4,
     captureMode: 'guided',
-    latitude: 9.7392,
-    longitude: 118.7353,
-    locationName: 'Brgy. San Roque, Puerto Princesa, Palawan',
-    address: 'Puerto Princesa, Palawan',
+    latitude: null,
+    longitude: null,
+    locationName: 'Not available',
+    address: 'Not available',
+    barangay: null,
     predictions: [
       PredictionModel(
         rank: 1,
@@ -155,6 +187,7 @@ class MockIdentificationResult {
     heightM: 6.8,
     canopyWidthM: 4.2,
     dbhCm: null,
+    measurementMethod: 'depth_estimation_mock',
     measurementConfidence: 88.0,
     validationResult: 'match',
     validationMessage: 'Species is commonly found in this area.',
@@ -162,4 +195,8 @@ class MockIdentificationResult {
     explanation:
         'This local mock result suggests Rhizophora apiculata for prototype testing.',
   );
+}
+
+String _displaySpeciesName(String value) {
+  return value.replaceAll('_', ' ').trim();
 }

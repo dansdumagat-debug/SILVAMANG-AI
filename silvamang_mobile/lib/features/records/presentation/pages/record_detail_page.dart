@@ -12,6 +12,7 @@ import '../../../../core/widgets/loading_view.dart';
 import '../../../../core/widgets/prediction_tile.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../controllers/records_controller.dart';
@@ -26,15 +27,13 @@ class RecordDetailPage extends ConsumerStatefulWidget {
 }
 
 class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
-  int get _recordId => int.tryParse(widget.recordId) ?? 0;
-
   @override
   void initState() {
     super.initState();
     Future.microtask(
       () => ref
           .read(recordsControllerProvider.notifier)
-          .loadRecordById(_recordId),
+          .loadRecordById(widget.recordId),
     );
   }
 
@@ -45,7 +44,12 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
-      appBar: AppBar(title: const Text('Record Details')),
+      appBar: AppBar(
+        leading: const SilvamangBackButton(
+          fallbackRouteName: RouteNames.records,
+        ),
+        title: const Text('Record Details'),
+      ),
       body: state.isLoading
           ? const LoadingView(message: 'Loading record details...')
           : state.errorMessage != null
@@ -68,7 +72,7 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
                       icon: Icons.refresh_rounded,
                       onPressed: () => ref
                           .read(recordsControllerProvider.notifier)
-                          .loadRecordById(_recordId),
+                          .loadRecordById(widget.recordId),
                     ),
                   ],
                 ),
@@ -331,13 +335,17 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
                         ),
                         _DetailRow(
                           label: 'Latitude',
-                          value: record.locationValidation!.latitude
-                              .toStringAsFixed(6),
+                          value:
+                              record.locationValidation!.latitude
+                                  ?.toStringAsFixed(6) ??
+                              '',
                         ),
                         _DetailRow(
                           label: 'Longitude',
-                          value: record.locationValidation!.longitude
-                              .toStringAsFixed(6),
+                          value:
+                              record.locationValidation!.longitude
+                                  ?.toStringAsFixed(6) ??
+                              '',
                         ),
                         _DetailRow(
                           label: 'Distance',
@@ -372,7 +380,14 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
                 SilvamangButton(
                   text: 'Ask AI Assistant',
                   icon: Icons.chat_bubble_rounded,
-                  onPressed: () => context.goNamed(RouteNames.aiAssistant),
+                  onPressed: record == null
+                      ? null
+                      : () => context.pushNamed(
+                          RouteNames.aiAssistant,
+                          queryParameters: {
+                            'scan_record_id': record.id.toString(),
+                          },
+                        ),
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -9,12 +10,48 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/metric_card.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/silvamang_card.dart';
+import '../../../../core/widgets/silvamang_logo.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  bool _offlineRefreshAttempted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => ref.read(offlineSyncControllerProvider.notifier).loadQueue(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authControllerProvider);
+    final offlineState = ref.watch(offlineSyncControllerProvider);
+    final notificationCount =
+        offlineState.pendingCount +
+        offlineState.failedCount +
+        offlineState.recentlyDeletedCount +
+        (authState.isOfflineSession ? 1 : 0);
+
+    if (authState.isOfflineSession && !_offlineRefreshAttempted) {
+      _offlineRefreshAttempted = true;
+      Future.microtask(() {
+        if (!mounted) {
+          return;
+        }
+        ref.read(authControllerProvider.notifier).refreshCurrentUser();
+      });
+    }
+
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
       body: ListView(
@@ -29,6 +66,8 @@ class HomePage extends StatelessWidget {
             bottom: false,
             child: Row(
               children: [
+                const SilvamangLogo(size: 44),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,25 +81,89 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  width: 46,
-                  height: 46,
-                  decoration: const BoxDecoration(
-                    color: AppColors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.notifications_none_rounded,
-                    color: AppColors.primaryDarkGreen,
+                InkWell(
+                  borderRadius: BorderRadius.circular(24),
+                  onTap: () => context.pushNamed(RouteNames.notifications),
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: const BoxDecoration(
+                            color: AppColors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.notifications_none_rounded,
+                            color: AppColors.primaryDarkGreen,
+                          ),
+                        ),
+                        if (notificationCount > 0)
+                          Positioned(
+                            right: 0,
+                            top: -2,
+                            child: Container(
+                              constraints: const BoxConstraints(
+                                minWidth: 20,
+                                minHeight: 20,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.dangerRed,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  notificationCount > 9
+                                      ? '9+'
+                                      : notificationCount.toString(),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.white,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          if (authState.isOfflineSession) ...[
+            const SizedBox(height: AppSpacing.md),
+            SilvamangCard(
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.cloud_off_rounded,
+                    color: AppColors.warningOrange,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Offline session active. Your data will sync when connection is restored.',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.xl),
           SilvamangCard(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            onTap: () => context.goNamed(RouteNames.captureGuide),
+            onTap: () => context.pushNamed(RouteNames.captureGuide),
             child: Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -131,28 +234,42 @@ class HomePage extends StatelessWidget {
                 subtitle: 'Height & Canopy Estimation',
                 icon: Icons.straighten_rounded,
                 background: AppColors.softGreen,
-                onTap: () => context.goNamed(RouteNames.measurement),
+                onTap: () => context.pushNamed(RouteNames.measurement),
               ),
               _QuickActionCard(
                 title: 'My Records',
                 subtitle: 'View History',
                 icon: Icons.history_rounded,
                 background: AppColors.softBlue,
-                onTap: () => context.goNamed(RouteNames.records),
+                onTap: () => context.pushNamed(RouteNames.records),
+              ),
+              _QuickActionCard(
+                title: 'Mangrove Map',
+                subtitle: 'View scan pins',
+                icon: Icons.map_rounded,
+                background: const Color(0xFFE8F6F1),
+                onTap: () => context.pushNamed(RouteNames.map),
               ),
               _QuickActionCard(
                 title: 'Species Guide',
                 subtitle: 'Browse Mangrove Species',
                 icon: Icons.menu_book_rounded,
                 background: const Color(0xFFFFF7E8),
-                onTap: () => context.goNamed(RouteNames.speciesList),
+                onTap: () => context.pushNamed(RouteNames.speciesList),
               ),
               _QuickActionCard(
                 title: 'AI Assistant',
                 subtitle: 'Ask about mangroves',
                 icon: Icons.chat_bubble_rounded,
                 background: const Color(0xFFEFF5FF),
-                onTap: () => context.goNamed(RouteNames.aiAssistant),
+                onTap: () => context.pushNamed(RouteNames.aiAssistant),
+              ),
+              _QuickActionCard(
+                title: 'Offline Queue',
+                subtitle: 'View pending sync items',
+                icon: Icons.cloud_queue_rounded,
+                background: const Color(0xFFFFF4EA),
+                onTap: () => context.pushNamed(RouteNames.offlineQueue),
               ),
             ],
           ),

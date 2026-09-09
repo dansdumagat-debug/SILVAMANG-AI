@@ -14,15 +14,16 @@ class AiModelSeeder extends Seeder
     {
         $models = [
             [
-                'model_name' => 'SILVAMANG CNN Classifier',
+                'model_name' => 'SILVAMANG EfficientNet-B0 Classifier',
                 'model_type' => 'classification',
-                'version' => '0.1.0',
-                'accuracy' => 91.70,
-                'precision_score' => 89.30,
-                'recall_score' => 88.60,
-                'f1_score' => 88.90,
-                'top_k_accuracy' => 95.40,
+                'version' => 'transfer-learning-0.1.0',
+                'accuracy' => 84.42,
+                'precision_score' => 86.69,
+                'recall_score' => 84.52,
+                'f1_score' => 85.38,
+                'top_k_accuracy' => null,
                 'status' => 'active',
+                'notes' => 'Runtime classifier used by the Python AI service. Metrics are from silvamang_ai_service/reports/efficientnet_transfer/test_metrics.json.',
             ],
             [
                 'model_name' => 'SILVAMANG YOLOv8 Detector',
@@ -45,6 +46,21 @@ class AiModelSeeder extends Seeder
         ];
 
         foreach ($models as $model) {
+            if ($model['model_type'] === 'classification') {
+                $existingClassifier = AiModel::query()
+                    ->where('model_type', 'classification')
+                    ->whereIn('model_name', [
+                        'SILVAMANG CNN Classifier',
+                        'SILVAMANG EfficientNet-B0 Classifier',
+                    ])
+                    ->first();
+
+                if ($existingClassifier) {
+                    $existingClassifier->update($model);
+                    continue;
+                }
+            }
+
             AiModel::updateOrCreate(
                 [
                     'model_name' => $model['model_name'],

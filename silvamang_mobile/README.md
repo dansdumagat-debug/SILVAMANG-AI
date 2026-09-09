@@ -285,3 +285,136 @@ Not yet implemented:
 
 Next phase:
 Phase 14 will initialize the Python AI service with /health, /predict, and /measure mock endpoints.
+
+## Phase 18A - Measurement Preparation
+
+The measurement screen currently displays prototype/mock height and canopy estimates. Real MiDaS depth estimation will be integrated later.
+
+## Phase 18B - Measurement Result Connected to Flutter Workflow
+
+Implemented:
+- AI measurement response model
+- AI measurement repository
+- Measurement controller/provider
+- Flutter Measurement screen connected to Laravel `/api/ai/measure`
+- Loading, error, retry, and result states
+- Prototype height and canopy width display
+- Measurement warning for mock/depth-estimation prototype mode
+
+Endpoint used:
+- POST `/api/ai/measure`
+
+Current status:
+- Measurement is prototype/mock depth estimation
+- Real MiDaS integration is not yet implemented
+
+Next phase:
+Phase 19 will integrate the real AI prediction workflow into the mobile save process, or proceed to deployment/testing preparation depending on available YOLO/depth data.
+
+## Phase 19A - End-to-End CNN Prediction Workflow Finalization
+
+Implemented:
+- Flutter calls Laravel `/api/ai/predict`
+- Multipart image prediction request
+- CNN baseline result display
+- Mock fallback display if AI service is unavailable
+- Save Record uses currently displayed AI result
+
+## Phase 20B - Flutter AI Assistant Integration
+
+Implemented:
+- Assistant message model
+- Assistant chat response model
+- Assistant repository
+- Assistant controller/provider
+- AI Assistant screen connected to Laravel endpoint
+- Chat bubbles
+- Quick prompt chips
+- Loading and error states
+- Optional scan record context support
+- Record detail Ask AI Assistant action
+
+Endpoint used:
+- POST `/api/ai/assistant/chat`
+
+Current status:
+- Rule-based Laravel assistant
+- No external LLM API
+- Chat history is session-only
+
+Next phase:
+Phase 21 will implement offline-online hybrid functionality and sync queue preparation.
+
+## Phase 21A - Offline Queue and Local Sync Preparation
+
+Implemented:
+- Offline sync item model
+- Offline sync repository
+- Offline sync controller/provider
+- Connectivity status check
+- Offline queue page
+- Save Record fallback to local queue when offline
+- Profile link to Offline Queue
+- Manual sync preparation
+
+Current limitations:
+- No background sync yet
+- No real offline AI inference yet
+- Image upload still requires online connection
+- Pending scan sync is prepared for prototype use
+
+Next phase:
+Phase 21B will improve sync reliability, add backend conflict handling if needed, and finalize offline-online hybrid behavior.
+
+## Phase 21B - Offline Sync Reliability and Manual Sync Finalization
+
+Implemented:
+- Improved offline sync item state
+- Retry count and synced timestamp
+- Pending/failed/synced queue handling
+- Manual Sync Now action
+- Retry failed item action
+- Clear synced action
+- Offline queue status UI
+- Safer offline save fallback
+
+Current limitations:
+- No background sync yet
+- No offline AI inference yet
+- Image upload still requires an online retry
+- Full conflict resolution is not implemented yet
+
+Next phase:
+Phase 22 will finalize reports, analytics, and evaluation outputs for defense preparation.
+
+## Phase 24A-Pre — Pre-Deployment Mobile Polish
+
+Implemented:
+- Reusable SILVAMANG AI logo widget
+- Logo branding on splash, login, register, home, and profile screens
+- Persistent login startup check from splash
+- Cached offline session support when `/api/me` is unreachable
+- 401/403 auth handling that clears invalid tokens
+- Offline session banner on the home dashboard
+- Offline Queue quick action on the home dashboard
+- Profile Offline Queue menu keeps pending count display
+
+Current behavior:
+- Saved token and cached user data are reused while offline.
+- Invalid or expired tokens are cleared only when the backend returns 401 or 403.
+- Offline Queue still uses manual Refresh Status, Sync Now, and Clear Synced actions.
+
+## Deployment Documentation
+
+Deployment and demo preparation guides are available in:
+
+```text
+../docs/deployment/
+```
+
+Useful mobile documents:
+- Local demo guide
+- Flutter APK build guide
+- Environment variables guide
+- Demo accounts guide
+- Pre-defense checklist

@@ -41,7 +41,7 @@
                     <div class="form-error">{{ $errors->first() }}</div>
                 @endif
                 <label>Email address<span class="login-input-wrap"><i>@</i><input type="email" name="email" value="{{ old('email') }}" placeholder="Enter your email" required autofocus></span></label>
-                <label>Password<span class="login-input-wrap"><i>*</i><input type="password" name="password" placeholder="Enter your password" required></span></label>
+                <label>Password<span class="login-input-wrap has-action"><i>*</i><input id="login-password" type="password" name="password" placeholder="Enter your password" required><button type="button" class="password-toggle" aria-label="Show password" aria-controls="login-password">Show</button></span></label>
                 <div class="login-options">
                     <label class="checkbox-row"><input type="checkbox" name="remember" value="1"> Remember me</label>
                     <a href="{{ route('login') }}">Forgot password?</a>
@@ -53,5 +53,16 @@
             </form>
         </section>
     </main>
+    <script>
+        const passwordInput = document.getElementById('login-password');
+        const passwordToggle = document.querySelector('.password-toggle');
+
+        passwordToggle?.addEventListener('click', () => {
+            const shouldShow = passwordInput.type === 'password';
+            passwordInput.type = shouldShow ? 'text' : 'password';
+            passwordToggle.textContent = shouldShow ? 'Hide' : 'Show';
+            passwordToggle.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
+        });
+    </script>
 </body>
 </html>

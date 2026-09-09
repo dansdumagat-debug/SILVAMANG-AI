@@ -11,7 +11,7 @@ class TopPrediction(BaseModel):
     species_id: int | None = None
     scientific_name: str
     common_name: str | None = None
-    confidence: float
+    confidence: float | None = None
 
 
 class PredictionItem(BaseModel):
@@ -20,6 +20,8 @@ class PredictionItem(BaseModel):
     scientific_name: str
     common_name: str | None = None
     confidence: float
+    model_name: str | None = None
+    model_version: str | None = None
 
 
 class MeasurementEstimate(BaseModel):
@@ -27,7 +29,7 @@ class MeasurementEstimate(BaseModel):
     canopy_width_m: float | None = None
     dbh_cm: float | None = None
     measurement_method: str
-    confidence: float
+    confidence: float | None = None
 
 
 class LocationHint(BaseModel):
@@ -41,8 +43,15 @@ class ReceivedInput(BaseModel):
     image_count: int
 
 
+class PredictionDebug(BaseModel):
+    class_order: list[str]
+    predicted_class_index: int
+
+
 class MockPredictionData(BaseModel):
     mode: str
+    source: str | None = None
+    warning: str | None = None
     model: AiModelInfo
     top_prediction: TopPrediction
     predictions: list[PredictionItem]
@@ -50,9 +59,9 @@ class MockPredictionData(BaseModel):
     measurement: MeasurementEstimate
     location_hint: LocationHint
     received: ReceivedInput
+    debug: PredictionDebug | None = None
 
 
 class MockPredictionResponse(BaseModel):
     message: str
     data: MockPredictionData
-

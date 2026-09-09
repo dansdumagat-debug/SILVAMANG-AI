@@ -10,6 +10,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../controllers/species_controller.dart';
@@ -45,7 +46,10 @@ class _SpeciesListPageState extends ConsumerState<SpeciesListPage> {
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
-      appBar: AppBar(title: const Text('Biodiversity Database')),
+      appBar: AppBar(
+        leading: const SilvamangBackButton(),
+        title: const Text('Biodiversity Database'),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppConstants.screenPadding,
@@ -126,7 +130,7 @@ class _SpeciesListPageState extends ConsumerState<SpeciesListPage> {
               (species) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: SilvamangCard(
-                  onTap: () => context.goNamed(
+                  onTap: () => context.pushNamed(
                     RouteNames.speciesDetail,
                     pathParameters: {'id': species.id.toString()},
                   ),

@@ -2,11 +2,28 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ApiId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 
 class StoreLocationValidationRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('scan_record_id')) {
+            return;
+        }
+
+        try {
+            $this->merge([
+                'scan_record_id' => ApiId::decodeOrFail($this->input('scan_record_id')),
+            ]);
+        } catch (InvalidArgumentException) {
+            abort(400, 'Invalid scan record ID.');
+        }
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */

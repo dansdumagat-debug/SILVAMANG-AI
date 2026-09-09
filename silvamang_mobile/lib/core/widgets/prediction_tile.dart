@@ -20,7 +20,11 @@ class PredictionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final normalized = (confidence / 100).clamp(0.0, 1.0);
+    final hasValidConfidence = confidence.isFinite;
+    final normalized = hasValidConfidence
+        ? (confidence / 100).clamp(0.0, 1.0)
+        : null;
+
     return SilvamangCard(
       child: Row(
         children: [
@@ -36,16 +40,19 @@ class PredictionTile extends StatelessWidget {
                 Text(scientificName, style: AppTextStyles.titleMedium),
                 Text(commonName, style: AppTextStyles.bodySmall),
                 const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: normalized,
-                  color: AppColors.primaryGreen,
-                  backgroundColor: AppColors.borderSoft,
-                ),
+                if (normalized != null)
+                  LinearProgressIndicator(
+                    value: normalized,
+                    color: AppColors.primaryGreen,
+                    backgroundColor: AppColors.borderSoft,
+                  ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Text('${confidence.toStringAsFixed(1)}%'),
+          if (hasValidConfidence) ...[
+            const SizedBox(width: 12),
+            Text('${confidence.toStringAsFixed(1)}%'),
+          ],
         ],
       ),
     );

@@ -9,3 +9,19 @@ storage/logs/*.log
 .phpunit.result.cache
 npm-debug.log
 yarn-error.log
+dataset/
+
+# Python local/runtime files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+pytest-cache-files-*/
+.venv/
+
+# Local LAN/demo server files
+*.log
+open-silvamang-lan-firewall.ps1
+
+# Generated reports and exports
+silvamang_ai_service/export/
+silvamang_ai_service/reports/

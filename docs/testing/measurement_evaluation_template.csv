@@ -1,0 +1,1 @@
+sample_id,species,image_path,estimated_height_m,actual_height_m,height_absolute_error,height_percentage_error,estimated_canopy_width_m,actual_canopy_width_m,canopy_absolute_error,canopy_percentage_error,measurement_method,remarks

@@ -32,12 +32,26 @@
         </article>
 
         <article class="panel report-card">
-            <div class="panel-header"><h3>7-Day Scan Volume</h3><span>{{ $scanTrend->sum('count') }} scans</span></div>
-            @include('admin.partials.mini-bar-chart', ['items' => $scanTrend])
+            <div class="panel-header"><h3>CNN Baseline Status</h3><span>File-based metrics</span></div>
+            @if (! empty($cnnMetrics))
+                <div class="metric-grid">
+                    <div><span>Accuracy</span><strong>{{ $cnnMetrics['accuracy'] ?? 'N/A' }}%</strong></div>
+                    <div><span>F1-score</span><strong>{{ $cnnMetrics['f1_score'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Precision</span><strong>{{ $cnnMetrics['precision'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Top-3 Accuracy</span><strong>{{ $cnnMetrics['top_3_accuracy'] ?? 'N/A' }}%</strong></div>
+                </div>
+            @else
+                <div class="empty-card">CNN evaluation metrics are not available yet.</div>
+            @endif
         </article>
     </section>
 
     <section class="dashboard-grid">
+        <article class="panel report-card">
+            <div class="panel-header"><h3>7-Day Scan Volume</h3><span>{{ $scanTrend->sum('count') }} scans</span></div>
+            @include('admin.partials.mini-bar-chart', ['items' => $scanTrend])
+        </article>
+
         <article class="panel report-card">
             <div class="panel-header"><h3>Top Identified Species</h3><span>Top 5</span></div>
             @forelse ($topIdentifiedSpecies as $species)

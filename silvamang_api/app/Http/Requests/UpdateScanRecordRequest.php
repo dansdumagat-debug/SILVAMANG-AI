@@ -2,11 +2,28 @@
 
 namespace App\Http\Requests;
 
+use App\Support\ApiId;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 
 class UpdateScanRecordRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('user_id')) {
+            return;
+        }
+
+        try {
+            $this->merge([
+                'user_id' => ApiId::decodeOrFail($this->input('user_id')),
+            ]);
+        } catch (InvalidArgumentException) {
+            abort(400, 'Invalid user ID.');
+        }
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -36,8 +53,14 @@ class UpdateScanRecordRequest extends FormRequest
             'validation_status' => ['nullable', 'string', 'max:50'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'accuracy' => ['nullable', 'numeric', 'min:0'],
             'location_name' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
+            'barangay' => ['nullable', 'string', 'max:255'],
+            'manual_barangay' => ['nullable', 'string', 'max:255'],
+            'location_lookup_status' => ['nullable', 'string', 'max:255'],
+            'height_m' => ['nullable', 'numeric', 'min:0'],
+            'canopy_width_m' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
             'offline_reference' => ['nullable', 'string', 'max:255'],
             'captured_at' => ['nullable', 'date'],

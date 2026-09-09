@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\AiModelController;
-use App\Http\Controllers\Api\AiMeasurementController;
+use App\Http\Controllers\Api\AIController;
 use App\Http\Controllers\Api\AiServiceHealthController;
 use App\Http\Controllers\Api\AlertController;
+use App\Http\Controllers\Api\AssistantChatController;
 use App\Http\Controllers\Api\AssistantLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardSummaryController;
+use App\Http\Controllers\Api\ExternalSpeciesObservationController;
 use App\Http\Controllers\Api\LocationValidationController;
+use App\Http\Controllers\Api\MangroveEducationController;
 use App\Http\Controllers\Api\MeasurementController;
 use App\Http\Controllers\Api\MockAiPredictionController;
 use App\Http\Controllers\Api\PredictionController;
@@ -29,18 +32,10 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
 Route::get('species', [SpeciesController::class, 'index']);
+Route::get('species/{species}/external-observations', [ExternalSpeciesObservationController::class, 'show']);
 Route::get('species/{species}', [SpeciesController::class, 'show']);
-Route::get('predictions', [PredictionController::class, 'index']);
-Route::post('predictions', [PredictionController::class, 'store']);
-Route::get('predictions/{prediction}', [PredictionController::class, 'show']);
-
-Route::get('measurements', [MeasurementController::class, 'index']);
-Route::post('measurements', [MeasurementController::class, 'store']);
-Route::get('measurements/{measurement}', [MeasurementController::class, 'show']);
-
-Route::get('location-validations', [LocationValidationController::class, 'index']);
-Route::post('location-validations', [LocationValidationController::class, 'store']);
-Route::get('location-validations/{locationValidation}', [LocationValidationController::class, 'show']);
+Route::get('external-species-observations', [ExternalSpeciesObservationController::class, 'index']);
+Route::get('mangrove-education', [MangroveEducationController::class, 'show']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
@@ -55,9 +50,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('scan-records/{scanRecord}/validate-location', [ScanRecordController::class, 'validateLocation']);
     Route::apiResource('scan-records', ScanRecordController::class);
+    Route::get('predictions', [PredictionController::class, 'index']);
+    Route::post('predictions', [PredictionController::class, 'store']);
+    Route::get('predictions/{prediction}', [PredictionController::class, 'show']);
+    Route::get('measurements', [MeasurementController::class, 'index']);
+    Route::post('measurements', [MeasurementController::class, 'store']);
+    Route::get('measurements/{measurement}', [MeasurementController::class, 'show']);
+    Route::get('location-validations', [LocationValidationController::class, 'index']);
+    Route::post('location-validations', [LocationValidationController::class, 'store']);
+    Route::get('location-validations/{locationValidation}', [LocationValidationController::class, 'show']);
+    Route::get('ai/health', [AIController::class, 'health']);
     Route::get('ai/service-health', AiServiceHealthController::class);
+    Route::post('ai/classify', [AIController::class, 'classify']);
+    Route::post('ai/detect', [AIController::class, 'detect']);
+    Route::post('ai/segment', [AIController::class, 'segment']);
+    Route::post('ai/measure', [AIController::class, 'measure']);
+    Route::post('ai/predict', MockAiPredictionController::class);
     Route::post('ai/mock-predict', MockAiPredictionController::class);
-    Route::post('ai/measure', AiMeasurementController::class);
+    Route::post('ai/assistant/chat', AssistantChatController::class);
+    Route::post('chatbot/message', AssistantChatController::class);
     Route::get('scan-images', [ScanImageController::class, 'index']);
     Route::post('scan-images', [ScanImageController::class, 'store']);
     Route::get('scan-images/{scanImage}', [ScanImageController::class, 'show']);

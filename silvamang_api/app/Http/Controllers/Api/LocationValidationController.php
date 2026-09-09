@@ -8,7 +8,9 @@ use App\Models\LocationValidation;
 use App\Models\ScanRecord;
 use App\Services\LocationValidationService;
 use App\Http\Controllers\Controller;
+use App\Support\ApiAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LocationValidationController extends Controller
 {
@@ -16,6 +18,7 @@ class LocationValidationController extends Controller
     {
         $locationValidations = LocationValidation::query()
             ->with(['scanRecord', 'species'])
+            ->whereHas('scanRecord', fn ($query) => ApiAccess::scopeScanRecords($query, Auth::user()))
             ->when($request->query('result'), fn ($query, $result) => $query->where('result', $result))
             ->when($request->query('species_id'), fn ($query, $speciesId) => $query->where('species_id', $speciesId))
             ->when($request->query('search'), function ($query, $search) {
@@ -38,6 +41,8 @@ class LocationValidationController extends Controller
     {
         $data = $request->validated();
         $scanRecord = ScanRecord::findOrFail($data['scan_record_id']);
+        ApiAccess::abortUnlessCanAccessScanRecord($scanRecord, Auth::user());
+
         $speciesId = $data['species_id'] ?? $scanRecord->species_id;
         $latitude = array_key_exists('latitude', $data) ? $data['latitude'] : $scanRecord->latitude;
         $longitude = array_key_exists('longitude', $data) ? $data['longitude'] : $scanRecord->longitude;
@@ -70,6 +75,9 @@ class LocationValidationController extends Controller
 
     public function show(LocationValidation $locationValidation)
     {
+        $locationValidation->load('scanRecord');
+        ApiAccess::abortUnlessCanAccessScanRecord($locationValidation->scanRecord, Auth::user());
+
         return response()->json([
             'message' => 'Location validation retrieved successfully.',
             'data' => new LocationValidationResource($locationValidation->load(['scanRecord', 'species'])),

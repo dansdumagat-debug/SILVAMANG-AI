@@ -7,7 +7,7 @@ use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateProfileRequest;
-use App\Models\Role;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,11 +17,7 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
         $data = $request->validated();
-        $roleName = $data['role'] ?? 'mobile_user';
-
-        if (! Role::where('name', $roleName)->exists()) {
-            $roleName = 'mobile_user';
-        }
+        $roleName = 'mobile_user';
 
         $user = User::create([
             'name' => $data['name'],
@@ -32,14 +28,7 @@ class AuthController extends Controller
         $user->assignRole($roleName);
         $token = $user->createToken('silvamang-api-token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Registration successful.',
-            'data' => [
-                'user' => $user->load('roles'),
-                'roles' => $user->roles->pluck('name')->values(),
-                'token' => $token,
-            ],
-        ], 201);
+        return response()->json($this->authResponse('Registration successful.', $user, $token), 201);
     }
 
     public function login(LoginRequest $request)
@@ -55,14 +44,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('silvamang-api-token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful.',
-            'data' => [
-                'user' => $user->load('roles'),
-                'roles' => $user->roles->pluck('name')->values(),
-                'token' => $token,
-            ],
-        ]);
+        return response()->json($this->authResponse('Login successful.', $user, $token));
     }
 
     public function logout(Request $request)
@@ -81,7 +63,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Authenticated user retrieved successfully.',
             'data' => [
-                'user' => $user,
+                'user' => new UserResource($user),
                 'roles' => $user->roles->pluck('name')->values(),
             ],
         ]);
@@ -95,7 +77,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Profile updated successfully.',
             'data' => [
-                'user' => $user->load('roles'),
+                'user' => new UserResource($user->load('roles')),
                 'roles' => $user->roles->pluck('name')->values(),
             ],
         ]);
@@ -118,5 +100,26 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Password changed successfully.',
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function authResponse(string $message, User $user, string $token): array
+    {
+        $user->load('roles');
+        $roles = $user->roles->pluck('name')->values();
+        $userResource = new UserResource($user);
+
+        return [
+            'message' => $message,
+            'token' => $token,
+            'user' => $userResource,
+            'data' => [
+                'user' => $userResource,
+                'roles' => $roles,
+                'token' => $token,
+            ],
+        ];
     }
 }

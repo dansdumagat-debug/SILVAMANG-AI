@@ -15,8 +15,8 @@ class ScanImageModel {
     this.updatedAt,
   });
 
-  final int id;
-  final int scanRecordId;
+  final String id;
+  final String scanRecordId;
   final String plantPart;
   final String imagePath;
   final String imageUrl;
@@ -31,8 +31,8 @@ class ScanImageModel {
 
   factory ScanImageModel.fromJson(Map<String, dynamic> json) {
     return ScanImageModel(
-      id: _asInt(json['id']),
-      scanRecordId: _asInt(json['scan_record_id'] ?? json['scanRecordId']),
+      id: _asString(json['id']),
+      scanRecordId: _asString(json['scan_record_id'] ?? json['scanRecordId']),
       plantPart: _asString(json['plant_part'] ?? json['plantPart']),
       imagePath: _asString(json['image_path'] ?? json['imagePath']),
       imageUrl: _asString(json['image_url'] ?? json['imageUrl']),

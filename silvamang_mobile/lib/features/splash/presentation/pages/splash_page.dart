@@ -9,13 +9,35 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/silvamang_button.dart';
+import '../../../../core/widgets/silvamang_logo.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 
-class SplashPage extends ConsumerWidget {
+class SplashPage extends ConsumerStatefulWidget {
   const SplashPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends ConsumerState<SplashPage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_checkAuthStatus);
+  }
+
+  Future<void> _checkAuthStatus() async {
+    final isAuthenticated = await ref
+        .read(authControllerProvider.notifier)
+        .checkAuthStatus();
+    if (!mounted) {
+      return;
+    }
+    context.goNamed(isAuthenticated ? RouteNames.home : RouteNames.login);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
@@ -32,26 +54,7 @@ class SplashPage extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryDarkGreen.withValues(alpha: 0.14),
-                      blurRadius: 28,
-                      offset: const Offset(0, 14),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.eco_rounded,
-                  size: 64,
-                  color: AppColors.primaryGreen,
-                ),
-              ),
+              const SilvamangLogo(size: 120),
               const SizedBox(height: AppSpacing.xl),
               Text(
                 AppStrings.appName,
@@ -73,17 +76,7 @@ class SplashPage extends ConsumerWidget {
                 isLoading: authState.isLoading,
                 onPressed: authState.isLoading
                     ? null
-                    : () async {
-                        final isAuthenticated = await ref
-                            .read(authControllerProvider.notifier)
-                            .checkAuthStatus();
-                        if (!context.mounted) {
-                          return;
-                        }
-                        context.goNamed(
-                          isAuthenticated ? RouteNames.home : RouteNames.login,
-                        );
-                      },
+                    : () => context.pushNamed(RouteNames.login),
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(

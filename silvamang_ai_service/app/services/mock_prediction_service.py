@@ -11,51 +11,30 @@ def build_mock_prediction(
 
     return {
         "mode": "mock",
+        "source": "mock_fallback",
+        "warning": "No valid CNN prediction was produced.",
         "model": {
             "name": "SILVAMANG Mock Classifier",
             "version": settings.mock_model_version,
             "type": "classification",
         },
         "top_prediction": {
-            "species_id": 1,
-            "scientific_name": "Rhizophora apiculata",
-            "common_name": "Red Mangrove",
-            "confidence": 92.4,
+            "species_id": None,
+            "scientific_name": "",
+            "common_name": None,
+            "confidence": None,
         },
-        "predictions": [
-            {
-                "rank": 1,
-                "species_id": 1,
-                "scientific_name": "Rhizophora apiculata",
-                "common_name": "Red Mangrove",
-                "confidence": 92.4,
-            },
-            {
-                "rank": 2,
-                "species_id": 2,
-                "scientific_name": "Rhizophora mucronata",
-                "common_name": "Red Mangrove",
-                "confidence": 5.1,
-            },
-            {
-                "rank": 3,
-                "species_id": 5,
-                "scientific_name": "Bruguiera gymnorrhiza",
-                "common_name": "Large-leaved Orange Mangrove",
-                "confidence": 2.5,
-            },
-        ],
+        "predictions": [],
         "explanation": (
-            "This mock result suggests Rhizophora apiculata based on the "
-            "prototype classification workflow. Real CNN and YOLOv8 inference "
-            "will be integrated in a later phase."
+            "No valid species prediction is available from the fallback path. "
+            "Capture or select an image and use the CNN service for real identification."
         ),
         "measurement": {
-            "height_m": 6.8,
-            "canopy_width_m": 4.2,
+            "height_m": None,
+            "canopy_width_m": None,
             "dbh_cm": None,
-            "measurement_method": "depth_estimation",
-            "confidence": 88.0,
+            "measurement_method": "not_estimated",
+            "confidence": None,
         },
         "location_hint": {
             "latitude": latitude,
@@ -67,4 +46,3 @@ def build_mock_prediction(
             "image_count": image_count,
         },
     }
-

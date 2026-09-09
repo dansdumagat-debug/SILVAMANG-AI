@@ -35,13 +35,13 @@ class MockSilvamangData {
   ];
 
   static final scanRecord = ScanRecordModel(
-    id: 1,
+    id: 'demo-scan-record',
     recordCode: 'SIL-0001',
     topScientificName: 'Rhizophora mucronata',
     topCommonName: 'Bakauan babae',
     confidence: 92.4,
     validationStatus: 'match',
-    locationName: 'Brgy. San Roque, Puerto Princesa, Palawan',
+    locationName: 'Not available',
     createdAt: DateTime.now(),
   );
 
@@ -68,9 +68,7 @@ class MockSilvamangData {
   );
 
   static const locationValidation = LocationValidationModel(
-    result: 'match',
-    latitude: 9.7392,
-    longitude: 118.7353,
-    message: 'Species location aligns with known mangrove distribution.',
+    result: 'pending',
+    message: 'Location coordinates are not available for this mock record.',
   );
 }

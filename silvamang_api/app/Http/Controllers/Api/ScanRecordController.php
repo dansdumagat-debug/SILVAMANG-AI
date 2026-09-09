@@ -9,6 +9,7 @@ use App\Models\LocationValidation;
 use App\Models\ScanRecord;
 use App\Services\LocationValidationService;
 use App\Http\Controllers\Controller;
+use App\Support\ApiAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
 
@@ -20,6 +21,7 @@ class ScanRecordController extends Controller
     public function index()
     {
         $scanRecords = ScanRecord::query()
+            ->tap(fn ($query) => ApiAccess::scopeScanRecords($query, Auth::user()))
             ->with(['species', 'images', 'predictions.species', 'measurement', 'locationValidation.species'])
             ->when(request('search'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
@@ -50,7 +52,12 @@ class ScanRecordController extends Controller
     {
         $data = $request->validated();
         $data['record_code'] = $data['record_code'] ?? $this->generateRecordCode();
-        $data['user_id'] = $data['user_id'] ?? Auth::id();
+
+        if (ApiAccess::canViewAllRecords(Auth::user())) {
+            $data['user_id'] = $data['user_id'] ?? Auth::id();
+        } else {
+            $data['user_id'] = Auth::id();
+        }
 
         $scanRecord = ScanRecord::create($data);
 
@@ -65,6 +72,8 @@ class ScanRecordController extends Controller
      */
     public function show(ScanRecord $scanRecord)
     {
+        ApiAccess::abortUnlessCanAccessScanRecord($scanRecord, Auth::user());
+
         return response()->json([
             'message' => 'Scan record retrieved successfully.',
             'data' => new ScanRecordResource($scanRecord->load(['species', 'images', 'predictions.species', 'measurement', 'locationValidation.species'])),
@@ -76,7 +85,14 @@ class ScanRecordController extends Controller
      */
     public function update(UpdateScanRecordRequest $request, ScanRecord $scanRecord)
     {
-        $scanRecord->update($request->validated());
+        ApiAccess::abortUnlessCanAccessScanRecord($scanRecord, Auth::user());
+
+        $data = $request->validated();
+        if (! ApiAccess::canViewAllRecords(Auth::user())) {
+            unset($data['user_id']);
+        }
+
+        $scanRecord->update($data);
 
         return response()->json([
             'message' => 'Scan record updated successfully.',
@@ -89,6 +105,8 @@ class ScanRecordController extends Controller
      */
     public function destroy(ScanRecord $scanRecord)
     {
+        ApiAccess::abortUnlessCanAccessScanRecord($scanRecord, Auth::user());
+
         $scanRecord->delete();
 
         return response()->json([
@@ -98,6 +116,8 @@ class ScanRecordController extends Controller
 
     public function validateLocation(ScanRecord $scanRecord, LocationValidationService $service)
     {
+        ApiAccess::abortUnlessCanAccessScanRecord($scanRecord, Auth::user());
+
         $validation = $service->validateSpeciesLocation(
             $scanRecord->species_id,
             $scanRecord->latitude !== null ? (float) $scanRecord->latitude : null,

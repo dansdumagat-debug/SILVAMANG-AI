@@ -8,8 +8,10 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/section_header.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
+import '../../../measurement/presentation/controllers/field_distance_controller.dart';
 import '../../data/models/captured_plant_part_image.dart';
 import '../controllers/capture_controller.dart';
 
@@ -20,11 +22,19 @@ class CaptureGuidePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final captureState = ref.watch(captureControllerProvider);
     final captureController = ref.read(captureControllerProvider.notifier);
+    final fieldDistanceState = ref.watch(fieldDistanceControllerProvider);
+    final fieldDistanceController = ref.read(
+      fieldDistanceControllerProvider.notifier,
+    );
     final capturedCount = captureState.capturedCount;
+    final distanceMeters = fieldDistanceState.measurement.distanceMeters;
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
-      appBar: AppBar(title: const Text('Capture Mangrove')),
+      appBar: AppBar(
+        leading: const SilvamangBackButton(),
+        title: const Text('Capture Mangrove'),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppConstants.screenPadding,
@@ -62,6 +72,111 @@ class CaptureGuidePage extends ConsumerWidget {
           Text(
             'At least one image is required. More plant parts improve reliability.',
             style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SilvamangCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: AppColors.softGreen,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.social_distance_rounded,
+                        color: AppColors.primaryDarkGreen,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Measure Distance First',
+                            style: AppTextStyles.titleMedium,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Walk from your standing point to the mangrove/front point for an estimated distance.',
+                            style: AppTextStyles.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  distanceMeters == null
+                      ? 'Distance from user to target: Not measured'
+                      : 'Distance from user to target: ${distanceMeters.toStringAsFixed(2)} meters',
+                  style: AppTextStyles.labelLarge,
+                ),
+                if (fieldDistanceState.measurement.warningMessage != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    fieldDistanceState.measurement.warningMessage!,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.warningOrange,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.md),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isNarrow = constraints.maxWidth < 360;
+                    final measureButton = SilvamangButton(
+                      text: distanceMeters == null
+                          ? 'Measure Distance'
+                          : 'Remeasure',
+                      icon: Icons.directions_walk_rounded,
+                      fullWidth: isNarrow,
+                      onPressed: () =>
+                          context.pushNamed(RouteNames.fieldDistance),
+                    );
+                    final skipButton = SilvamangButton(
+                      text: isNarrow ? 'Skip' : 'Skip Distance',
+                      icon: Icons.skip_next_rounded,
+                      type: SilvamangButtonType.outline,
+                      fullWidth: isNarrow,
+                      onPressed: () {
+                        fieldDistanceController.reset();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Distance measurement skipped.'),
+                          ),
+                        );
+                      },
+                    );
+
+                    if (isNarrow) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          measureButton,
+                          const SizedBox(height: AppSpacing.sm),
+                          skipButton,
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      children: [
+                        Expanded(child: measureButton),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(child: skipButton),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
           if (captureState.errorMessage != null) ...[
             const SizedBox(height: AppSpacing.md),
@@ -125,7 +240,7 @@ class CaptureGuidePage extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
           Text(
-            'Images stay local in this phase. No upload or AI inference yet.',
+            'Images are used for online or offline identification when you continue.',
             style: AppTextStyles.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -143,7 +258,7 @@ class CaptureGuidePage extends ConsumerWidget {
                       ),
                     );
                   }
-                : () => context.goNamed(RouteNames.identificationResult),
+                : () => context.pushNamed(RouteNames.identificationResult),
           ),
         ],
       ),

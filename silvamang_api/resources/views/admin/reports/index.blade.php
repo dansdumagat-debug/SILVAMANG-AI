@@ -6,7 +6,10 @@
     <div class="page-heading">
         <div>
             <h2>Reports & Analytics</h2>
-            <p>Monitor identification activity, AI performance, validation results, and ecological records.</p>
+            <p>System performance, AI evaluation, and ecological monitoring summary.</p>
+        </div>
+        <div class="action-row report-print-actions">
+            <button type="button" class="small-button" onclick="window.print()">Print Report</button>
         </div>
     </div>
 
@@ -39,11 +42,11 @@
 
     <section class="analytics-grid summary-grid">
         @include('admin.partials.analytics-card', ['label' => 'Total Scans', 'value' => $totalScans, 'hint' => 'Filtered scan records', 'icon' => 'SC'])
-        @include('admin.partials.analytics-card', ['label' => 'Completed Scans', 'value' => $completedScans, 'hint' => $pendingScans . ' pending', 'icon' => 'OK'])
-        @include('admin.partials.analytics-card', ['label' => 'Average Confidence', 'value' => $averageConfidence . '%', 'hint' => 'Scan record confidence', 'icon' => 'AI'])
-        @include('admin.partials.analytics-card', ['label' => 'Total Measurements', 'value' => $totalMeasurements, 'hint' => 'Linked to filtered scans', 'icon' => 'MS'])
-        @include('admin.partials.analytics-card', ['label' => 'Validation Matches', 'value' => $validationMatches, 'hint' => 'Location status match', 'icon' => 'VM'])
-        @include('admin.partials.analytics-card', ['label' => 'Validation Mismatches', 'value' => $validationMismatches, 'hint' => 'Needs review', 'icon' => 'VX'])
+        @include('admin.partials.analytics-card', ['label' => 'Uploaded Images', 'value' => $totalUploadedImages, 'hint' => 'Stored scan images', 'icon' => 'IM'])
+        @include('admin.partials.analytics-card', ['label' => 'Species', 'value' => $totalSpecies, 'hint' => 'Species database', 'icon' => 'SP'])
+        @include('admin.partials.analytics-card', ['label' => 'Users', 'value' => $totalUsers, 'hint' => 'Registered accounts', 'icon' => 'US'])
+        @include('admin.partials.analytics-card', ['label' => 'Measurements', 'value' => $totalMeasurements, 'hint' => 'Linked to filtered scans', 'icon' => 'MS'])
+        @include('admin.partials.analytics-card', ['label' => 'Assistant Logs', 'value' => $totalAssistantLogs, 'hint' => 'Saved assistant interactions', 'icon' => 'LG'])
     </section>
 
     <section class="report-grid">
@@ -53,7 +56,14 @@
         </article>
 
         <article class="report-card">
-            <div class="panel-header"><h3>Top Identified Species</h3><span>Top 5</span></div>
+            <div class="panel-header"><h3>Identification Analytics</h3><span>Top species and scan status</span></div>
+            <div class="metric-grid report-metric-grid">
+                <div><span>Average Confidence</span><strong>{{ $averageConfidence }}%</strong></div>
+                <div><span>Completed</span><strong>{{ $completedScans }}</strong></div>
+                <div><span>Pending</span><strong>{{ $pendingScans }}</strong></div>
+                <div><span>Failed</span><strong>{{ $failedScans }}</strong></div>
+            </div>
+            <hr class="report-divider">
             @forelse ($mostIdentifiedSpecies as $species)
                 @include('admin.partials.progress-bar', ['label' => $species->name, 'value' => $species->total, 'max' => max(1, $mostIdentifiedSpecies->max('total')), 'suffix' => ' scans'])
             @empty
@@ -65,6 +75,13 @@
     <section class="report-grid">
         <article class="report-card">
             <div class="panel-header"><h3>Validation Breakdown</h3><span>Status mix</span></div>
+            <div class="metric-grid report-metric-grid">
+                <div><span>Match</span><strong>{{ $validationMatches }}</strong></div>
+                <div><span>Mismatch</span><strong>{{ $validationMismatches }}</strong></div>
+                <div><span>Likely Found</span><strong>{{ $validationLikelyFound }}</strong></div>
+                <div><span>Unknown</span><strong>{{ $validationUnknown }}</strong></div>
+            </div>
+            <hr class="report-divider">
             @forelse ($validationBreakdown as $item)
                 <div class="metric-row">
                     @include('admin.partials.status-badge', ['status' => $item['label']])
@@ -83,12 +100,13 @@
                 <div><span>Average DBH</span><strong>{{ $measurementSummary['average_dbh_cm'] }} cm</strong></div>
                 <div><span>Total Records</span><strong>{{ $measurementSummary['total'] }}</strong></div>
             </div>
+            <p class="report-note">Measurement values are based on stored measurement records. Prototype depth-estimation values should be interpreted with image angle and distance limitations.</p>
         </article>
     </section>
 
     <section class="report-grid">
         <article class="report-card">
-            <div class="panel-header"><h3>AI Model Performance</h3><span>{{ $aiModelSummary['active_models'] }} active</span></div>
+            <div class="panel-header"><h3>AI Model Performance</h3><span>{{ $aiModelSummary['active_models'] }} active / {{ $aiModelSummary['total_models'] }} total</span></div>
             <div class="metric-list">
                 @include('admin.partials.progress-bar', ['label' => 'Average Accuracy', 'value' => $aiModelSummary['average_accuracy'], 'max' => 100, 'suffix' => '%'])
                 @include('admin.partials.progress-bar', ['label' => 'Average Precision', 'value' => $aiModelSummary['average_precision'], 'max' => 100, 'suffix' => '%'])
@@ -99,8 +117,62 @@
         </article>
 
         <article class="report-card">
-            <div class="panel-header"><h3>Alert Summary</h3><span>Monitoring</span></div>
+            <div class="panel-header"><h3>Uploaded Images & Dataset</h3><span>Evidence readiness</span></div>
             <div class="metric-grid">
+                <div><span>Total Images</span><strong>{{ $imageSummary['total'] }}</strong></div>
+                <div><span>Verified</span><strong>{{ $imageSummary['verified'] }}</strong></div>
+                <div><span>Dataset Species</span><strong>{{ $datasetSummary['species_count'] }}</strong></div>
+                <div><span>Dataset Images</span><strong>{{ $datasetSummary['image_count'] }}</strong></div>
+            </div>
+            <p class="report-note">{{ $datasetSummary['note'] }}</p>
+        </article>
+    </section>
+
+    <section class="report-grid">
+        <article class="report-card wide-report-card">
+            <div class="panel-header"><h3>CNN Baseline Evaluation</h3><span>File-based evidence</span></div>
+            @if (! empty($cnnMetrics))
+                <div class="cnn-metric-grid">
+                    <div><span>Accuracy</span><strong>{{ $cnnMetrics['accuracy'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Precision</span><strong>{{ $cnnMetrics['precision'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Recall</span><strong>{{ $cnnMetrics['recall'] ?? 'N/A' }}%</strong></div>
+                    <div><span>F1-score</span><strong>{{ $cnnMetrics['f1_score'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Top-3 Accuracy</span><strong>{{ $cnnMetrics['top_3_accuracy'] ?? 'N/A' }}%</strong></div>
+                </div>
+                @if ($cnnConfusionMatrixPreview)
+                    <div class="confusion-matrix-preview">
+                        <span>Confusion Matrix</span>
+                        <img src="{{ $cnnConfusionMatrixPreview }}" alt="CNN baseline confusion matrix">
+                    </div>
+                @endif
+                @if (! empty($cnnClassificationReport))
+                    <div class="table-wrap">
+                        <table class="compact-table classification-report-table">
+                            <thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1-score</th><th>Support</th></tr></thead>
+                            <tbody>
+                                @foreach ($cnnClassificationReport as $row)
+                                    <tr>
+                                        <td>{{ str_replace('_', ' ', $row['class'] ?? 'N/A') }}</td>
+                                        <td>{{ isset($row['precision']) && is_numeric($row['precision']) ? round($row['precision'] * 100, 2) . '%' : 'N/A' }}</td>
+                                        <td>{{ isset($row['recall']) && is_numeric($row['recall']) ? round($row['recall'] * 100, 2) . '%' : 'N/A' }}</td>
+                                        <td>{{ isset($row['f1-score']) && is_numeric($row['f1-score']) ? round($row['f1-score'] * 100, 2) . '%' : 'N/A' }}</td>
+                                        <td>{{ $row['support'] ?? 'N/A' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            @else
+                <div class="empty-card">CNN evaluation metrics are not available yet. Run evaluate_cnn_baseline.py first.</div>
+            @endif
+        </article>
+
+        <article class="report-card">
+            <div class="panel-header"><h3>Assistant & Alerts</h3><span>Monitoring</span></div>
+            <div class="metric-grid">
+                <div><span>Total Assistant Logs</span><strong>{{ $totalAssistantLogs }}</strong></div>
+                <div><span>Total Alerts</span><strong>{{ $totalAlerts }}</strong></div>
                 @foreach ($alertSummary['statuses'] as $status => $count)
                     <div><span>{{ ucfirst($status) }} Alerts</span><strong>{{ $count }}</strong></div>
                 @endforeach
@@ -110,8 +182,19 @@
                     <span class="severity-badge severity-{{ $severity }}">{{ ucfirst($severity) }}: {{ $count }}</span>
                 @endforeach
             </div>
+            @if ($assistantIntentSummary->isNotEmpty())
+                <hr class="report-divider">
+                @foreach ($assistantIntentSummary as $intent)
+                    @include('admin.partials.progress-bar', ['label' => $intent->intent ?? 'unknown', 'value' => $intent->total, 'max' => max(1, $assistantIntentSummary->max('total')), 'suffix' => ' logs'])
+                @endforeach
+            @endif
         </article>
     </section>
+
+    <article class="panel print-note">
+        <strong>Print/Export Note</strong>
+        <p>Use the Print Report button or your browser print dialog to save this page as PDF. Excel/PDF export is not implemented in this phase.</p>
+    </article>
 
     <section class="report-grid">
         <article class="report-card wide-report-card">

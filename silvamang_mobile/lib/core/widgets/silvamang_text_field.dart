@@ -7,6 +7,7 @@ class SilvamangTextField extends StatelessWidget {
     required this.label,
     this.hint,
     this.prefixIcon,
+    this.suffixIcon,
     this.obscureText = false,
     this.validator,
     this.keyboardType,
@@ -16,6 +17,7 @@ class SilvamangTextField extends StatelessWidget {
   final String label;
   final String? hint;
   final IconData? prefixIcon;
+  final Widget? suffixIcon;
   final bool obscureText;
   final FormFieldValidator<String>? validator;
   final TextInputType? keyboardType;
@@ -31,6 +33,7 @@ class SilvamangTextField extends StatelessWidget {
         labelText: label,
         hintText: hint,
         prefixIcon: prefixIcon == null ? null : Icon(prefixIcon),
+        suffixIcon: suffixIcon,
       ),
     );
   }

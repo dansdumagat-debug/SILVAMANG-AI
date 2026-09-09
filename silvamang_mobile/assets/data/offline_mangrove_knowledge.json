@@ -1,0 +1,194 @@
+[
+  {
+    "category": "general_mangrove",
+    "question": "What is a mangrove?",
+    "answer": "Mangroves are salt-tolerant trees and shrubs that grow in coastal intertidal areas. They survive in muddy, salty, low-oxygen soil and form forests that protect shorelines, store carbon, and provide habitat for fish, crabs, birds, and other wildlife.",
+    "keywords": ["mangrove", "definition", "coastal", "intertidal", "salt tolerant"],
+    "related_species": [],
+    "suggested_questions": ["Why are mangroves important?", "What are mangrove root types?", "What species grow in the Philippines?"]
+  },
+  {
+    "category": "ecology",
+    "question": "Why are mangroves important?",
+    "answer": "Mangroves reduce wave energy, slow storm surge, trap sediment, protect coastal communities from erosion, and act as nursery habitat for fish and crabs. Their deep root and soil systems also store blue carbon, helping climate resilience.",
+    "keywords": ["importance", "benefits", "ecology", "carbon", "nursery", "erosion", "wave", "storm"],
+    "related_species": ["Rhizophora apiculata", "Avicennia marina", "Sonneratia alba"],
+    "suggested_questions": ["How do mangroves protect coastal areas?", "What is blue carbon?", "How can I protect mangroves?"]
+  },
+  {
+    "category": "ecology",
+    "question": "How do mangroves protect coastal areas?",
+    "answer": "Mangroves protect coastal areas by slowing waves, reducing storm surge force, trapping sediment, and holding muddy shorelines together with dense roots. A healthy mangrove belt can reduce erosion and give coastal communities a natural buffer during rough weather.",
+    "keywords": ["protect coastal areas", "coastline", "shoreline", "storm surge", "waves", "erosion", "sediment", "coastal protection"],
+    "related_species": ["Rhizophora apiculata", "Rhizophora mucronata", "Sonneratia alba", "Avicennia marina"],
+    "suggested_questions": ["Why are mangroves important?", "How do mangroves help marine life?", "What threatens mangrove ecosystems?"]
+  },
+  {
+    "category": "ecology",
+    "question": "How do mangroves help marine life?",
+    "answer": "Mangrove roots create shelter and feeding areas for young fish, crabs, shrimp, mollusks, and other coastal animals. Leaf litter adds nutrients to the food web, while calm root areas give juvenile marine life safer nursery habitat before moving to reefs, seagrass, or open water.",
+    "keywords": ["marine life", "nursery", "fish", "crabs", "shrimp", "animals", "wildlife", "habitat", "food web"],
+    "related_species": ["Rhizophora apiculata", "Avicennia marina", "Sonneratia alba"],
+    "suggested_questions": ["What animals live in mangroves?", "Why are roots important?", "How do mangroves protect coastal areas?"]
+  },
+  {
+    "category": "ecology",
+    "question": "How do mangroves store carbon?",
+    "answer": "Mangroves store carbon in trunks, branches, roots, and especially in waterlogged soils where dead plant material breaks down slowly. This stored coastal carbon is often called blue carbon, and protecting mangroves helps keep that carbon locked in the ecosystem.",
+    "keywords": ["carbon", "blue carbon", "climate", "store carbon", "soil carbon", "carbon storage"],
+    "related_species": [],
+    "suggested_questions": ["Why are mangroves important?", "What threatens mangrove ecosystems?", "How can we protect mangroves?"]
+  },
+  {
+    "category": "species_information",
+    "question": "What is Rhizophora apiculata?",
+    "answer": "Rhizophora apiculata is a true mangrove species commonly recognized by strong stilt roots, opposite leaves, and propagules. It is often found along muddy shorelines, estuaries, and sheltered coastal areas, where it helps stabilize sediment and protect shorelines.",
+    "keywords": ["rhizophora", "apiculata", "red mangrove", "stilt roots", "propagules"],
+    "related_species": ["Rhizophora apiculata"],
+    "suggested_questions": ["How can I identify Rhizophora apiculata?", "What are stilt roots?", "Where is Rhizophora apiculata found?"]
+  },
+  {
+    "category": "species_information",
+    "question": "What is Avicennia marina?",
+    "answer": "Avicennia marina is a hardy mangrove species often associated with pencil-like breathing roots called pneumatophores. It tolerates salty, muddy tidal areas and helps trap sediment along shorelines.",
+    "keywords": ["avicennia", "marina", "grey mangrove", "pneumatophores", "breathing roots"],
+    "related_species": ["Avicennia marina", "Avicennia marina var. rumphiana"],
+    "suggested_questions": ["What are pneumatophores?", "What is the difference between Rhizophora and Avicennia?", "Where does Avicennia marina grow?"]
+  },
+  {
+    "category": "species_information",
+    "question": "What is Bruguiera gymnorrhiza?",
+    "answer": "Bruguiera gymnorrhiza is a mangrove species with large leaves and root structures that support stability and gas exchange. It can occur in sheltered estuaries, river mouths, and inner mangrove forests.",
+    "keywords": ["bruguiera", "gymnorrhiza", "large leaved", "knee roots", "river mouth"],
+    "related_species": ["Bruguiera gymnorrhiza"],
+    "suggested_questions": ["What are knee roots?", "How do I identify Bruguiera?", "What habitats support Bruguiera?"]
+  },
+  {
+    "category": "species_information",
+    "question": "What is Ceriops tagal?",
+    "answer": "Ceriops tagal is a mangrove species found in sheltered muddy flats and interior mangrove zones. It produces elongated propagules and contributes to dense mangrove stands that stabilize soft coastal sediment.",
+    "keywords": ["ceriops", "tagal", "spurred mangrove", "propagules", "muddy flats"],
+    "related_species": ["Ceriops tagal"],
+    "suggested_questions": ["What are propagules?", "How do mangroves reproduce?", "What is mangrove zonation?"]
+  },
+  {
+    "category": "species_information",
+    "question": "What is Sonneratia alba?",
+    "answer": "Sonneratia alba is commonly found near seaward mangrove edges and tidal channels. It may show cone-like breathing roots and is useful for recognizing open-water mangrove fringe habitats.",
+    "keywords": ["sonneratia", "alba", "mangrove apple", "seaward", "tidal channel", "breathing roots"],
+    "related_species": ["Sonneratia alba"],
+    "suggested_questions": ["What species grow near the seaward edge?", "What are breathing roots?", "How does zonation work?"]
+  },
+  {
+    "category": "species_information",
+    "question": "What is Xylocarpus granatum?",
+    "answer": "Xylocarpus granatum is a mangrove tree known for large round fruits and strong trunk or buttress-like root features. Photos that include fruits, bark, roots, and leaves help identify it more confidently.",
+    "keywords": ["xylocarpus", "granatum", "cannonball", "fruit", "buttress"],
+    "related_species": ["Xylocarpus granatum"],
+    "suggested_questions": ["What plant parts should I photograph?", "How can I identify Xylocarpus?", "Why take multiple photos?"]
+  },
+  {
+    "category": "identification_guide",
+    "question": "What is the difference between Rhizophora and Avicennia?",
+    "answer": "Rhizophora species usually show stilt or prop roots that arch from the trunk and branches into the mud. Avicennia species often show many pencil-like pneumatophores rising from the soil. Use several features together: roots, leaves, bark, flowers, fruits, propagules, habitat, and GPS context.",
+    "keywords": ["difference", "rhizophora", "avicennia", "prop roots", "pneumatophores", "identify"],
+    "related_species": ["Rhizophora apiculata", "Rhizophora mucronata", "Rhizophora stylosa", "Avicennia marina"],
+    "suggested_questions": ["What are prop roots?", "What are pneumatophores?", "How do I take better scan photos?"]
+  },
+  {
+    "category": "mangrove_biology",
+    "question": "What are prop roots?",
+    "answer": "Prop roots, also called stilt roots, are roots that grow from the stem or branches down into the mud. They help mangroves stand firmly in soft sediment, resist waves, and exchange gases in waterlogged environments.",
+    "keywords": ["prop roots", "stilt roots", "roots", "rhizophora", "support", "mud"],
+    "related_species": ["Rhizophora apiculata", "Rhizophora mucronata", "Rhizophora stylosa"],
+    "suggested_questions": ["What are pneumatophores?", "How do mangroves protect coastal areas?", "How can I identify Rhizophora?"]
+  },
+  {
+    "category": "mangrove_biology",
+    "question": "Why do mangroves survive in salty water?",
+    "answer": "Mangroves survive salty water through adaptations such as filtering salt at the roots, storing or excreting extra salt through leaves, using thick waxy leaves to reduce water loss, and growing special roots that help them breathe in oxygen-poor mud.",
+    "keywords": ["salty water", "salt water", "salinity", "salt tolerant", "adaptations", "survive", "waxy leaves", "salt excretion"],
+    "related_species": ["Avicennia marina", "Rhizophora apiculata", "Sonneratia alba"],
+    "suggested_questions": ["What are mangrove adaptations?", "What are breathing roots?", "How do mangroves reproduce?"]
+  },
+  {
+    "category": "mangrove_biology",
+    "question": "What are mangrove adaptations?",
+    "answer": "Mangrove adaptations include salt filtering, salt excretion, thick leaves, floating propagules, support roots, and breathing roots such as pneumatophores. These traits help mangroves survive salty tides, soft mud, strong waves, and low oxygen soil.",
+    "keywords": ["adaptation", "adaptations", "salt", "breathing roots", "pneumatophores", "propagules", "low oxygen"],
+    "related_species": ["Rhizophora apiculata", "Avicennia marina", "Sonneratia alba", "Bruguiera gymnorrhiza"],
+    "suggested_questions": ["Why do mangroves survive in salty water?", "What are prop roots?", "What are pneumatophores?"]
+  },
+  {
+    "category": "mangrove_biology",
+    "question": "How do mangroves reproduce?",
+    "answer": "Many mangroves produce propagules, which are young plant structures that can float with tides before settling in suitable mud. Reproduction success depends on water movement, salinity, sediment, and whether the site is protected from disturbance.",
+    "keywords": ["reproduction", "propagules", "seed", "seedling", "tide"],
+    "related_species": ["Rhizophora apiculata", "Ceriops tagal", "Bruguiera gymnorrhiza"],
+    "suggested_questions": ["What are propagules?", "Where should mangroves be planted?", "How can I protect seedlings?"]
+  },
+  {
+    "category": "distribution",
+    "question": "What mangrove species grow in the Philippines?",
+    "answer": "The Philippines has many true mangrove and mangrove-associated species. SILVAMANG currently focuses on species such as Rhizophora apiculata, Rhizophora mucronata, Rhizophora stylosa, Avicennia marina, Bruguiera gymnorrhiza, Ceriops tagal, Sonneratia alba, Excoecaria agallocha, and Xylocarpus granatum.",
+    "keywords": ["philippines", "distribution", "species", "grow", "southeast asia"],
+    "related_species": ["Rhizophora apiculata", "Avicennia marina", "Bruguiera gymnorrhiza", "Ceriops tagal", "Sonneratia alba", "Xylocarpus granatum"],
+    "suggested_questions": ["Where is Rhizophora apiculata found?", "What is mangrove zonation?", "How does location validation work?"]
+  },
+  {
+    "category": "zonation",
+    "question": "What is mangrove zonation?",
+    "answer": "Mangrove zonation is the pattern of species growing in different coastal zones based on tides, salinity, elevation, sediment, wave exposure, and freshwater input. Some species tolerate seaward exposure, while others grow better in inner or riverine areas.",
+    "keywords": ["zonation", "zone", "seaward", "landward", "salinity", "tides", "sediment"],
+    "related_species": ["Sonneratia alba", "Rhizophora apiculata", "Bruguiera gymnorrhiza"],
+    "suggested_questions": ["Which species grow near open water?", "Why does GPS matter?", "What habitat does this species prefer?"]
+  },
+  {
+    "category": "conservation",
+    "question": "How can I protect mangroves?",
+    "answer": "Protect mangroves by avoiding cutting, preventing waste dumping, reporting illegal clearing, protecting natural tidal flow, planting only suitable native species, monitoring survival after planting, and recording verified field observations for long-term management.",
+    "keywords": ["protect", "conservation", "threat", "illegal cutting", "pollution", "restore", "reforestation"],
+    "related_species": [],
+    "suggested_questions": ["What are threats to mangroves?", "Why are mangroves important?", "Where should mangroves be planted?"]
+  },
+  {
+    "category": "conservation",
+    "question": "What threatens mangrove ecosystems?",
+    "answer": "Mangrove ecosystems are threatened by cutting, land conversion, fishpond expansion, pollution, blocked tidal flow, poorly planned planting, sediment changes, and climate-related sea level rise. Conservation should protect existing forests first, then restore suitable degraded sites.",
+    "keywords": ["threat", "threats", "danger", "cutting", "pollution", "fishpond", "land conversion", "sea level rise", "degradation"],
+    "related_species": [],
+    "suggested_questions": ["How can we protect mangroves?", "Why should mangroves be conserved?", "How do mangroves store carbon?"]
+  },
+  {
+    "category": "conservation",
+    "question": "Why should mangroves be conserved?",
+    "answer": "Mangroves should be conserved because they protect shorelines, support fisheries, store carbon, provide biodiversity habitat, and help communities adapt to storms and coastal hazards. Conservation also preserves field sites for education, monitoring, and restoration work.",
+    "keywords": ["conserved", "conserve", "conservation", "why conserve", "protect", "biodiversity", "fisheries"],
+    "related_species": [],
+    "suggested_questions": ["What threatens mangrove ecosystems?", "How can I protect mangroves?", "Why are mangroves important?"]
+  },
+  {
+    "category": "environmental_education",
+    "question": "What animals live in mangroves?",
+    "answer": "Mangroves provide habitat for fish, crabs, shrimp, mollusks, insects, birds, reptiles, and many microorganisms. Many animals use mangrove roots and muddy channels as feeding, breeding, shelter, or nursery areas.",
+    "keywords": ["animals", "wildlife", "fish", "crabs", "birds", "shrimp", "reptiles", "habitat", "marine life"],
+    "related_species": [],
+    "suggested_questions": ["How do mangroves help marine life?", "Why are mangroves important?", "What is mangrove zonation?"]
+  },
+  {
+    "category": "location_information",
+    "question": "How does location validation work?",
+    "answer": "Location validation uses the phone GPS coordinates and compares them with available species distribution or boundary data. GPS gives latitude and longitude only; barangay names require boundary data. If boundary data is missing, the app must show barangay as not available instead of inventing a name.",
+    "keywords": ["location", "gps", "barangay", "validation", "boundary", "coordinates"],
+    "related_species": [],
+    "suggested_questions": ["Why is barangay not available?", "How accurate is phone GPS?", "What does validation status mean?"]
+  },
+  {
+    "category": "identification_guide",
+    "question": "How do I take better mangrove scan photos?",
+    "answer": "Take clear photos in good light. Include one close-up of leaves and another image of roots, bark, flowers, fruits, or propagules when available. Avoid blur, heavy shadow, mixed species in one frame, and very distant canopy-only photos.",
+    "keywords": ["photo", "scan", "capture", "image", "blur", "confidence", "identify"],
+    "related_species": [],
+    "suggested_questions": ["Why is confidence low?", "What plant parts should I photograph?", "How do I identify Rhizophora?"]
+  }
+]

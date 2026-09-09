@@ -27,6 +27,10 @@ class EnsureUserHasRole
             return $next($request);
         }
 
+        if (! $request->expectsJson()) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return response()->json([
             'message' => 'You do not have permission to access this resource.',
         ], 403);

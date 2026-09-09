@@ -87,7 +87,7 @@ class RecordsController extends StateNotifier<RecordsState> {
     await loadRecords();
   }
 
-  Future<void> loadRecordById(int id) async {
+  Future<void> loadRecordById(String id) async {
     state = state.copyWith(
       isLoading: true,
       clearError: true,

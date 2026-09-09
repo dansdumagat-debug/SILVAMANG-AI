@@ -7,6 +7,21 @@ use Illuminate\Validation\Rule;
 
 class MockPredictionRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('plant_part') && ! $this->has('plant_parts')) {
+            $this->merge([
+                'plant_parts' => [$this->input('plant_part')],
+            ]);
+        }
+
+        if ($this->has('plant_parts') && ! is_array($this->input('plant_parts'))) {
+            $this->merge([
+                'plant_parts' => [$this->input('plant_parts')],
+            ]);
+        }
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -18,8 +33,18 @@ class MockPredictionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'images' => ['nullable', 'array'],
-            'images.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:10240'],
+            'images' => ['nullable'],
+            'images.*' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:10240'],
+            'plant_part' => ['nullable', 'string', Rule::in([
+                'leaves',
+                'bark',
+                'roots',
+                'flowers',
+                'canopy',
+                'full_tree',
+                'other',
+            ])],
             'plant_parts' => ['nullable', 'array'],
             'plant_parts.*' => ['nullable', 'string', Rule::in([
                 'leaves',

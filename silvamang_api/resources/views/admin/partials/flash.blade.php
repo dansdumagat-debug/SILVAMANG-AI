@@ -6,6 +6,10 @@
     <div class="flash-alert flash-error">{{ session('error') }}</div>
 @endif
 
+@if (session('warning'))
+    <div class="flash-alert flash-warning">{{ session('warning') }}</div>
+@endif
+
 @if ($errors->any())
     <div class="flash-alert flash-error">
         <strong>Please review the form errors.</strong>

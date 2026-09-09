@@ -9,6 +9,7 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../controllers/location_controller.dart';
@@ -37,7 +38,12 @@ class _LocationValidationPageState
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
-      appBar: AppBar(title: const Text('Location & Validation')),
+      appBar: AppBar(
+        leading: const SilvamangBackButton(
+          fallbackRouteName: RouteNames.measurement,
+        ),
+        title: const Text('Location & Validation'),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppConstants.screenPadding,
@@ -88,12 +94,12 @@ class _LocationValidationPageState
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       SilvamangBadge(
-                        label: locationState.isUsingFallback
-                            ? 'Fallback'
-                            : 'GPS',
-                        type: locationState.isUsingFallback
-                            ? SilvamangBadgeType.warning
-                            : SilvamangBadgeType.success,
+                        label: locationState.hasLocation
+                            ? 'GPS'
+                            : 'Location unavailable',
+                        type: locationState.hasLocation
+                            ? SilvamangBadgeType.success
+                            : SilvamangBadgeType.warning,
                       ),
                     ],
                   ),
@@ -107,17 +113,17 @@ class _LocationValidationPageState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SilvamangBadge(
-                  label: locationState.isUsingFallback
-                      ? 'Prototype Fallback Location'
-                      : 'Ready for Backend Validation',
-                  type: locationState.isUsingFallback
-                      ? SilvamangBadgeType.warning
-                      : SilvamangBadgeType.info,
+                  label: locationState.hasLocation
+                      ? 'Ready for Backend Validation'
+                      : 'Location unavailable',
+                  type: locationState.hasLocation
+                      ? SilvamangBadgeType.info
+                      : SilvamangBadgeType.warning,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(
-                  locationState.isUsingFallback
-                      ? 'GPS unavailable. Fallback prototype location will be used.'
+                  !locationState.hasLocation
+                      ? 'GPS unavailable. No demo coordinates will be used.'
                       : 'Current coordinates can be sent to the Laravel validation engine when saving a scan record.',
                   style: AppTextStyles.bodyLarge,
                 ),
@@ -212,7 +218,7 @@ class _LocationValidationPageState
           ),
           const SizedBox(height: AppSpacing.sm),
           TextButton.icon(
-            onPressed: () => context.goNamed(RouteNames.aiAssistant),
+            onPressed: () => context.pushNamed(RouteNames.aiAssistant),
             icon: const Icon(Icons.chat_bubble_rounded),
             label: const Text('Ask AI Assistant'),
           ),

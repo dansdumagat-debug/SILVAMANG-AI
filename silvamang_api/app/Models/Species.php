@@ -54,4 +54,14 @@ class Species extends Model
     {
         return $this->hasMany(LocationValidation::class);
     }
+
+    public function externalObservations()
+    {
+        return $this->hasMany(ExternalSpeciesObservation::class);
+    }
+
+    public function education()
+    {
+        return $this->hasOne(MangroveEducation::class);
+    }
 }

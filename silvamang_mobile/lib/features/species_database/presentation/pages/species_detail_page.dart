@@ -10,9 +10,14 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../../core/widgets/section_header.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
+import '../../../../shared/models/species_model.dart';
+import '../../data/models/external_species_observation_model.dart';
+import '../../data/repositories/external_species_observation_repository.dart';
 import '../controllers/species_controller.dart';
+import '../widgets/external_biodiversity_references_section.dart';
 
 class SpeciesDetailPage extends ConsumerStatefulWidget {
   const SpeciesDetailPage({super.key, required this.speciesId});
@@ -24,6 +29,9 @@ class SpeciesDetailPage extends ConsumerStatefulWidget {
 }
 
 class _SpeciesDetailPageState extends ConsumerState<SpeciesDetailPage> {
+  Future<ExternalSpeciesReferenceResult>? _externalReferencesFuture;
+  String? _externalReferencesKey;
+
   int get _speciesId => int.tryParse(widget.speciesId) ?? 0;
 
   @override
@@ -43,7 +51,12 @@ class _SpeciesDetailPageState extends ConsumerState<SpeciesDetailPage> {
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
-      appBar: AppBar(title: const Text('Species Detail')),
+      appBar: AppBar(
+        leading: const SilvamangBackButton(
+          fallbackRouteName: RouteNames.speciesList,
+        ),
+        title: const Text('Species Detail'),
+      ),
       body: state.isLoading
           ? const LoadingView(message: 'Loading species details...')
           : state.errorMessage != null
@@ -186,15 +199,39 @@ class _SpeciesDetailPageState extends ConsumerState<SpeciesDetailPage> {
                     style: AppTextStyles.bodyLarge,
                   ),
                 ),
+                if (species != null &&
+                    species.scientificName.trim().isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  ExternalBiodiversityReferencesSection(
+                    referencesFuture: _externalReferencesFor(species),
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.xl),
                 SilvamangButton(
                   text: 'Add Observation',
                   icon: Icons.add_a_photo_rounded,
-                  onPressed: () => context.goNamed(RouteNames.captureGuide),
+                  onPressed: () => context.pushNamed(RouteNames.captureGuide),
                 ),
               ],
             ),
     );
+  }
+
+  Future<ExternalSpeciesReferenceResult> _externalReferencesFor(
+    SpeciesModel species,
+  ) {
+    final key = '${species.id}:${species.scientificName}';
+    if (_externalReferencesFuture == null || _externalReferencesKey != key) {
+      _externalReferencesKey = key;
+      _externalReferencesFuture = ref
+          .read(externalSpeciesObservationRepositoryProvider)
+          .getReferences(
+            speciesId: species.id,
+            speciesName: species.scientificName,
+          );
+    }
+
+    return _externalReferencesFuture!;
   }
 }
 

@@ -3,6 +3,91 @@
 @section('title', 'AI Models')
 
 @section('content')
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div>
+                <h5 class="mb-0">AI Model Runtime Health</h5>
+                <small class="text-muted">Checks Python AI service availability for each registered model endpoint.</small>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Model name</th>
+                            <th>Type</th>
+                            <th>Version</th>
+                            <th>Accuracy</th>
+                            <th>Evaluation metrics</th>
+                            <th>Status</th>
+                            <th>Endpoint</th>
+                            <th>Health</th>
+                            <th>Last checked</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($aiModels as $aiModel)
+                            @php($health = $modelHealth[$aiModel->id] ?? null)
+                            @php($evaluations = collect($modelEvaluations[$aiModel->id] ?? []))
+                            @php($accuracyEvaluation = $evaluations->firstWhere('metric_name', 'accuracy'))
+                            <tr>
+                                <td>{{ $aiModel->model_name }}</td>
+                                <td>{{ $aiModel->model_type }}</td>
+                                <td>{{ $health['version'] ?? $aiModel->version ?? 'Not available' }}</td>
+                                <td>
+                                    @if ($accuracyEvaluation)
+                                        {{ $accuracyEvaluation->display_value }}
+                                    @elseif ($aiModel->accuracy !== null)
+                                        {{ $aiModel->accuracy }}%
+                                    @else
+                                        Not available
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($evaluations->isNotEmpty())
+                                        <div class="d-flex flex-column gap-1">
+                                            @foreach ($evaluations->take(6) as $evaluation)
+                                                <div>
+                                                    <strong>{{ str_replace('_', ' ', ucfirst($evaluation->metric_name)) }}:</strong>
+                                                    {{ $evaluation->display_value }}
+                                                    <small class="text-muted">
+                                                        {{ $evaluation->date?->format('M d, Y') }}
+                                                    </small>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-muted">No evaluation recorded</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php($isActive = ($health['status'] ?? $aiModel->status) === 'active')
+                                    <span class="badge {{ $isActive ? 'bg-success' : 'bg-secondary' }}">
+                                        {{ $isActive ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>{{ $health['endpoint'] ?? 'Not mapped' }}</td>
+                                <td>{{ $health['message'] ?? 'Not checked' }}</td>
+                                <td>
+                                    @if (! empty($health['last_checked_at']))
+                                        {{ $health['last_checked_at']->format('M d, Y h:i A') }}
+                                    @else
+                                        Not checked
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">No AI models found.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     <div class="page-heading">
         <div><h2>AI Models</h2><p>Monitor model versions, readiness, and current status.</p></div>
         <a href="{{ route('admin.ai-models.create') }}" class="primary-action">Add AI Model</a>

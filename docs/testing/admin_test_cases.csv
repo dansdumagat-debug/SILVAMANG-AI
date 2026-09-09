@@ -1,0 +1,13 @@
+test_id,admin_module,test_case,test_steps,expected_result,actual_result,status,remarks
+AT-001,Authentication,Admin login,Login with admin account,Admin dashboard opens,,,
+AT-002,Dashboard,Dashboard statistics,Open dashboard,Statistics cards display actual data,,,
+AT-003,Species,Species CRUD,Create view edit species,Species changes persist,,,
+AT-004,Scan Records,Scan record review,Open scan record detail,Record details display,,,
+AT-005,Images,Captured image display,Open scan record with images,Images or safe paths display,,,
+AT-006,Dataset,Dataset verification,Review and update dataset status,Verification metadata saves,,,
+AT-007,Dataset,Export verified images,Run export action,Verified images are copied to dataset raw folder,,,
+AT-008,AI Models,AI models page,Open AI models,Model records display,,,
+AT-009,Assistant Logs,Assistant logs page,Open assistant logs,Questions responses intents display,,,
+AT-010,Reports,Reports and analytics,Open reports,Analytics and CNN evidence display if available,,,
+AT-011,Users,User management,Open users page,Users and role controls display,,,
+AT-012,Settings,Settings page,Open settings,System information displays,,,

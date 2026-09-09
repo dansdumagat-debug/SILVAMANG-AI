@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AiModel;
+use App\Models\AiModelEvaluation;
+use App\Services\AiModelHealthService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class AiModelController extends Controller
 {
-    public function index()
+    public function index(Request $request, AiModelHealthService $healthService)
     {
         $query = AiModel::query()
             ->when(request('search'), function ($query, $search) {
@@ -21,8 +24,15 @@ class AiModelController extends Controller
             ->when(request('model_type'), fn ($query, $type) => $query->where('model_type', $type))
             ->when(request('status'), fn ($query, $status) => $query->where('status', $status));
 
+        $modelHealth = $healthService->refreshStatuses();
+        $modelEvaluations = Schema::hasTable('ai_model_evaluations')
+            ? AiModelEvaluation::query()->orderByDesc('date')->get()->groupBy('model_id')
+            : collect();
+
         return view('admin.ai-models.index', [
             'aiModels' => $query->orderBy('model_name')->paginate(10)->withQueryString(),
+            'modelHealth' => $modelHealth,
+            'modelEvaluations' => $modelEvaluations,
             'modelTypes' => AiModel::whereNotNull('model_type')->distinct()->orderBy('model_type')->pluck('model_type'),
             'statuses' => AiModel::whereNotNull('status')->distinct()->orderBy('status')->pluck('status'),
         ]);

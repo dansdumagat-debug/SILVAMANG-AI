@@ -9,11 +9,12 @@ use App\Models\Measurement;
 use App\Models\ScanRecord;
 use App\Models\Species;
 use App\Models\User;
+use App\Services\CnnMetricsReaderService;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function __invoke()
+    public function __invoke(CnnMetricsReaderService $cnnMetricsReader)
     {
         $topIdentifiedSpecies = ScanRecord::query()
             ->leftJoin('species', 'scan_records.species_id', '=', 'species.id')
@@ -71,6 +72,7 @@ class DashboardController extends Controller
             'scanTrend' => $scanTrend,
             'validationBreakdown' => $validationBreakdown,
             'aiModelHealth' => $aiModelHealth,
+            'cnnMetrics' => $cnnMetricsReader->metrics(),
         ]);
     }
 }

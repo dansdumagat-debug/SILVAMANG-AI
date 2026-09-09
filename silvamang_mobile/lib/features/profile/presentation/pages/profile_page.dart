@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -9,9 +9,12 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/metric_card.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
+import '../../../../core/widgets/silvamang_logo.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -29,10 +32,14 @@ class ProfilePage extends ConsumerWidget {
     final role = user?.roles.isNotEmpty == true
         ? user!.roles.first
         : 'Mobile User';
+    final offlineState = ref.watch(offlineSyncControllerProvider);
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        leading: const SilvamangBackButton(),
+        title: const Text('Profile'),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppConstants.screenPadding,
@@ -44,19 +51,7 @@ class ProfilePage extends ConsumerWidget {
           SilvamangCard(
             child: Column(
               children: [
-                Container(
-                  width: 92,
-                  height: 92,
-                  decoration: const BoxDecoration(
-                    color: AppColors.softGreen,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.person_rounded,
-                    color: AppColors.primaryDarkGreen,
-                    size: 54,
-                  ),
-                ),
+                const SilvamangLogo(size: 92),
                 const SizedBox(height: AppSpacing.md),
                 Text(displayName, style: AppTextStyles.titleLarge),
                 Text(displayEmail, style: AppTextStyles.bodyMedium),
@@ -99,25 +94,39 @@ class ProfilePage extends ConsumerWidget {
           _MenuCard(
             icon: Icons.history_rounded,
             label: 'My Records',
-            onTap: () => context.goNamed(RouteNames.records),
+            onTap: () => context.pushNamed(RouteNames.records),
           ),
           const SizedBox(height: AppSpacing.sm),
           _MenuCard(
             icon: Icons.cloud_queue_rounded,
-            label: 'Offline Queue',
-            onTap: () {},
+            label: offlineState.pendingCount > 0
+                ? 'Offline Queue (${offlineState.pendingCount})'
+                : 'Offline Queue',
+            onTap: () => context.pushNamed(RouteNames.offlineQueue),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _MenuCard(
+            icon: Icons.download_for_offline_rounded,
+            label: 'Manage Offline Maps',
+            onTap: () => context.pushNamed(RouteNames.offlineMapManager),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          _MenuCard(
+            icon: Icons.memory_rounded,
+            label: 'Offline Model Diagnostic',
+            onTap: () => context.pushNamed(RouteNames.offlineModelDiagnostic),
           ),
           const SizedBox(height: AppSpacing.sm),
           _MenuCard(
             icon: Icons.settings_rounded,
             label: 'App Settings',
-            onTap: () {},
+            onTap: () => context.pushNamed(RouteNames.appSettings),
           ),
           const SizedBox(height: AppSpacing.sm),
           _MenuCard(
             icon: Icons.help_outline_rounded,
             label: 'Help & About',
-            onTap: () {},
+            onTap: () => context.pushNamed(RouteNames.helpAbout),
           ),
           const SizedBox(height: AppSpacing.lg),
           SilvamangButton(

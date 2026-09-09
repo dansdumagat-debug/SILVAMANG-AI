@@ -44,35 +44,50 @@ class BottomNavShell extends StatelessWidget {
                 icon: Icons.home_rounded,
                 label: 'Home',
                 active: location == '/home',
-                onTap: () => context.goNamed(RouteNames.home),
+                onTap: () => _openPage(context, RouteNames.home, '/home'),
               ),
               _NavItem(
                 icon: Icons.history_rounded,
                 label: 'History',
                 active: location == '/records',
-                onTap: () => context.goNamed(RouteNames.records),
+                onTap: () => _openPage(context, RouteNames.records, '/records'),
               ),
               _CaptureButton(
-                active: location == '/capture-guide',
-                onTap: () => context.goNamed(RouteNames.captureGuide),
+                active:
+                    location == '/capture-guide' ||
+                    location == '/field-distance',
+                onTap: () => _openPage(
+                  context,
+                  RouteNames.captureGuide,
+                  '/capture-guide',
+                ),
               ),
               _NavItem(
                 icon: Icons.chat_bubble_rounded,
                 label: 'AI',
                 active: location == '/ai-assistant',
-                onTap: () => context.goNamed(RouteNames.aiAssistant),
+                onTap: () =>
+                    _openPage(context, RouteNames.aiAssistant, '/ai-assistant'),
               ),
               _NavItem(
                 icon: Icons.person_rounded,
                 label: 'Profile',
                 active: location == '/profile',
-                onTap: () => context.goNamed(RouteNames.profile),
+                onTap: () => _openPage(context, RouteNames.profile, '/profile'),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _openPage(BuildContext context, String routeName, String routePath) {
+    if (location == routePath) {
+      return;
+    }
+
+    context.pushNamed(routeName);
   }
 }
 

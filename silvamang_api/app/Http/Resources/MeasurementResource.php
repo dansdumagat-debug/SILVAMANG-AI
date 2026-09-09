@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\ApiId;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,8 +16,8 @@ class MeasurementResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'scan_record_id' => $this->scan_record_id,
+            'id' => ApiId::encode($this->id),
+            'scan_record_id' => ApiId::encode($this->scan_record_id),
             'height_m' => $this->height_m !== null ? (float) $this->height_m : null,
             'canopy_width_m' => $this->canopy_width_m !== null ? (float) $this->canopy_width_m : null,
             'dbh_cm' => $this->dbh_cm !== null ? (float) $this->dbh_cm : null,

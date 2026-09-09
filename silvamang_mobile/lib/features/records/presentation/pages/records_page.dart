@@ -10,6 +10,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../../../../shared/models/scan_record_model.dart';
@@ -47,6 +48,7 @@ class _RecordsPageState extends ConsumerState<RecordsPage> {
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
       appBar: AppBar(
+        leading: const SilvamangBackButton(),
         title: const Text('My Records'),
         actions: [
           IconButton(
@@ -106,6 +108,34 @@ class _RecordsPageState extends ConsumerState<RecordsPage> {
                       .filterRecords(filter),
                 ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SilvamangCard(
+            onTap: () => context.pushNamed(RouteNames.offlineQueue),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.softGreen,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.cloud_queue_rounded,
+                    color: AppColors.primaryDarkGreen,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text('Offline Queue', style: AppTextStyles.labelLarge),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.mutedText,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           if (state.isLoading)
@@ -190,7 +220,7 @@ class _RecordCard extends StatelessWidget {
     final date = record.capturedAt ?? record.createdAt;
 
     return SilvamangCard(
-      onTap: () => context.goNamed(
+      onTap: () => context.pushNamed(
         RouteNames.recordDetail,
         pathParameters: {'id': record.id.toString()},
       ),

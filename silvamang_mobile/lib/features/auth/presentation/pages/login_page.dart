@@ -9,7 +9,9 @@ import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
+import '../../../../core/widgets/silvamang_logo.dart';
 import '../../../../core/widgets/silvamang_text_field.dart';
+import '../../../../core/widgets/silvamang_back_button.dart';
 import '../controllers/auth_controller.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -23,6 +25,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -56,19 +59,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             padding: const EdgeInsets.all(AppConstants.screenPadding),
             child: Column(
               children: [
-                Container(
-                  width: 86,
-                  height: 86,
-                  decoration: const BoxDecoration(
-                    color: AppColors.softGreen,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.eco_rounded,
-                    color: AppColors.primaryDarkGreen,
-                    size: 46,
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: SilvamangBackButton(
+                    fallbackRouteName: RouteNames.splash,
                   ),
                 ),
+                const SizedBox(height: AppSpacing.sm),
+                const SilvamangLogo(size: 86),
                 const SizedBox(height: AppSpacing.md),
                 Text('SILVAMANG AI', style: AppTextStyles.titleLarge),
                 Text(
@@ -113,7 +111,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           label: 'Password',
                           hint: 'Enter your password',
                           prefixIcon: Icons.lock_outline,
-                          obscureText: true,
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            tooltip: _obscurePassword
+                                ? 'Show password'
+                                : 'Hide password',
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                           validator: (value) {
                             if ((value ?? '').isEmpty) {
                               return 'Password is required';
@@ -150,7 +163,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 ref
                                     .read(authControllerProvider.notifier)
                                     .clearError();
-                                context.goNamed(RouteNames.register);
+                                context.pushNamed(RouteNames.register);
                               },
                               child: const Text('Create account'),
                             ),

@@ -16,7 +16,9 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AdminUserSeeder::class,
             SpeciesSeeder::class,
+            MangroveEducationSeeder::class,
             AiModelSeeder::class,
+            MangroveKnowledgeSeeder::class,
             DemoScanRecordSeeder::class,
         ]);
     }

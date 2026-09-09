@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../../../core/services/api_client.dart';
 import '../../../../core/services/local_storage_service.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -20,21 +21,23 @@ class AuthState {
     this.user,
     this.token,
     this.isLoading = false,
+    this.isOfflineSession = false,
     this.errorMessage,
   });
 
   final UserModel? user;
   final String? token;
   final bool isLoading;
+  final bool isOfflineSession;
   final String? errorMessage;
 
-  bool get isAuthenticated =>
-      token != null && token!.isNotEmpty && user != null;
+  bool get isAuthenticated => token != null && token!.isNotEmpty;
 
   AuthState copyWith({
     UserModel? user,
     String? token,
     bool? isLoading,
+    bool? isOfflineSession,
     String? errorMessage,
     bool clearUser = false,
     bool clearToken = false,
@@ -44,6 +47,7 @@ class AuthState {
       user: clearUser ? null : user ?? this.user,
       token: clearToken ? null : token ?? this.token,
       isLoading: isLoading ?? this.isLoading,
+      isOfflineSession: isOfflineSession ?? this.isOfflineSession,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
@@ -65,14 +69,60 @@ class AuthController extends StateNotifier<AuthState> {
     }
 
     state = AuthState(user: cachedUser, token: token, isLoading: true);
-    final user = await repository.me();
-    if (user == null) {
-      state = const AuthState();
+
+    try {
+      final user = await repository.me();
+      state = AuthState(user: user, token: token);
+      return true;
+    } on ApiException catch (error) {
+      if (error.isUnauthorized) {
+        await storage.clearAuth();
+        state = const AuthState();
+        return false;
+      }
+
+      state = AuthState(
+        user: cachedUser,
+        token: token,
+        isOfflineSession: true,
+        errorMessage:
+            'Offline session active. Your data will sync when connection is restored.',
+      );
+      return true;
+    } catch (_) {
+      state = AuthState(
+        user: cachedUser,
+        token: token,
+        isOfflineSession: true,
+        errorMessage:
+            'Offline session active. Your data will sync when connection is restored.',
+      );
+      return true;
+    }
+  }
+
+  Future<void> clearUnauthorizedSession() async {
+    await storage.clearAuth();
+    state = const AuthState();
+  }
+
+  Future<bool> refreshCurrentUser() async {
+    if (state.token == null || state.token!.isEmpty) {
       return false;
     }
 
-    state = AuthState(user: user, token: token);
-    return true;
+    try {
+      final user = await repository.me();
+      state = state.copyWith(user: user, isOfflineSession: false);
+      return true;
+    } on ApiException catch (error) {
+      if (error.isUnauthorized) {
+        await clearUnauthorizedSession();
+        return false;
+      }
+      state = state.copyWith(isOfflineSession: true);
+      return true;
+    }
   }
 
   Future<bool> login(String email, String password) async {

@@ -1,0 +1,21 @@
+# Defense Evidence Checklist
+
+- [ ] Laravel route:list screenshot
+- [ ] Flutter analyze no issues screenshot
+- [ ] Python /health screenshot
+- [ ] Python /docs screenshot
+- [ ] CNN metrics.json
+- [ ] confusion_matrix.png
+- [ ] admin dashboard screenshot
+- [ ] mobile login screenshot
+- [ ] mobile capture screenshot
+- [ ] identification result screenshot
+- [ ] scan record saved screenshot
+- [ ] image upload screenshot
+- [ ] location validation screenshot
+- [ ] AI assistant screenshot
+- [ ] offline queue screenshot
+- [ ] reports page screenshot
+- [ ] usability forms
+- [ ] testing summary
+- [ ] dataset summary screenshot

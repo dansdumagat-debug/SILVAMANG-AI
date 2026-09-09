@@ -9,6 +9,10 @@ use Throwable;
 
 class PythonAiService
 {
+    private ?int $lastStatusCode = null;
+    private ?string $lastResponseMode = null;
+    private ?string $lastError = null;
+
     public function health(): array
     {
         try {
@@ -26,6 +30,8 @@ class PythonAiService
                 'service' => $data['service'] ?? null,
                 'mode' => $data['mode'] ?? null,
                 'version' => $data['version'] ?? null,
+                'cnn' => $data['cnn'] ?? null,
+                'measurement' => $data['measurement'] ?? null,
                 'message' => $data['message'] ?? null,
             ];
         } catch (Throwable $error) {
@@ -35,20 +41,31 @@ class PythonAiService
 
     public function predict(array $payload = [], array $images = []): array
     {
+        $this->lastStatusCode = null;
+        $this->lastResponseMode = null;
+        $this->lastError = null;
+
         try {
             $validImages = array_values(array_filter($images, fn ($image) => $image instanceof UploadedFile));
             $request = empty($validImages)
                 ? $this->client()->asForm()
-                : $this->client()->withOptions(['multipart' => $this->multipartPayload($payload, $validImages)]);
+                : $this->multipartRequest($payload, $validImages[0]);
 
             $response = $request->post($this->url('/predict'), empty($validImages) ? $payload : []);
+            $this->lastStatusCode = $response->status();
 
             if (! $response->successful()) {
+                $this->lastError = "Python AI service returned HTTP {$response->status()}.";
                 throw new RequestException($response);
             }
 
-            return $response->json();
+            $json = $response->json();
+            $this->lastResponseMode = data_get($json, 'data.mode') ?? data_get($json, 'mode');
+
+            return $json;
         } catch (Throwable $error) {
+            $this->lastError ??= $error->getMessage();
+
             throw new \RuntimeException(
                 'Python AI service is unavailable. Using Laravel fallback mock prediction.',
                 previous: $error
@@ -95,9 +112,13 @@ class PythonAiService
         return rtrim((string) config('services.ai_service.url', 'http://127.0.0.1:9000'), '/') . $path;
     }
 
-    private function multipartPayload(array $payload, array $images): array
+    private function multipartRequest(array $payload, UploadedFile $image)
     {
-        $multipart = [];
+        $request = $this->client()->attach(
+            'image',
+            fopen($image->getRealPath(), 'r'),
+            $image->getClientOriginalName()
+        );
 
         foreach ($payload as $key => $value) {
             if ($value === null) {
@@ -106,30 +127,36 @@ class PythonAiService
 
             if (is_array($value)) {
                 foreach ($value as $item) {
-                    $multipart[] = [
-                        'name' => $key,
-                        'contents' => (string) $item,
-                    ];
+                    if ($key === 'plant_parts') {
+                        $request = $request->attach('plant_parts', (string) $item);
+                        $request = $request->attach('plant_parts[]', (string) $item);
+                    } else {
+                        $request = $request->attach($key, (string) $item);
+                    }
                 }
 
                 continue;
             }
 
-            $multipart[] = [
-                'name' => $key,
-                'contents' => (string) $value,
-            ];
+            $request = $request->attach($key, (string) $value);
         }
 
-        foreach ($images as $image) {
-            $multipart[] = [
-                'name' => 'images',
-                'contents' => fopen($image->getRealPath(), 'r'),
-                'filename' => $image->getClientOriginalName(),
-            ];
-        }
+        return $request;
+    }
 
-        return $multipart;
+    public function lastStatusCode(): ?int
+    {
+        return $this->lastStatusCode;
+    }
+
+    public function lastResponseMode(): ?string
+    {
+        return $this->lastResponseMode;
+    }
+
+    public function lastError(): ?string
+    {
+        return $this->lastError;
     }
 
     private function unavailable(string $message): array

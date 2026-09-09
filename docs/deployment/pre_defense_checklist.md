@@ -1,0 +1,25 @@
+# Pre-Defense Checklist
+
+- [ ] Laravel `route:list` works
+- [ ] Laravel API `/api/health` works
+- [ ] Laravel admin login works
+- [ ] Python `/health` works
+- [ ] Python `/docs` works
+- [ ] Python CNN available true
+- [ ] Flutter analyze no issues
+- [ ] Flutter app opens
+- [ ] Login works
+- [ ] Persistent login works
+- [ ] Offline session works when backend is unavailable
+- [ ] Species database loads
+- [ ] Capture guide works
+- [ ] Image upload works
+- [ ] CNN prediction returns result
+- [ ] Save scan record works
+- [ ] GPS validation works
+- [ ] Measurement screen works
+- [ ] AI assistant works
+- [ ] Offline queue page works
+- [ ] Admin reports page works
+- [ ] CNN metrics and confusion matrix available
+- [ ] Demo script prepared

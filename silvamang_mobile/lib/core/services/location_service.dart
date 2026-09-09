@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class DeviceLocation {
@@ -18,20 +21,20 @@ class DeviceLocation {
   final String address;
   final DateTime timestamp;
   final String source;
+}
 
-  bool get isFallback => source == 'fallback';
+class DeviceLocationResult {
+  const DeviceLocationResult({
+    this.location,
+    this.errorMessage,
+    this.permissionStatus = '',
+  });
 
-  static DeviceLocation fallback() {
-    return DeviceLocation(
-      latitude: 9.7392,
-      longitude: 118.7353,
-      accuracy: 0,
-      locationName: 'Brgy. San Roque, Puerto Princesa, Palawan',
-      address: 'Puerto Princesa, Palawan',
-      timestamp: DateTime.now(),
-      source: 'fallback',
-    );
-  }
+  final DeviceLocation? location;
+  final String? errorMessage;
+  final String permissionStatus;
+
+  bool get hasLocation => location != null;
 }
 
 class LocationService {
@@ -58,25 +61,64 @@ class LocationService {
   }
 
   Future<DeviceLocation?> getCurrentLocation() async {
-    final enabled = await isLocationServiceEnabled();
-    if (!enabled) {
-      return null;
+    final result = await getCurrentLocationResult();
+    return result.location;
+  }
+
+  Future<DeviceLocationResult> getCurrentLocationResult({
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    if (kDebugMode) {
+      debugPrint('SILVAMANG AI location request started');
     }
 
-    final allowed = await requestLocationPermission();
-    if (!allowed) {
-      return null;
+    final enabled = await isLocationServiceEnabled();
+    if (!enabled) {
+      if (kDebugMode) {
+        debugPrint('SILVAMANG AI location failure reason: GPS disabled');
+      }
+      return const DeviceLocationResult(
+        errorMessage: 'Location service is disabled. Please enable GPS.',
+        permissionStatus: 'service_disabled',
+      );
+    }
+
+    var permission = await Geolocator.checkPermission();
+    if (kDebugMode) {
+      debugPrint('SILVAMANG AI location permission status: $permission');
+    }
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (kDebugMode) {
+        debugPrint('SILVAMANG AI location permission status: $permission');
+      }
+    }
+
+    if (permission == LocationPermission.denied) {
+      return const DeviceLocationResult(
+        errorMessage: 'Location permission denied.',
+        permissionStatus: 'denied',
+      );
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return const DeviceLocationResult(
+        errorMessage:
+            'Location permission is permanently denied. Enable it in app settings.',
+        permissionStatus: 'denied_forever',
+      );
     }
 
     try {
       final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 12),
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+          timeLimit: timeout,
         ),
       );
 
-      return DeviceLocation(
+      final location = DeviceLocation(
         latitude: position.latitude,
         longitude: position.longitude,
         accuracy: position.accuracy,
@@ -85,12 +127,35 @@ class LocationService {
         timestamp: position.timestamp,
         source: 'gps',
       );
-    } catch (_) {
-      return null;
-    }
-  }
 
-  Future<DeviceLocation> getCurrentLocationOrFallback() async {
-    return await getCurrentLocation() ?? DeviceLocation.fallback();
+      if (kDebugMode) {
+        debugPrint(
+          'SILVAMANG AI latitude/longitude captured: '
+          '${location.latitude}, ${location.longitude}',
+        );
+        debugPrint('SILVAMANG AI location accuracy: ${location.accuracy}');
+      }
+
+      return DeviceLocationResult(
+        location: location,
+        permissionStatus: permission.name,
+      );
+    } on TimeoutException {
+      if (kDebugMode) {
+        debugPrint('SILVAMANG AI location failure reason: timeout');
+      }
+      return const DeviceLocationResult(
+        errorMessage: 'Location request timed out.',
+        permissionStatus: 'timeout',
+      );
+    } catch (_) {
+      if (kDebugMode) {
+        debugPrint('SILVAMANG AI location failure reason: unavailable');
+      }
+      return const DeviceLocationResult(
+        errorMessage: 'Location unavailable. Please try again.',
+        permissionStatus: 'unavailable',
+      );
+    }
   }
 }

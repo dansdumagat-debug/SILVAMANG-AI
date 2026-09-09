@@ -54,6 +54,6 @@ class PredictionModel {
     if (value is num) {
       return value.toDouble();
     }
-    return double.tryParse(value?.toString() ?? '') ?? 0;
+    return double.tryParse(value?.toString() ?? '') ?? double.nan;
   }
 }

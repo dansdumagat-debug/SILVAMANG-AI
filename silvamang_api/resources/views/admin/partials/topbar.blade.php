@@ -4,6 +4,15 @@
 @endphp
 
 <header class="admin-topbar">
+    <button type="button" class="mobile-nav-toggle" data-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="false">
+        <span class="mobile-nav-bars" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+        <span>Menu</span>
+    </button>
+
     <div class="search-box">
         <span class="search-icon"></span>
         <input type="search" placeholder="Search anything...">

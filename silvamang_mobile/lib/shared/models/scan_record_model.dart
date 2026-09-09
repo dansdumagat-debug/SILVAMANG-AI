@@ -17,8 +17,14 @@ class ScanRecordModel {
     required this.validationStatus,
     this.latitude,
     this.longitude,
+    this.accuracy,
     required this.locationName,
     this.address = '',
+    this.barangay,
+    this.manualBarangay,
+    this.locationLookupStatus,
+    this.heightM,
+    this.canopyWidthM,
     this.notes = '',
     this.offlineReference = '',
     this.capturedAt,
@@ -31,9 +37,9 @@ class ScanRecordModel {
     this.locationValidation,
   });
 
-  final int id;
+  final String id;
   final String recordCode;
-  final int? userId;
+  final String? userId;
   final int? speciesId;
   final String topScientificName;
   final String topCommonName;
@@ -43,8 +49,14 @@ class ScanRecordModel {
   final String validationStatus;
   final double? latitude;
   final double? longitude;
+  final double? accuracy;
   final String locationName;
   final String address;
+  final String? barangay;
+  final String? manualBarangay;
+  final String? locationLookupStatus;
+  final double? heightM;
+  final double? canopyWidthM;
   final String notes;
   final String offlineReference;
   final DateTime? capturedAt;
@@ -58,9 +70,9 @@ class ScanRecordModel {
 
   factory ScanRecordModel.fromJson(Map<String, dynamic> json) {
     return ScanRecordModel(
-      id: _asInt(json['id']),
+      id: _asString(json['id']),
       recordCode: _asString(json['record_code'] ?? json['recordCode']),
-      userId: _asNullableInt(json['user_id'] ?? json['userId']),
+      userId: _asNullableString(json['user_id'] ?? json['userId']),
       speciesId: _asNullableInt(json['species_id'] ?? json['speciesId']),
       topScientificName: _asString(
         json['top_scientific_name'] ?? json['topScientificName'],
@@ -78,8 +90,20 @@ class ScanRecordModel {
       ),
       latitude: _asNullableDouble(json['latitude']),
       longitude: _asNullableDouble(json['longitude']),
+      accuracy: _asNullableDouble(json['accuracy']),
       locationName: _asString(json['location_name'] ?? json['locationName']),
       address: _asString(json['address']),
+      barangay: _asNullableString(json['barangay']),
+      manualBarangay: _asNullableString(
+        json['manual_barangay'] ?? json['manualBarangay'],
+      ),
+      locationLookupStatus: _asNullableString(
+        json['location_lookup_status'] ?? json['locationLookupStatus'],
+      ),
+      heightM: _asNullableDouble(json['height_m'] ?? json['heightM']),
+      canopyWidthM: _asNullableDouble(
+        json['canopy_width_m'] ?? json['canopyWidthM'],
+      ),
       notes: _asString(json['notes']),
       offlineReference: _asString(
         json['offline_reference'] ?? json['offlineReference'],
@@ -112,8 +136,14 @@ class ScanRecordModel {
       'validation_status': validationStatus,
       'latitude': latitude,
       'longitude': longitude,
+      'accuracy': accuracy,
       'location_name': locationName,
       'address': address,
+      'barangay': barangay,
+      'manual_barangay': manualBarangay,
+      'location_lookup_status': locationLookupStatus,
+      'height_m': heightM,
+      'canopy_width_m': canopyWidthM,
       'notes': notes,
       'offline_reference': offlineReference,
       'captured_at': capturedAt?.toIso8601String(),
@@ -167,11 +197,10 @@ class ScanRecordModel {
     return value?.toString() ?? '';
   }
 
-  static int _asInt(Object? value) {
-    if (value is int) {
-      return value;
-    }
-    return int.tryParse(value?.toString() ?? '') ?? 0;
+  static String? _asNullableString(Object? value) {
+    final text = value?.toString();
+
+    return text == null || text.isEmpty ? null : text;
   }
 
   static int? _asNullableInt(Object? value) {

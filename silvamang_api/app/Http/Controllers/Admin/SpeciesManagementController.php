@@ -49,6 +49,13 @@ class SpeciesManagementController extends Controller
 
     public function show(Species $species)
     {
+        $species->load([
+            'externalObservations' => fn ($query) => $query
+                ->latest('updated_at')
+                ->latest('observed_date')
+                ->limit(6),
+        ]);
+
         return view('admin.species.show', [
             'species' => $species,
         ]);

@@ -5,6 +5,7 @@ import '../constants/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'empty_state.dart';
 import 'silvamang_badge.dart';
+import 'silvamang_back_button.dart';
 import 'silvamang_card.dart';
 
 class FeaturePlaceholderPage extends StatelessWidget {
@@ -22,7 +23,7 @@ class FeaturePlaceholderPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(leading: const SilvamangBackButton(), title: Text(title)),
       body: ListView(
         padding: const EdgeInsets.all(AppConstants.screenPadding),
         children: [

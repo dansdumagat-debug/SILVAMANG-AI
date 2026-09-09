@@ -28,4 +28,39 @@
         <div class="metadata-section"><span>Ecological Role</span><p>{{ $species->ecological_role ?? 'N/A' }}</p></div>
         <div class="metadata-section"><span>Identification Notes</span><p>{{ $species->identification_notes ?? 'N/A' }}</p></div>
     </article>
+
+    <article class="detail-card">
+        <div class="panel-header">
+            <div>
+                <h3>External Biodiversity References</h3>
+                <span>Cached iNaturalist observations used only as supporting species context.</span>
+            </div>
+            @if (auth()->user()?->hasAnyRole(['super_admin', 'admin']))
+                <a href="{{ route('admin.external-biodiversity.index', ['species_id' => $species->id]) }}" class="secondary-action">Manage References</a>
+            @endif
+        </div>
+
+        @if ($species->externalObservations->isEmpty())
+            <div class="empty-card">No cached external biodiversity references for this species yet.</div>
+        @else
+            <div class="image-list">
+                @foreach ($species->externalObservations as $observation)
+                    <div class="image-card">
+                        @if ($observation->photo_url)
+                            <img src="{{ $observation->photo_url }}" alt="iNaturalist observation photo" class="image-card-preview">
+                        @else
+                            <div class="image-card-placeholder">No photo</div>
+                        @endif
+                        <div class="image-card-meta">
+                            <strong>{{ $observation->location ?? 'Location not provided' }}</strong>
+                            <span>Observer: {{ $observation->observer ?? 'N/A' }}</span>
+                            <span>Observed: {{ $observation->observed_date?->format('M d, Y') ?? 'N/A' }}</span>
+                            <span>Quality: {{ ucfirst(str_replace('_', ' ', $observation->quality_grade ?? 'unknown')) }}</span>
+                            <a href="https://www.inaturalist.org/observations/{{ $observation->source_observation_id }}" target="_blank" rel="noopener" class="icon-button">Open iNaturalist</a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </article>
 @endsection

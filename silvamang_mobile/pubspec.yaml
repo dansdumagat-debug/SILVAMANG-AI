@@ -50,6 +50,13 @@ dependencies:
   uuid:
   fl_chart:
   connectivity_plus:
+  sensors_plus:
+  image:
+  url_launcher:
+  flutter_onnxruntime: ^1.8.3
+  flutter_map:
+  latlong2:
+  flutter_map_tile_caching:
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -60,6 +67,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+dependency_overrides:
+  objectbox_flutter_libs:
+    path: third_party/objectbox_flutter_libs
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -75,6 +86,13 @@ flutter:
   assets:
     - .env
     - .env.example
+    - assets/models/class_order.json
+    - assets/models/efficientnet_b0_silvamang_single.onnx
+    - assets/models/efficientnet_b0_silvamang.onnx
+    - assets/models/efficientnet_b0_silvamang.onnx.data
+    - assets/geo/barangay_boundaries.geojson
+    - assets/data/mangrove_education.json
+    - assets/data/offline_mangrove_knowledge.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:

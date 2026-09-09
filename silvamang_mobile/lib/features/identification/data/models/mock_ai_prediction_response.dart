@@ -3,6 +3,8 @@ import '../../../../shared/models/prediction_model.dart';
 class MockAiPredictionResponse {
   const MockAiPredictionResponse({
     required this.mode,
+    required this.source,
+    this.warning,
     required this.model,
     required this.topPrediction,
     required this.predictions,
@@ -10,9 +12,15 @@ class MockAiPredictionResponse {
     required this.measurement,
     required this.locationHint,
     required this.received,
+    this.detections = const <Map<String, dynamic>>[],
+    this.segmentation = const <String, dynamic>{},
+    this.pipeline = const <String, dynamic>{},
+    this.storage = const <String, dynamic>{},
   });
 
   final String mode;
+  final String source;
+  final String? warning;
   final MockAiModelInfo model;
   final MockTopPrediction topPrediction;
   final List<PredictionModel> predictions;
@@ -20,10 +28,70 @@ class MockAiPredictionResponse {
   final MockAiMeasurement measurement;
   final MockAiLocationHint locationHint;
   final MockAiReceivedInput received;
+  final List<Map<String, dynamic>> detections;
+  final Map<String, dynamic> segmentation;
+  final Map<String, dynamic> pipeline;
+  final Map<String, dynamic> storage;
+
+  String? get serverScanRecordId {
+    return _asNullableString(
+      storage['scan_record_id'] ??
+          storage['scanRecordId'] ??
+          pipeline['scan_record_id'] ??
+          pipeline['scanRecordId'],
+    );
+  }
+
+  bool get isValidCnnResult {
+    final normalizedMode = mode.trim().toLowerCase();
+    final normalizedSource = source.trim().toLowerCase();
+    final normalizedWarning = warning?.trim().toLowerCase() ?? '';
+
+    if (normalizedMode == 'mock' || normalizedMode.contains('fallback')) {
+      return false;
+    }
+    if (normalizedMode != 'cnn_baseline' &&
+        normalizedMode != 'cnn_efficientnet_b0' &&
+        normalizedMode != 'offline_onnx_efficientnet_b0') {
+      return false;
+    }
+    if (normalizedSource == 'mock_fallback' ||
+        normalizedSource.contains('mock fallback')) {
+      return false;
+    }
+    if (normalizedSource != 'python_ai_service' &&
+        normalizedSource != 'flutter_offline_model' &&
+        normalizedSource != 'laravel_ai_pipeline') {
+      return false;
+    }
+    if (received.imageCount < 1) {
+      return false;
+    }
+    if (received.plantParts.isEmpty) {
+      return false;
+    }
+    if (normalizedWarning.contains('no image was received') ||
+        normalizedWarning.contains('no image uploaded')) {
+      return false;
+    }
+    if (topPrediction.scientificName.trim().isEmpty) {
+      return false;
+    }
+
+    return validPredictions.isNotEmpty;
+  }
+
+  List<PredictionModel> get validPredictions {
+    return predictions
+        .where((prediction) => prediction.scientificName.trim().isNotEmpty)
+        .toList();
+  }
 
   factory MockAiPredictionResponse.fromJson(Map<String, dynamic> json) {
     return MockAiPredictionResponse(
       mode: _asString(json['mode'], fallback: 'mock'),
+      source: _asString(json['source'], fallback: 'mock_fallback'),
+      warning: _asNullableString(json['warning']),
       model: MockAiModelInfo.fromJson(_asMap(json['model'])),
       topPrediction: MockTopPrediction.fromJson(
         _asMap(json['top_prediction'] ?? json['topPrediction']),
@@ -35,6 +103,10 @@ class MockAiPredictionResponse {
         _asMap(json['location_hint'] ?? json['locationHint']),
       ),
       received: MockAiReceivedInput.fromJson(_asMap(json['received'])),
+      detections: _asMapList(json['detections']),
+      segmentation: _asMap(json['segmentation']),
+      pipeline: _asMap(json['pipeline']),
+      storage: _asMap(json['storage']),
     );
   }
 
@@ -43,7 +115,8 @@ class MockAiPredictionResponse {
       return const [];
     }
     return value
-        .whereType<Map<String, dynamic>>()
+        .map(_asMap)
+        .where((prediction) => prediction.isNotEmpty)
         .map(PredictionModel.fromJson)
         .toList();
   }
@@ -62,7 +135,7 @@ class MockAiModelInfo {
 
   factory MockAiModelInfo.fromJson(Map<String, dynamic> json) {
     return MockAiModelInfo(
-      name: _asString(json['name'], fallback: 'SILVAMANG Mock Classifier'),
+      name: _asString(json['name'], fallback: 'SILVAMANG AI Model'),
       version: _asString(json['version'], fallback: '0.1.0'),
       type: _asString(json['type'], fallback: 'classification'),
     );
@@ -87,13 +160,9 @@ class MockTopPrediction {
       speciesId: _asNullableInt(json['species_id'] ?? json['speciesId']),
       scientificName: _asString(
         json['scientific_name'] ?? json['scientificName'],
-        fallback: 'Rhizophora apiculata',
       ),
-      commonName: _asString(
-        json['common_name'] ?? json['commonName'],
-        fallback: 'Red Mangrove',
-      ),
-      confidence: _asDouble(json['confidence'], fallback: 92.4),
+      commonName: _asString(json['common_name'] ?? json['commonName']),
+      confidence: _asDouble(json['confidence'], fallback: double.nan),
     );
   }
 }
@@ -115,17 +184,20 @@ class MockAiMeasurement {
 
   factory MockAiMeasurement.fromJson(Map<String, dynamic> json) {
     return MockAiMeasurement(
-      heightM: _asDouble(json['height_m'] ?? json['heightM'], fallback: 6.8),
+      heightM: _asDouble(
+        json['height_m'] ?? json['heightM'],
+        fallback: double.nan,
+      ),
       canopyWidthM: _asDouble(
         json['canopy_width_m'] ?? json['canopyWidthM'],
-        fallback: 4.2,
+        fallback: double.nan,
       ),
       dbhCm: _asNullableDouble(json['dbh_cm'] ?? json['dbhCm']),
       measurementMethod: _asString(
         json['measurement_method'] ?? json['measurementMethod'],
-        fallback: 'depth_estimation',
+        fallback: 'not_estimated',
       ),
-      confidence: _asDouble(json['confidence'], fallback: 88.0),
+      confidence: _asDouble(json['confidence'], fallback: double.nan),
     );
   }
 }
@@ -171,9 +243,20 @@ class MockAiReceivedInput {
   }
 }
 
+List<Map<String, dynamic>> _asMapList(Object? value) {
+  if (value is! List) {
+    return const [];
+  }
+
+  return value.map(_asMap).where((item) => item.isNotEmpty).toList();
+}
+
 Map<String, dynamic> _asMap(Object? value) {
   if (value is Map<String, dynamic>) {
     return value;
+  }
+  if (value is Map) {
+    return value.map((key, mapValue) => MapEntry(key.toString(), mapValue));
   }
   return const {};
 }
@@ -182,6 +265,14 @@ String _asString(Object? value, {String fallback = ''}) {
   final text = value?.toString();
   if (text == null || text.isEmpty) {
     return fallback;
+  }
+  return text;
+}
+
+String? _asNullableString(Object? value) {
+  final text = value?.toString();
+  if (text == null || text.isEmpty) {
+    return null;
   }
   return text;
 }

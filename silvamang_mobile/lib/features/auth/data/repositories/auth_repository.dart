@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/api_client.dart';
@@ -56,31 +55,19 @@ class AuthRepository {
     return auth;
   }
 
-  Future<UserModel?> me() async {
-    try {
-      final response = await apiClient.get<Map<String, dynamic>>('/me');
-      final data = response.data ?? {};
-      final userData = data['data'] is Map<String, dynamic>
-          ? data['data'] as Map<String, dynamic>
-          : data;
-      final userJson = userData['user'] is Map<String, dynamic>
-          ? userData['user'] as Map<String, dynamic>
-          : userData;
-      final roles = UserModel.parseRoles(
-        userData['roles'] ?? userJson['roles'],
-      );
-      final user = UserModel.fromJson({...userJson, 'roles': roles});
-      await storage.saveUserJson(jsonEncode(user.toJson()));
-      return user;
-    } on ApiException {
-      await storage.clearAuth();
-      return null;
-    } on DioException catch (error) {
-      if (error.response?.statusCode == 401) {
-        await storage.clearAuth();
-      }
-      return null;
-    }
+  Future<UserModel> me() async {
+    final response = await apiClient.get<Map<String, dynamic>>('/me');
+    final data = response.data ?? {};
+    final userData = data['data'] is Map<String, dynamic>
+        ? data['data'] as Map<String, dynamic>
+        : data;
+    final userJson = userData['user'] is Map<String, dynamic>
+        ? userData['user'] as Map<String, dynamic>
+        : userData;
+    final roles = UserModel.parseRoles(userData['roles'] ?? userJson['roles']);
+    final user = UserModel.fromJson({...userJson, 'roles': roles});
+    await storage.saveUserJson(jsonEncode(user.toJson()));
+    return user;
   }
 
   Future<void> logout() async {
