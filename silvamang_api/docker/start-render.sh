@@ -34,11 +34,13 @@ echo "Render startup APP_URL=$APP_URL"
 echo "Render startup AI_SERVICE_URL=$AI_SERVICE_URL"
 
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database
+chmod -R 775 storage bootstrap/cache database || true
 
 if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
     DB_FILE="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
     mkdir -p "$(dirname "$DB_FILE")"
     touch "$DB_FILE"
+    chmod 664 "$DB_FILE" || true
 fi
 
 php artisan migrate --force

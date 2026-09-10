@@ -46,7 +46,10 @@ COPY . .
 RUN composer dump-autoload --optimize \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database \
     && touch database/database.sqlite \
+    && chown -R www-data:www-data storage bootstrap/cache database \
     && chmod -R 775 storage bootstrap/cache database \
     && chmod +x docker/start-render.sh
+
+USER www-data
 
 CMD ["sh", "docker/start-render.sh"]
