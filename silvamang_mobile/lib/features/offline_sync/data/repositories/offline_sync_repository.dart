@@ -67,20 +67,25 @@ class OfflineSyncRepository {
     ]);
   }
 
-  Future<void> clearSynced({String? onlyType}) async {
+  Future<void> clearSynced({
+    String? onlyType,
+    bool Function(OfflineSyncItem item)? matches,
+  }) async {
     final items = await getItems();
     final syncedItems = items
         .where(
           (item) =>
               item.status == OfflineSyncItem.statusSynced &&
-              (onlyType == null || item.type == onlyType),
+              (onlyType == null || item.type == onlyType) &&
+              (matches == null || matches(item)),
         )
         .toList();
     await _archiveDeletedItems(syncedItems);
     await _saveItems([
       for (final item in items)
         if (item.status != OfflineSyncItem.statusSynced ||
-            (onlyType != null && item.type != onlyType))
+            (onlyType != null && item.type != onlyType) ||
+            (matches != null && !matches(item)))
           item,
     ]);
   }
@@ -131,8 +136,11 @@ class OfflineSyncRepository {
     ]);
   }
 
-  Future<void> clearRecentlyDeleted({String? onlyType}) async {
-    if (onlyType == null) {
+  Future<void> clearRecentlyDeleted({
+    String? onlyType,
+    bool Function(OfflineSyncItem item)? matches,
+  }) async {
+    if (onlyType == null && matches == null) {
       await _saveRecentlyDeletedItems(const []);
       return;
     }
@@ -140,7 +148,9 @@ class OfflineSyncRepository {
     final deletedItems = await getRecentlyDeletedItems();
     await _saveRecentlyDeletedItems([
       for (final item in deletedItems)
-        if (item.type != onlyType) item,
+        if ((onlyType != null && item.type != onlyType) ||
+            (matches != null && !matches(item)))
+          item,
     ]);
   }
 
@@ -189,8 +199,7 @@ class OfflineSyncRepository {
     final nextDeletedItems = <String, OfflineSyncItem>{
       for (final item in existingDeletedItems) item.id: item,
       for (final item in items) item.id: item.copyWith(deletedAt: deletedAt),
-    }.values.toList()
-      ..sort(_newestDeletedFirst);
+    }.values.toList()..sort(_newestDeletedFirst);
 
     await _saveRecentlyDeletedItems(
       nextDeletedItems.take(_maxRecentlyDeletedItems).toList(),

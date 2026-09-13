@@ -5,6 +5,8 @@ class OfflineSyncItem {
     required this.payloadJson,
     required this.status,
     required this.createdAt,
+    this.ownerUserId,
+    this.ownerUserEmail,
     this.lastAttemptAt,
     this.syncedAt,
     this.deletedAt,
@@ -23,6 +25,8 @@ class OfflineSyncItem {
   final String payloadJson;
   final String status;
   final DateTime createdAt;
+  final String? ownerUserId;
+  final String? ownerUserEmail;
   final DateTime? lastAttemptAt;
   final DateTime? syncedAt;
   final DateTime? deletedAt;
@@ -37,6 +41,12 @@ class OfflineSyncItem {
       status: _asString(json['status'], fallback: statusPending),
       createdAt:
           _asDate(json['created_at'] ?? json['createdAt']) ?? DateTime.now(),
+      ownerUserId: _asNullableString(
+        json['owner_user_id'] ?? json['ownerUserId'],
+      ),
+      ownerUserEmail: _asNullableString(
+        json['owner_user_email'] ?? json['ownerUserEmail'],
+      ),
       lastAttemptAt: _asDate(json['last_attempt_at'] ?? json['lastAttemptAt']),
       syncedAt: _asDate(json['synced_at'] ?? json['syncedAt']),
       deletedAt: _asDate(json['deleted_at'] ?? json['deletedAt']),
@@ -54,6 +64,8 @@ class OfflineSyncItem {
       'payload_json': payloadJson,
       'status': status,
       'created_at': createdAt.toIso8601String(),
+      'owner_user_id': ownerUserId,
+      'owner_user_email': ownerUserEmail,
       'last_attempt_at': lastAttemptAt?.toIso8601String(),
       'synced_at': syncedAt?.toIso8601String(),
       'deleted_at': deletedAt?.toIso8601String(),
@@ -68,6 +80,8 @@ class OfflineSyncItem {
     String? payloadJson,
     String? status,
     DateTime? createdAt,
+    String? ownerUserId,
+    String? ownerUserEmail,
     DateTime? lastAttemptAt,
     DateTime? syncedAt,
     DateTime? deletedAt,
@@ -83,12 +97,34 @@ class OfflineSyncItem {
       payloadJson: payloadJson ?? this.payloadJson,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      ownerUserId: ownerUserId ?? this.ownerUserId,
+      ownerUserEmail: ownerUserEmail ?? this.ownerUserEmail,
       lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
       syncedAt: clearSyncedAt ? null : syncedAt ?? this.syncedAt,
       deletedAt: clearDeletedAt ? null : deletedAt ?? this.deletedAt,
       retryCount: retryCount ?? this.retryCount,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     );
+  }
+
+  bool belongsToOwner({
+    String? userId,
+    String? userEmail,
+    bool includeOwnerless = false,
+  }) {
+    final itemEmail = _asNullableString(ownerUserEmail)?.toLowerCase();
+    final requestedEmail = _asNullableString(userEmail)?.toLowerCase();
+    if (itemEmail != null) {
+      return requestedEmail != null && itemEmail == requestedEmail;
+    }
+
+    final itemUserId = _asNullableString(ownerUserId);
+    final requestedUserId = _asNullableString(userId);
+    if (itemUserId != null) {
+      return requestedUserId != null && itemUserId == requestedUserId;
+    }
+
+    return includeOwnerless;
   }
 }
 
@@ -101,7 +137,7 @@ String _asString(Object? value, {String fallback = ''}) {
 }
 
 String? _asNullableString(Object? value) {
-  final text = value?.toString();
+  final text = value?.toString().trim();
   if (text == null || text.isEmpty) {
     return null;
   }

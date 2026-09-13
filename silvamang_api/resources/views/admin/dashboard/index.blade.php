@@ -3,6 +3,9 @@
 @section('title', 'Dashboard Overview')
 
 @section('content')
+    @if ($isMobileDashboard ?? false)
+        @include('admin.dashboard.mobile-user')
+    @else
     <div class="page-heading">
         <div>
             <h2>Dashboard Overview</h2>
@@ -116,4 +119,5 @@
             </div>
         </article>
     </section>
+    @endif
 @endsection

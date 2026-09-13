@@ -1,10 +1,17 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../data/models/assistant_message_model.dart';
 import '../../data/repositories/assistant_repository.dart';
 
 final assistantControllerProvider =
     StateNotifierProvider<AssistantController, AssistantState>((ref) {
+      ref.watch(
+        authControllerProvider.select(
+          (state) => state.user?.email.trim().toLowerCase(),
+        ),
+      );
       return AssistantController(
         repository: ref.watch(assistantRepositoryProvider),
       );
@@ -153,7 +160,9 @@ class AssistantController extends StateNotifier<AssistantState> {
     List<AssistantMessageModel> messages,
   ) {
     return messages
-        .where((message) => !message.isError && message.source != 'local_greeting')
+        .where(
+          (message) => !message.isError && message.source != 'local_greeting',
+        )
         .map(
           (message) => {
             'role': message.isUser ? 'user' : 'assistant',

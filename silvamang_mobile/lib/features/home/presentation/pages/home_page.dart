@@ -13,6 +13,7 @@ import '../../../../core/widgets/silvamang_card.dart';
 import '../../../../core/widgets/silvamang_logo.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
+import '../../../records/presentation/controllers/records_controller.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -28,7 +29,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     Future.microtask(
-      () => ref.read(offlineSyncControllerProvider.notifier).loadQueue(),
+      () {
+        ref.read(offlineSyncControllerProvider.notifier).loadQueue();
+        ref.read(recordsControllerProvider.notifier).loadRecords();
+      },
     );
   }
 
@@ -36,6 +40,41 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final offlineState = ref.watch(offlineSyncControllerProvider);
+    final recordsState = ref.watch(recordsControllerProvider);
+    final records = recordsState.records;
+    final speciesCount = records
+        .map((record) => record.topScientificName.trim().toLowerCase())
+        .where((species) => species.isNotEmpty)
+        .toSet()
+        .length;
+    final confidences = records
+        .map((record) => record.confidence)
+        .where((confidence) => confidence.isFinite && confidence > 0)
+        .toList(growable: false);
+    final averageConfidence = confidences.isEmpty
+        ? null
+        : confidences.reduce((total, value) => total + value) /
+              confidences.length;
+    final statsUnavailable =
+        recordsState.errorMessage != null && records.isEmpty;
+    final statsLoading = recordsState.isLoading && records.isEmpty;
+    final totalScansValue = statsLoading
+        ? '...'
+        : statsUnavailable
+        ? '--'
+        : records.length.toString();
+    final averageConfidenceValue = statsLoading
+        ? '...'
+        : statsUnavailable
+        ? '--'
+        : averageConfidence == null
+        ? 'N/A'
+        : '${averageConfidence.toStringAsFixed(1)}%';
+    final speciesValue = statsLoading
+        ? '...'
+        : statsUnavailable
+        ? '--'
+        : speciesCount.toString();
     final notificationCount =
         offlineState.pendingCount +
         offlineState.failedCount +
@@ -276,29 +315,29 @@ class _HomePageState extends ConsumerState<HomePage> {
           const SizedBox(height: AppSpacing.xl),
           const SectionHeader(title: 'Mini Stats'),
           const SizedBox(height: AppSpacing.md),
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: MetricCard(
                   title: 'Total Scans',
-                  value: '34,120',
+                  value: totalScansValue,
                   icon: Icons.camera_alt_rounded,
                 ),
               ),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: MetricCard(
-                  title: 'AI Accuracy',
-                  value: '91.7%',
+                  title: 'Avg Confidence',
+                  value: averageConfidenceValue,
                   icon: Icons.verified_rounded,
                   color: AppColors.successGreen,
                 ),
               ),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: MetricCard(
                   title: 'Species',
-                  value: '80',
+                  value: speciesValue,
                   icon: Icons.eco_rounded,
                   color: AppColors.warningOrange,
                 ),

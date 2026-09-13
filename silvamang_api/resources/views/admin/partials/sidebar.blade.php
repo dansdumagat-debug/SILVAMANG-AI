@@ -1,8 +1,10 @@
 @php
     $currentUser = auth()->user();
     $adminConsoleRoles = ['super_admin', 'admin', 'researcher'];
+    $isMobileUserOnly = $currentUser?->hasRole('mobile_user') && ! $currentUser?->hasAnyRole($adminConsoleRoles);
     $links = [
         ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard'],
+        ['label' => 'My Map', 'route' => 'admin.my-map', 'match' => 'admin.my-map', 'mobile_only' => true],
         ['label' => 'Species Management', 'route' => 'admin.species.index', 'match' => 'admin.species.*', 'roles' => $adminConsoleRoles],
         ['label' => 'Mangrove Scan Monitoring', 'route' => 'admin.scan-monitoring.index', 'match' => 'admin.scan-*', 'roles' => $adminConsoleRoles],
         ['label' => 'Dataset Verification', 'route' => 'admin.dataset-verification.index', 'match' => 'admin.dataset-verification.*', 'roles' => $adminConsoleRoles],
@@ -29,12 +31,13 @@
         </div>
         <div>
             <h1>SILVAMANG AI</h1>
-            <p>Admin Console</p>
+            <p>{{ $isMobileUserOnly ? 'Field Dashboard' : 'Admin Console' }}</p>
         </div>
     </div>
 
     <nav class="sidebar-nav">
         @foreach ($links as $link)
+            @continue(($link['mobile_only'] ?? false) && ! $isMobileUserOnly)
             @continue(isset($link['roles']) && ! $currentUser?->hasAnyRole($link['roles']))
             @if ($link['route'])
                 <a href="{{ route($link['route']) }}" class="{{ request()->routeIs($link['match']) ? 'active' : '' }}">

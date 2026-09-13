@@ -8,6 +8,10 @@ class MapScanRecord {
     this.serverId,
     this.userId,
     this.userEmail,
+    this.recordCode,
+    this.scannerName,
+    this.isMine = true,
+    this.canViewRecord = true,
     this.commonName,
     this.confidence,
     this.imagePath,
@@ -22,12 +26,17 @@ class MapScanRecord {
     this.canopyWidthM,
     this.fieldDistanceM,
     this.notes,
+    this.validationStatus,
   });
 
   final String localId;
   final String? serverId;
   final String? userId;
   final String? userEmail;
+  final String? recordCode;
+  final String? scannerName;
+  final bool isMine;
+  final bool canViewRecord;
   final String speciesName;
   final String? commonName;
   final double? confidence;
@@ -43,6 +52,7 @@ class MapScanRecord {
   final double? canopyWidthM;
   final double? fieldDistanceM;
   final String? notes;
+  final String? validationStatus;
   final String syncStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -56,11 +66,35 @@ class MapScanRecord {
   bool get isSynced => syncStatus == synced;
   bool get isPending => syncStatus == pending;
 
+  bool belongsToOwner({
+    String? ownerUserId,
+    String? ownerUserEmail,
+    bool includeOwnerless = false,
+  }) {
+    final recordEmail = _asNullableString(userEmail)?.toLowerCase();
+    final requestedEmail = _asNullableString(ownerUserEmail)?.toLowerCase();
+    if (recordEmail != null) {
+      return requestedEmail != null && recordEmail == requestedEmail;
+    }
+
+    final recordId = _asNullableString(userId);
+    final requestedId = _asNullableString(ownerUserId);
+    if (recordId != null) {
+      return requestedId != null && recordId == requestedId;
+    }
+
+    return includeOwnerless;
+  }
+
   MapScanRecord copyWith({
     String? localId,
     String? serverId,
     String? userId,
     String? userEmail,
+    String? recordCode,
+    String? scannerName,
+    bool? isMine,
+    bool? canViewRecord,
     String? speciesName,
     String? commonName,
     double? confidence,
@@ -76,6 +110,7 @@ class MapScanRecord {
     double? canopyWidthM,
     double? fieldDistanceM,
     String? notes,
+    String? validationStatus,
     String? syncStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -85,6 +120,10 @@ class MapScanRecord {
       serverId: serverId ?? this.serverId,
       userId: userId ?? this.userId,
       userEmail: userEmail ?? this.userEmail,
+      recordCode: recordCode ?? this.recordCode,
+      scannerName: scannerName ?? this.scannerName,
+      isMine: isMine ?? this.isMine,
+      canViewRecord: canViewRecord ?? this.canViewRecord,
       speciesName: speciesName ?? this.speciesName,
       commonName: commonName ?? this.commonName,
       confidence: confidence ?? this.confidence,
@@ -100,6 +139,7 @@ class MapScanRecord {
       canopyWidthM: canopyWidthM ?? this.canopyWidthM,
       fieldDistanceM: fieldDistanceM ?? this.fieldDistanceM,
       notes: notes ?? this.notes,
+      validationStatus: validationStatus ?? this.validationStatus,
       syncStatus: syncStatus ?? this.syncStatus,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -112,10 +152,21 @@ class MapScanRecord {
       serverId: _asNullableString(json['server_id'] ?? json['serverId']),
       userId: _asNullableString(json['user_id'] ?? json['userId']),
       userEmail: _asNullableString(json['user_email'] ?? json['userEmail']),
+      recordCode: _asNullableString(json['record_code'] ?? json['recordCode']),
+      scannerName: _asNullableString(
+        json['scanner_name'] ?? json['scannerName'],
+      ),
+      isMine: _asBool(json['is_mine'] ?? json['isMine'], fallback: true),
+      canViewRecord: _asBool(
+        json['can_view_record'] ?? json['canViewRecord'],
+        fallback: true,
+      ),
       speciesName: _asString(json['species_name'] ?? json['speciesName']),
       commonName: _asNullableString(json['common_name'] ?? json['commonName']),
       confidence: _asDouble(json['confidence']),
-      imagePath: _asNullableString(json['image_path'] ?? json['imagePath']),
+      imagePath: _asNullableString(
+        json['image_path'] ?? json['imagePath'] ?? json['image_url'],
+      ),
       latitude: _asDouble(json['latitude']),
       longitude: _asDouble(json['longitude']),
       accuracy: _asDouble(json['accuracy']),
@@ -135,11 +186,16 @@ class MapScanRecord {
         json['field_distance_m'] ?? json['fieldDistanceM'],
       ),
       notes: _asNullableString(json['notes']),
+      validationStatus: _asNullableString(
+        json['validation_status'] ?? json['validationStatus'],
+      ),
       syncStatus: _asString(
         json['sync_status'] ?? json['syncStatus'],
         fallback: localOnly,
       ),
-      createdAt: _asDateTime(json['created_at'] ?? json['createdAt']),
+      createdAt: _asDateTime(
+        json['created_at'] ?? json['createdAt'] ?? json['captured_at'],
+      ),
       updatedAt: _asDateTime(json['updated_at'] ?? json['updatedAt']),
     );
   }
@@ -150,6 +206,10 @@ class MapScanRecord {
       'server_id': serverId,
       'user_id': userId,
       'user_email': userEmail,
+      'record_code': recordCode,
+      'scanner_name': scannerName,
+      'is_mine': isMine,
+      'can_view_record': canViewRecord,
       'species_name': speciesName,
       'common_name': commonName,
       'confidence': confidence,
@@ -165,6 +225,7 @@ class MapScanRecord {
       'canopy_width_m': canopyWidthM,
       'field_distance_m': fieldDistanceM,
       'notes': notes,
+      'validation_status': validationStatus,
       'sync_status': syncStatus,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -186,6 +247,22 @@ class MapScanRecord {
       return value.toDouble();
     }
     return double.tryParse(value?.toString() ?? '');
+  }
+
+  static bool _asBool(Object? value, {required bool fallback}) {
+    if (value is bool) {
+      return value;
+    }
+
+    final normalized = value?.toString().trim().toLowerCase();
+    if (normalized == 'true' || normalized == '1') {
+      return true;
+    }
+    if (normalized == 'false' || normalized == '0') {
+      return false;
+    }
+
+    return fallback;
   }
 
   static DateTime _asDateTime(Object? value) {

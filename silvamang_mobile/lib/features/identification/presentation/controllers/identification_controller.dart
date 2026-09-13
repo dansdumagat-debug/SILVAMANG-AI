@@ -29,7 +29,7 @@ final identificationControllerProvider =
         offlineSyncRepository: ref.watch(offlineSyncRepositoryProvider),
         localMapScanRepository: ref.watch(localMapScanRepositoryProvider),
         connectivityService: const ConnectivityService(),
-        currentUserId: null,
+        currentUserId: authState.user?.id,
         currentUserEmail: authState.user?.email,
       );
     });
@@ -745,6 +745,8 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         payloadJson: jsonEncode(payload),
         status: OfflineSyncItem.statusPending,
         createdAt: now,
+        ownerUserId: currentUserId,
+        ownerUserEmail: currentUserEmail,
       ),
     );
 

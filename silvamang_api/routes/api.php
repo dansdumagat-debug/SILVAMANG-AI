@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\MeasurementController;
 use App\Http\Controllers\Api\MockAiPredictionController;
 use App\Http\Controllers\Api\PredictionController;
 use App\Http\Controllers\Api\ScanImageController;
+use App\Http\Controllers\Api\ScanMapController;
 use App\Http\Controllers\Api\ScanRecordController;
 use App\Http\Controllers\Api\SpeciesController;
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('species/{species}', [SpeciesController::class, 'destroy'])->middleware('role:super_admin,admin,researcher');
 
     Route::post('scan-records/{scanRecord}/validate-location', [ScanRecordController::class, 'validateLocation']);
+    Route::get('scan-map', ScanMapController::class);
     Route::apiResource('scan-records', ScanRecordController::class);
     Route::get('predictions', [PredictionController::class, 'index']);
     Route::post('predictions', [PredictionController::class, 'store']);

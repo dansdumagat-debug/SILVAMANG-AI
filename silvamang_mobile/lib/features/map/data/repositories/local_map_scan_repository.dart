@@ -27,6 +27,8 @@ class LocalMapScanRepository {
         payloadJson: jsonEncode(record.toJson()),
         status: _queueStatusFromMapStatus(record.syncStatus),
         createdAt: record.createdAt,
+        ownerUserId: record.userId,
+        ownerUserEmail: record.userEmail,
       ),
     );
   }
@@ -38,34 +40,17 @@ class LocalMapScanRepository {
     bool includeLegacyRecords = false,
   }) async {
     final records = await _getAllMapRecords();
-    final cleanUserId = _cleanText(userId);
-    final cleanUserEmail = _cleanText(userEmail)?.toLowerCase();
 
-    return records.where((record) {
-      final recordUserId = _cleanText(record.userId);
-      final recordUserEmail = _cleanText(record.userEmail)?.toLowerCase();
-
-      if (cleanUserEmail != null && recordUserEmail == cleanUserEmail) {
-        return true;
-      }
-
-      if (cleanUserId != null && recordUserId == cleanUserId) {
-        return true;
-      }
-
-      if (recordUserEmail != null) {
-        return false;
-      }
-
-      if (recordUserId != null) {
-        return includeLegacyRecords &&
-            (cleanUserEmail != null || cleanUserId != null);
-      }
-
-      return includeGuestRecords &&
-          recordUserId == null &&
-          recordUserEmail == null;
-    }).toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return records
+        .where(
+          (record) => record.belongsToOwner(
+            ownerUserId: userId,
+            ownerUserEmail: userEmail,
+            includeOwnerless: includeGuestRecords || includeLegacyRecords,
+          ),
+        )
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 
   Future<List<MapScanRecord>> getPendingSyncRecords({
@@ -106,10 +91,7 @@ class LocalMapScanRepository {
   }
 
   Future<List<MapScanRecord>> _getAllMapRecords() async {
-    final items = [
-      ...(await offlineSyncRepository.getRecentlyDeletedItems()),
-      ...(await offlineSyncRepository.getItems()),
-    ];
+    final items = await offlineSyncRepository.getItems();
     final recordsByLocalId = <String, MapScanRecord>{};
 
     for (final item in items) {
@@ -158,11 +140,6 @@ class LocalMapScanRepository {
   }
 
   String _itemId(String localId) => '${itemType}_$localId';
-
-  String? _cleanText(String? value) {
-    final cleanValue = value?.trim();
-    return cleanValue == null || cleanValue.isEmpty ? null : cleanValue;
-  }
 
   String _queueStatusFromMapStatus(String syncStatus) {
     switch (syncStatus) {

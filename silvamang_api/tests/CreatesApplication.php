@@ -16,6 +16,15 @@ trait CreatesApplication
 
         $app->make(Kernel::class)->bootstrap();
 
+        $connection = (string) config('database.default');
+        $database = (string) config("database.connections.{$connection}.database");
+
+        if ($connection !== 'sqlite' && ! str_ends_with($database, '_testing')) {
+            throw new \RuntimeException(
+                "Refusing to run tests against non-test database [{$database}]."
+            );
+        }
+
         return $app;
     }
 }

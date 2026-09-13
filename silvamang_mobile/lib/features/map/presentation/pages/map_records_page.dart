@@ -17,13 +17,14 @@ import '../../../../core/widgets/local_image_preview.dart';
 import '../../../../core/widgets/silvamang_badge.dart';
 import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
-import '../../../../shared/models/scan_record_model.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../location/data/services/barangay_resolver_service.dart';
-import '../../../records/data/repositories/scan_record_repository.dart';
 import '../../data/models/map_scan_record.dart';
 import '../../data/repositories/local_map_scan_repository.dart';
+import '../../data/repositories/map_scan_repository.dart';
 import '../../data/services/offline_map_cache_service.dart';
+
+enum _MapRecordScope { mine, all }
 
 class MapRecordsPage extends ConsumerStatefulWidget {
   const MapRecordsPage({super.key});
@@ -42,6 +43,7 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
   Future<_MapRecordsState>? _future;
   MapScanRecord? _selectedRecord;
   String _selectedSpecies = _allSpeciesFilter;
+  _MapRecordScope _selectedScope = _MapRecordScope.mine;
 
   @override
   void initState() {
@@ -56,31 +58,45 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
         .getRecordsForUser(
           userId: authState.user?.id,
           userEmail: authState.user?.email,
-          includeGuestRecords: true,
-          includeLegacyRecords: true,
+          includeGuestRecords: !authState.isAuthenticated,
+          includeLegacyRecords: false,
         );
     final isOnline = await _connectivityService.hasNetworkConnection();
     var records = localRecords;
+    var myScanCount = localRecords.length;
+    var allScanCount = myScanCount;
     String? recordLoadMessage;
 
     if (isOnline && authState.isAuthenticated) {
       try {
-        final serverRecords = await ref
-            .read(scanRecordRepositoryProvider)
-            .getScanRecords();
+        final feed = await ref
+            .read(mapScanRepositoryProvider)
+            .getMapScans(includeAll: true);
         records = _mergeRecords(
           localRecords: localRecords,
-          serverRecords: _serverRecordsToMapRecords(
-            serverRecords,
-            authState.user?.email,
-          ),
+          serverRecords: feed.records,
         );
+        final pendingLocalRecords = localRecords
+            .where(
+              (record) =>
+                  record.serverId == null &&
+                  record.syncStatus != MapScanRecord.synced,
+            )
+            .toList();
+        myScanCount = feed.myScans + pendingLocalRecords.length;
+        allScanCount = feed.allScans + pendingLocalRecords.length;
       } catch (_) {
-        recordLoadMessage = 'Showing local scan pins only.';
+        recordLoadMessage =
+            'Server scans could not be loaded. Showing your local pins.';
       }
     }
 
     final resolvedRecords = await _recordsWithResolvedBarangay(records);
+    final mappedRecords = resolvedRecords
+        .where((record) => record.hasCoordinates)
+        .toList();
+    final myPinCount = mappedRecords.where((record) => record.isMine).length;
+    final allPinCount = mappedRecords.length;
     final cacheService = ref.read(offlineMapCacheServiceProvider);
     final cacheStatus = await cacheService.status();
     final locationResult = await _locationService.getCurrentLocationResult(
@@ -88,9 +104,11 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
     );
 
     return _MapRecordsState(
-      records: resolvedRecords
-          .where((record) => record.hasCoordinates)
-          .toList(),
+      records: mappedRecords,
+      myScanCount: myScanCount,
+      myPinCount: myPinCount,
+      allScanCount: allScanCount,
+      allPinCount: allPinCount,
       currentLocation: locationResult.location,
       isOnline: isOnline,
       cacheStatus: cacheStatus,
@@ -147,8 +165,9 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
           }
 
           final state = snapshot.data ?? const _MapRecordsState(records: []);
-          final speciesChoices = _speciesChoices(state.records);
-          final visibleRecords = _recordsForSelectedSpecies(state.records);
+          final scopedRecords = _recordsForSelectedScope(state.records);
+          final speciesChoices = _speciesChoices(scopedRecords);
+          final visibleRecords = _recordsForSelectedSpecies(scopedRecords);
 
           final initialCenter = _initialCenter(state, visibleRecords);
           final markers = <Marker>[
@@ -185,6 +204,7 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
           return Stack(
             children: [
               FlutterMap(
+                key: ValueKey(_selectedScope),
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: initialCenter,
@@ -224,13 +244,23 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
                 top: AppSpacing.md,
                 child: _MapTopBar(
                   recordCount: visibleRecords.length,
-                  totalRecordCount: state.records.length,
+                  totalRecordCount: scopedRecords.length,
+                  myScanCount: state.myScanCount,
+                  myPinCount: state.myPinCount,
+                  allScanCount: state.allScanCount,
+                  allPinCount: state.allPinCount,
+                  selectedScope: _selectedScope,
+                  onScopeChanged: _selectScope,
                   speciesChoices: speciesChoices,
                   selectedSpecies: _selectedSpecies,
                   onSpeciesChanged: (species) =>
                       _selectSpecies(species, state.records),
-                  locationMessage:
-                      state.locationMessage ?? state.offlineMapMessage,
+                  locationMessage: _joinMessages([
+                    state.locationMessage ?? state.offlineMapMessage,
+                    if (_selectedScope == _MapRecordScope.all &&
+                        !state.isOnline)
+                      'Connect to the server to view all users\' scans.',
+                  ]),
                 ),
               ),
               if (_selectedRecord != null)
@@ -246,7 +276,9 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
                       _selectedRecord!.latitude!,
                       _selectedRecord!.longitude!,
                     ),
-                    onViewRecord: _selectedRecord!.serverId == null
+                    onViewRecord:
+                        _selectedRecord!.serverId == null ||
+                            !_selectedRecord!.canViewRecord
                         ? null
                         : () => context.pushNamed(
                             RouteNames.recordDetail,
@@ -261,76 +293,6 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
         },
       ),
     );
-  }
-
-  List<MapScanRecord> _serverRecordsToMapRecords(
-    List<ScanRecordModel> scanRecords,
-    String? userEmail,
-  ) {
-    final records = <MapScanRecord>[];
-
-    for (final scanRecord in scanRecords) {
-      final latitude =
-          scanRecord.latitude ?? scanRecord.locationValidation?.latitude;
-      final longitude =
-          scanRecord.longitude ?? scanRecord.locationValidation?.longitude;
-      final capturedAt = scanRecord.capturedAt ?? scanRecord.createdAt;
-      final serverId = scanRecord.id.trim();
-
-      records.add(
-        MapScanRecord(
-          localId: serverId.isEmpty
-              ? 'server_scan_${capturedAt.microsecondsSinceEpoch}_${records.length}'
-              : 'server_$serverId',
-          serverId: serverId.isEmpty ? null : serverId,
-          userId: scanRecord.userId,
-          userEmail: userEmail,
-          speciesName: scanRecord.topScientificName,
-          commonName: scanRecord.topCommonName,
-          confidence: scanRecord.confidence,
-          imagePath: _serverRecordImagePath(scanRecord),
-          latitude: latitude,
-          longitude: longitude,
-          accuracy: scanRecord.accuracy,
-          barangay: scanRecord.barangay,
-          manualBarangay: scanRecord.manualBarangay,
-          locationLookupStatus:
-              scanRecord.locationLookupStatus ??
-              scanRecord.locationValidation?.message,
-          locationSource: 'server_scan_record',
-          heightM: scanRecord.heightM ?? scanRecord.measurement?.heightM,
-          canopyWidthM:
-              scanRecord.canopyWidthM ?? scanRecord.measurement?.canopyWidthM,
-          notes: scanRecord.notes,
-          syncStatus: MapScanRecord.synced,
-          createdAt: capturedAt,
-          updatedAt: scanRecord.updatedAt ?? scanRecord.createdAt,
-        ),
-      );
-    }
-
-    return records;
-  }
-
-  String? _serverRecordImagePath(ScanRecordModel scanRecord) {
-    for (final image in scanRecord.images) {
-      final localUri = image.localUri?.trim();
-      if (localUri != null && localUri.isNotEmpty) {
-        return localUri;
-      }
-
-      final imagePath = image.imagePath.trim();
-      if (imagePath.isNotEmpty) {
-        return imagePath;
-      }
-
-      final imageUrl = image.imageUrl.trim();
-      if (imageUrl.isNotEmpty) {
-        return imageUrl;
-      }
-    }
-
-    return null;
   }
 
   List<MapScanRecord> _mergeRecords({
@@ -364,6 +326,10 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
       serverId: preferred.serverId ?? existing.serverId,
       userId: preferred.userId ?? existing.userId,
       userEmail: preferred.userEmail ?? existing.userEmail,
+      recordCode: _pickText(preferred.recordCode, existing.recordCode),
+      scannerName: _pickText(preferred.scannerName, existing.scannerName),
+      isMine: preferred.isMine,
+      canViewRecord: preferred.canViewRecord,
       speciesName: _pickText(preferred.speciesName, existing.speciesName) ?? '',
       commonName: _pickText(preferred.commonName, existing.commonName),
       confidence: preferred.confidence ?? existing.confidence,
@@ -388,6 +354,10 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
       canopyWidthM: preferred.canopyWidthM ?? existing.canopyWidthM,
       fieldDistanceM: preferred.fieldDistanceM ?? existing.fieldDistanceM,
       notes: _pickText(preferred.notes, existing.notes),
+      validationStatus: _pickText(
+        preferred.validationStatus,
+        existing.validationStatus,
+      ),
       syncStatus: preferred.syncStatus == MapScanRecord.synced
           ? preferred.syncStatus
           : existing.syncStatus,
@@ -443,7 +413,9 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
 
     for (final record in records) {
       var resolvedRecord = record;
-      if (record.hasCoordinates && !_hasText(record.barangay)) {
+      if (record.isMine &&
+          record.hasCoordinates &&
+          !_hasText(record.barangay)) {
         final resolution = await resolver.resolve(
           latitude: record.latitude!,
           longitude: record.longitude!,
@@ -475,6 +447,14 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
         .toList();
   }
 
+  List<MapScanRecord> _recordsForSelectedScope(List<MapScanRecord> records) {
+    if (_selectedScope == _MapRecordScope.all) {
+      return records;
+    }
+
+    return records.where((record) => record.isMine).toList();
+  }
+
   void _selectSpecies(String species, List<MapScanRecord> records) {
     final nextRecords = species == _allSpeciesFilter
         ? records
@@ -498,6 +478,18 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
   void _selectRecord(MapScanRecord record) {
     setState(() => _selectedRecord = record);
     _moveToRecord(record, zoom: 16);
+  }
+
+  void _selectScope(_MapRecordScope scope) {
+    if (scope == _selectedScope) {
+      return;
+    }
+
+    setState(() {
+      _selectedScope = scope;
+      _selectedSpecies = _allSpeciesFilter;
+      _selectedRecord = null;
+    });
   }
 
   void _moveToRecord(MapScanRecord record, {required double zoom}) {
@@ -539,6 +531,10 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
   Color _markerColor(MapScanRecord record) {
     if (_selectedRecord?.localId == record.localId) {
       return Colors.blue.shade600;
+    }
+
+    if (!record.isMine) {
+      return const Color(0xFF138496);
     }
 
     switch (record.syncStatus) {
@@ -589,6 +585,10 @@ String _locationSourceLabel(String? source) {
 class _MapRecordsState {
   const _MapRecordsState({
     required this.records,
+    this.myScanCount = 0,
+    this.myPinCount = 0,
+    this.allScanCount = 0,
+    this.allPinCount = 0,
     this.currentLocation,
     this.isOnline = true,
     this.cacheStatus,
@@ -596,6 +596,10 @@ class _MapRecordsState {
   });
 
   final List<MapScanRecord> records;
+  final int myScanCount;
+  final int myPinCount;
+  final int allScanCount;
+  final int allPinCount;
   final DeviceLocation? currentLocation;
   final bool isOnline;
   final OfflineMapCacheStatus? cacheStatus;
@@ -620,6 +624,12 @@ class _MapTopBar extends StatelessWidget {
   const _MapTopBar({
     required this.recordCount,
     required this.totalRecordCount,
+    required this.myScanCount,
+    required this.myPinCount,
+    required this.allScanCount,
+    required this.allPinCount,
+    required this.selectedScope,
+    required this.onScopeChanged,
     required this.speciesChoices,
     required this.selectedSpecies,
     required this.onSpeciesChanged,
@@ -628,6 +638,12 @@ class _MapTopBar extends StatelessWidget {
 
   final int recordCount;
   final int totalRecordCount;
+  final int myScanCount;
+  final int myPinCount;
+  final int allScanCount;
+  final int allPinCount;
+  final _MapRecordScope selectedScope;
+  final ValueChanged<_MapRecordScope> onScopeChanged;
   final List<String> speciesChoices;
   final String selectedSpecies;
   final ValueChanged<String> onSpeciesChanged;
@@ -650,11 +666,42 @@ class _MapTopBar extends StatelessWidget {
               ),
               SilvamangBadge(
                 label: recordCount == totalRecordCount
-                    ? '$recordCount pins'
-                    : '$recordCount of $totalRecordCount pins',
+                    ? 'Showing $recordCount pins'
+                    : 'Showing $recordCount of $totalRecordCount pins',
                 type: SilvamangBadgeType.success,
               ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<_MapRecordScope>(
+              segments: const [
+                ButtonSegment(
+                  value: _MapRecordScope.mine,
+                  icon: Icon(Icons.person_pin_circle_rounded),
+                  label: Text('My Scans'),
+                ),
+                ButtonSegment(
+                  value: _MapRecordScope.all,
+                  icon: Icon(Icons.public_rounded),
+                  label: Text('All Scans'),
+                ),
+              ],
+              selected: {selectedScope},
+              showSelectedIcon: false,
+              onSelectionChanged: (selection) {
+                if (selection.isNotEmpty) {
+                  onScopeChanged(selection.first);
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'My scans: $myScanCount ($myPinCount pins)  |  '
+            'All scans: $allScanCount ($allPinCount pins)',
+            style: AppTextStyles.bodySmall,
           ),
           if (speciesChoices.length > 1) ...[
             const SizedBox(height: AppSpacing.sm),
@@ -797,8 +844,12 @@ class _RecordDetailsCard extends StatelessWidget {
                       ),
                     ),
                     SilvamangBadge(
-                      label: _syncLabel(record.syncStatus),
-                      type: _syncBadgeType(record.syncStatus),
+                      label: record.isMine
+                          ? _syncLabel(record.syncStatus)
+                          : 'Community',
+                      type: record.isMine
+                          ? _syncBadgeType(record.syncStatus)
+                          : SilvamangBadgeType.info,
                     ),
                     IconButton(
                       tooltip: 'Close',
@@ -822,6 +873,14 @@ class _RecordDetailsCard extends StatelessWidget {
                         text:
                             '${record.confidence!.toStringAsFixed(1)}% confidence',
                       ),
+                    _InfoChip(
+                      icon: record.isMine
+                          ? Icons.person_rounded
+                          : Icons.groups_rounded,
+                      text: record.isMine
+                          ? 'My scan'
+                          : record.scannerName ?? 'Community scanner',
+                    ),
                     _InfoChip(
                       icon: Icons.location_pin,
                       text:

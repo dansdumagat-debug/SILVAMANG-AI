@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Observation Map')
+@section('title', $isPersonalMap ? 'My Map' : 'Observation Map')
 
 @push('styles')
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -9,16 +9,36 @@
 @section('content')
     <div class="page-heading">
         <div>
-            <h2>Observation Map</h2>
-            <p>Monitor scanned mangrove observations on a satellite field map with species pins, timestamps, users, and validation status.</p>
+            <h2>{{ $isPersonalMap ? 'My Scan Map' : 'Observation Map' }}</h2>
+            <p>{{ $isPersonalMap ? 'Explore your own scan pins or switch to all community scans.' : 'Monitor scanned mangrove observations on a satellite field map with species pins, timestamps, users, and validation status.' }}</p>
         </div>
-        <a href="{{ route('admin.scan-monitoring.index') }}" class="secondary-action">Scan Monitoring</a>
+        @if ($isPersonalMap)
+            <nav class="map-scope-switch" aria-label="Choose scans shown on the map">
+                <a href="{{ route('admin.my-map', ['scope' => 'mine']) }}" class="{{ $mapScope === 'mine' ? 'active' : '' }}">
+                    <span>My Scans</span>
+                    <strong>{{ $mapCounts['my_scans'] }}</strong>
+                </a>
+                <a href="{{ route('admin.my-map', ['scope' => 'all']) }}" class="{{ $mapScope === 'all' ? 'active' : '' }}">
+                    <span>All Scans</span>
+                    <strong>{{ $mapCounts['all_scans'] }}</strong>
+                </a>
+            </nav>
+        @else
+            <a href="{{ route('admin.scan-monitoring.index') }}" class="secondary-action">Scan Monitoring</a>
+        @endif
     </div>
 
-    <section class="stats-grid observation-map-stats">
-        @include('admin.partials.stat-card', ['label' => 'Matching Records', 'value' => $totalMatchingRecords, 'hint' => 'Included by current filters', 'icon' => 'OBS'])
-        @include('admin.partials.stat-card', ['label' => 'Mapped Pins', 'value' => $markers->count(), 'hint' => 'Records with GPS coordinates', 'icon' => 'MAP'])
-        @include('admin.partials.stat-card', ['label' => 'No Coordinates', 'value' => $recordsWithoutCoordinates, 'hint' => 'Saved without map pin', 'icon' => 'GPS'])
+    <section class="stats-grid observation-map-stats {{ $isPersonalMap ? 'personal-map-stats' : '' }}">
+        @if ($isPersonalMap)
+            @include('admin.partials.stat-card', ['label' => 'My Scans', 'value' => $mapCounts['my_scans'], 'hint' => 'All records you submitted', 'icon' => 'ME'])
+            @include('admin.partials.stat-card', ['label' => 'My Map Pins', 'value' => $mapCounts['my_pins'], 'hint' => 'Your GPS-tagged scans', 'icon' => 'PIN'])
+            @include('admin.partials.stat-card', ['label' => 'All Scans', 'value' => $mapCounts['all_scans'], 'hint' => 'Records from all scanners', 'icon' => 'ALL'])
+            @include('admin.partials.stat-card', ['label' => 'All Map Pins', 'value' => $mapCounts['all_pins'], 'hint' => 'Community GPS-tagged scans', 'icon' => 'MAP'])
+        @else
+            @include('admin.partials.stat-card', ['label' => 'Matching Records', 'value' => $totalMatchingRecords, 'hint' => 'Included by current filters', 'icon' => 'OBS'])
+            @include('admin.partials.stat-card', ['label' => 'Mapped Pins', 'value' => $markers->count(), 'hint' => 'Records with GPS coordinates', 'icon' => 'MAP'])
+            @include('admin.partials.stat-card', ['label' => 'No Coordinates', 'value' => $recordsWithoutCoordinates, 'hint' => 'Saved without map pin', 'icon' => 'GPS'])
+        @endif
     </section>
 
     <article class="panel observation-map-panel">
@@ -30,8 +50,8 @@
                     <div class="admin-map-title">
                         <span class="admin-map-title-icon">MAP</span>
                         <div>
-                            <strong>Mangrove Map</strong>
-                            <span>Satellite view with scan record pins</span>
+                            <strong>{{ $isPersonalMap && $mapScope === 'mine' ? 'My Mangrove Scans' : 'Mangrove Map' }}</strong>
+                            <span>{{ $isPersonalMap && $mapScope === 'all' ? 'Pins shared by all scanners' : 'Satellite view with scan record pins' }}</span>
                         </div>
                     </div>
                     <span class="admin-map-count" id="visible-pin-count">{{ $markers->count() }} pins</span>
@@ -41,8 +61,11 @@
 
                 <details class="admin-map-filter-details">
                     <summary>Filters</summary>
-                    <form method="GET" action="{{ route('admin.observation-map.index') }}" class="admin-map-filter-grid">
-                        <input type="search" name="search" value="{{ request('search') }}" placeholder="Search species, record, user, barangay...">
+                    <form method="GET" action="{{ route($mapRoute) }}" class="admin-map-filter-grid">
+                        @if ($isPersonalMap)
+                            <input type="hidden" name="scope" value="{{ $mapScope }}">
+                        @endif
+                        <input type="search" name="search" value="{{ request('search') }}" placeholder="Search species, record, scanner, barangay...">
                         <select name="species_id">
                             <option value="">All species</option>
                             @foreach ($speciesOptions as $species)
@@ -51,14 +74,16 @@
                                 </option>
                             @endforeach
                         </select>
-                        <select name="user_id">
-                            <option value="">All users</option>
-                            @foreach ($userOptions as $user)
-                                <option value="{{ $user->id }}" @selected((string) request('user_id') === (string) $user->id)>
-                                    {{ $user->name }} / {{ $user->email }}
-                                </option>
-                            @endforeach
-                        </select>
+                        @unless ($isPersonalMap)
+                            <select name="user_id">
+                                <option value="">All users</option>
+                                @foreach ($userOptions as $user)
+                                    <option value="{{ $user->id }}" @selected((string) request('user_id') === (string) $user->id)>
+                                        {{ $user->name }} / {{ $user->email }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endunless
                         <input type="search" name="barangay" value="{{ request('barangay') }}" placeholder="Barangay/location">
                         <select name="validation_status">
                             <option value="">All validation</option>
@@ -71,7 +96,7 @@
                         <input type="date" name="date_from" value="{{ request('date_from') }}">
                         <input type="date" name="date_to" value="{{ request('date_to') }}">
                         <button type="submit" class="small-button">Apply Filter</button>
-                        <a href="{{ route('admin.observation-map.index') }}" class="reset-link">Reset</a>
+                        <a href="{{ route($mapRoute, $isPersonalMap ? ['scope' => $mapScope] : []) }}" class="reset-link">Reset</a>
                     </form>
                 </details>
             </div>
@@ -101,7 +126,9 @@
                     <div><span>Created</span><strong id="detail-created">N/A</strong></div>
                     <div><span>Synced</span><strong id="detail-synced">N/A</strong></div>
                 </div>
-                <a id="detail-link" href="{{ route('admin.scan-monitoring.index') }}" class="primary-action">Open Scan Record</a>
+                @unless ($isPersonalMap)
+                    <a id="detail-link" href="{{ route('admin.scan-monitoring.index') }}" class="primary-action">Open Scan Record</a>
+                @endunless
             </aside>
         </div>
     </article>
@@ -111,6 +138,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const markers = @json($markers);
+        const isPersonalMap = @json($isPersonalMap);
         const allSpeciesLabel = 'All species';
         const defaultCenter = [10.3347, 125.0750];
         let selectedSpecies = allSpeciesLabel;
@@ -140,6 +168,10 @@
         const markerColor = (record) => {
             if (selectedMarkerId === record.id) {
                 return '#2472B8';
+            }
+
+            if (isPersonalMap && !record.is_mine) {
+                return '#138496';
             }
 
             const status = record.sync_status || record.validation_status;
@@ -290,7 +322,9 @@
                 : '<div class="image-card-placeholder">Preview unavailable</div>';
 
             const detailLink = document.getElementById('detail-link');
-            detailLink.href = record.detail_url;
+            if (detailLink && record.detail_url) {
+                detailLink.href = record.detail_url;
+            }
             document.getElementById('observation-details').classList.add('is-visible');
         };
 

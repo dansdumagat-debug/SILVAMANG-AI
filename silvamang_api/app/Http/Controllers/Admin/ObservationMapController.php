@@ -13,12 +13,30 @@ use Illuminate\View\View;
 
 class ObservationMapController extends Controller
 {
+    private const ADMIN_CONSOLE_ROLES = ['super_admin', 'admin', 'researcher'];
+
     public function __invoke(Request $request): View
     {
+        return $this->renderMap($request, false);
+    }
+
+    public function personal(Request $request): View
+    {
+        abort_unless($this->isMobileUserOnly($request->user()), 403);
+
+        return $this->renderMap($request, true);
+    }
+
+    private function renderMap(Request $request, bool $isPersonalMap): View
+    {
+        $currentUser = $request->user();
+        $mapScope = $isPersonalMap && $request->query('scope') === 'all' ? 'all' : 'mine';
+
         $query = ScanRecord::query()
             ->with(['user', 'species', 'measurement', 'locationValidation', 'images'])
-            ->when($this->filterValue($request, 'search'), function (Builder $query, string $search) {
-                $query->where(function (Builder $builder) use ($search) {
+            ->when($isPersonalMap && $mapScope === 'mine', fn (Builder $builder) => $builder->where('user_id', $currentUser->id))
+            ->when($this->filterValue($request, 'search'), function (Builder $query, string $search) use ($isPersonalMap) {
+                $query->where(function (Builder $builder) use ($search, $isPersonalMap) {
                     $builder
                         ->where('record_code', 'like', "%{$search}%")
                         ->orWhere('top_scientific_name', 'like', "%{$search}%")
@@ -26,10 +44,12 @@ class ObservationMapController extends Controller
                         ->orWhere('location_name', 'like', "%{$search}%")
                         ->orWhere('barangay', 'like', "%{$search}%")
                         ->orWhere('manual_barangay', 'like', "%{$search}%")
-                        ->orWhereHas('user', function (Builder $userQuery) use ($search) {
-                            $userQuery
-                                ->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhereHas('user', function (Builder $userQuery) use ($search, $isPersonalMap) {
+                            $userQuery->where('name', 'like', "%{$search}%");
+
+                            if (! $isPersonalMap) {
+                                $userQuery->orWhere('email', 'like', "%{$search}%");
+                            }
                         });
                 });
             })
@@ -44,7 +64,6 @@ class ObservationMapController extends Controller
                     }
                 });
             })
-            ->when($this->filterValue($request, 'user_id'), fn (Builder $query, string $userId) => $query->where('user_id', $userId))
             ->when($this->filterValue($request, 'barangay'), function (Builder $query, string $barangay) {
                 $query->where(function (Builder $builder) use ($barangay) {
                     $builder
@@ -79,28 +98,33 @@ class ObservationMapController extends Controller
             ->when($this->filterValue($request, 'confidence_min'), fn (Builder $query, string $confidence) => $query->where('confidence', '>=', (float) $confidence))
             ->when($this->filterValue($request, 'confidence_max'), fn (Builder $query, string $confidence) => $query->where('confidence', '<=', (float) $confidence));
 
-        $totalMatchingRecords = (clone $query)->count();
-        $recordsWithoutCoordinates = (clone $query)
-            ->where(function (Builder $builder) {
-                $builder->whereNull('latitude')->orWhereNull('longitude');
-            })
-            ->count();
+        if (! $isPersonalMap && ($userId = $this->filterValue($request, 'user_id'))) {
+            $query->where('user_id', $userId);
+        }
 
-        $records = (clone $query)
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
+        $totalMatchingRecords = (clone $query)->count();
+        $mappedMatchingRecords = $this->withMapCoordinates(clone $query)->count();
+        $recordsWithoutCoordinates = $totalMatchingRecords - $mappedMatchingRecords;
+
+        $records = $this->withMapCoordinates(clone $query)
             ->orderByRaw('COALESCE(captured_at, created_at) desc')
             ->limit(500)
             ->get();
 
-        $markers = $records->map(fn (ScanRecord $record) => $this->markerPayload($record))->values();
+        $markers = $records
+            ->map(fn (ScanRecord $record) => $this->markerPayload($record, $currentUser, $isPersonalMap))
+            ->values();
 
         return view('admin.observation-map.index', [
+            'isPersonalMap' => $isPersonalMap,
+            'mapScope' => $mapScope,
+            'mapRoute' => $isPersonalMap ? 'admin.my-map' : 'admin.observation-map.index',
+            'mapCounts' => $isPersonalMap ? $this->personalMapCounts($currentUser) : null,
             'markers' => $markers,
             'totalMatchingRecords' => $totalMatchingRecords,
             'recordsWithoutCoordinates' => $recordsWithoutCoordinates,
             'speciesOptions' => Species::orderBy('scientific_name')->get(['id', 'scientific_name']),
-            'userOptions' => User::orderBy('name')->get(['id', 'name', 'email']),
+            'userOptions' => $isPersonalMap ? collect() : User::orderBy('name')->get(['id', 'name', 'email']),
             'validationStatuses' => ScanRecord::query()
                 ->whereNotNull('validation_status')
                 ->distinct()
@@ -109,7 +133,20 @@ class ObservationMapController extends Controller
         ]);
     }
 
-    private function markerPayload(ScanRecord $record): array
+    private function personalMapCounts(User $user): array
+    {
+        $myRecords = ScanRecord::query()->where('user_id', $user->id);
+        $allRecords = ScanRecord::query();
+
+        return [
+            'my_scans' => (clone $myRecords)->count(),
+            'my_pins' => $this->withMapCoordinates(clone $myRecords)->count(),
+            'all_scans' => (clone $allRecords)->count(),
+            'all_pins' => $this->withMapCoordinates(clone $allRecords)->count(),
+        ];
+    }
+
+    private function markerPayload(ScanRecord $record, User $currentUser, bool $isPersonalMap): array
     {
         $image = $record->images->first();
         $imageUrl = null;
@@ -135,24 +172,25 @@ class ObservationMapController extends Controller
             'species' => $speciesName,
             'common_name' => $record->top_common_name ?? $record->species?->common_name,
             'confidence' => $record->confidence !== null ? (float) $record->confidence : null,
-            'latitude' => (float) $record->latitude,
-            'longitude' => (float) $record->longitude,
+            'latitude' => (float) ($record->latitude ?? $record->locationValidation?->latitude),
+            'longitude' => (float) ($record->longitude ?? $record->locationValidation?->longitude),
             'accuracy' => $record->accuracy !== null ? (float) $record->accuracy : null,
             'barangay' => $record->barangay ?: $record->manual_barangay ?: $record->location_name,
             'validation_status' => $record->validation_status,
             'height_m' => $height,
             'canopy_width_m' => $canopyWidth,
             'sync_status' => $record->synced_at ? 'synced' : ($record->offline_reference ? 'pending_sync' : 'online'),
-            'user' => $record->user ? "{$record->user->name} ({$record->user->email})" : 'N/A',
-            'user_name' => $record->user?->name,
-            'user_email' => $record->user?->email,
+            'is_mine' => $record->user_id === $currentUser->id,
+            'user' => $record->user
+                ? ($isPersonalMap ? $record->user->name : "{$record->user->name} ({$record->user->email})")
+                : 'N/A',
             'captured_at' => $observedAt?->format('M d, Y h:i A'),
             'captured_date' => $observedAt?->format('F d, Y'),
             'captured_time' => $observedAt?->format('h:i A'),
             'created_at' => $record->created_at?->format('M d, Y h:i A'),
             'synced_at' => $record->synced_at?->format('M d, Y h:i A'),
             'image_url' => $imageUrl,
-            'detail_url' => route('admin.scan-monitoring.show', $record),
+            'detail_url' => $isPersonalMap ? null : route('admin.scan-monitoring.show', $record),
         ];
     }
 
@@ -161,5 +199,24 @@ class ObservationMapController extends Controller
         $value = trim((string) $request->query($key, ''));
 
         return $value === '' ? null : $value;
+    }
+
+    private function withMapCoordinates(Builder $query): Builder
+    {
+        return $query->where(function (Builder $builder) {
+            $builder
+                ->where(function (Builder $scanCoordinates) {
+                    $scanCoordinates->whereNotNull('latitude')->whereNotNull('longitude');
+                })
+                ->orWhereHas('locationValidation', function (Builder $validationCoordinates) {
+                    $validationCoordinates->whereNotNull('latitude')->whereNotNull('longitude');
+                });
+        });
+    }
+
+    private function isMobileUserOnly(?User $user): bool
+    {
+        return (bool) $user?->hasRole('mobile_user')
+            && ! $user->hasAnyRole(self::ADMIN_CONSOLE_ROLES);
     }
 }

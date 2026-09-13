@@ -77,6 +77,7 @@ Route::prefix('admin')
     ->middleware(['web', 'auth'])
     ->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
+        Route::get('/my-map', [ObservationMapController::class, 'personal'])->name('my-map');
         Route::middleware('role:super_admin,admin,researcher')->group(function () {
         Route::get('/species', [SpeciesManagementController::class, 'index'])->name('species.index');
         Route::get('/species/create', [SpeciesManagementController::class, 'create'])->name('species.create');

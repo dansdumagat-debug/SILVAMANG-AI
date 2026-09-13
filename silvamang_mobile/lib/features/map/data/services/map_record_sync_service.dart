@@ -11,6 +11,7 @@ final mapRecordSyncServiceProvider = Provider<MapRecordSyncService>((ref) {
   return MapRecordSyncService(
     apiClient: ApiClient.instance,
     localMapScanRepository: ref.watch(localMapScanRepositoryProvider),
+    userId: authState.user?.id,
     userEmail: authState.user?.email,
   );
 });
@@ -31,15 +32,18 @@ class MapRecordSyncService {
   const MapRecordSyncService({
     required this.apiClient,
     required this.localMapScanRepository,
+    required this.userId,
     required this.userEmail,
   });
 
   final ApiClient apiClient;
   final LocalMapScanRepository localMapScanRepository;
+  final String? userId;
   final String? userEmail;
 
   Future<MapRecordSyncResult> syncPendingRecords() async {
-    if (userEmail == null || userEmail!.trim().isEmpty) {
+    if ((userId == null || userId!.trim().isEmpty) &&
+        (userEmail == null || userEmail!.trim().isEmpty)) {
       return const MapRecordSyncResult(
         syncedCount: 0,
         failedCount: 0,
@@ -48,6 +52,7 @@ class MapRecordSyncService {
     }
 
     final pendingRecords = await localMapScanRepository.getPendingSyncRecords(
+      userId: userId,
       userEmail: userEmail,
     );
 

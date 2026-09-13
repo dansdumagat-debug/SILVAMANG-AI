@@ -3,16 +3,20 @@ import 'dart:convert';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../core/services/connectivity_service.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../records/data/repositories/scan_record_repository.dart';
 import '../../data/models/offline_sync_item.dart';
 import '../../data/repositories/offline_sync_repository.dart';
 
 final offlineSyncControllerProvider =
     StateNotifierProvider<OfflineSyncController, OfflineSyncState>((ref) {
+      final authState = ref.watch(authControllerProvider);
       return OfflineSyncController(
         connectivityService: const ConnectivityService(),
         offlineSyncRepository: ref.watch(offlineSyncRepositoryProvider),
         scanRecordRepository: ref.watch(scanRecordRepositoryProvider),
+        currentUserId: authState.user?.id,
+        currentUserEmail: authState.user?.email,
       );
     });
 
@@ -91,11 +95,15 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
     required this.connectivityService,
     required this.offlineSyncRepository,
     required this.scanRecordRepository,
+    required this.currentUserId,
+    required this.currentUserEmail,
   }) : super(const OfflineSyncState());
 
   final ConnectivityService connectivityService;
   final OfflineSyncRepository offlineSyncRepository;
   final ScanRecordRepository scanRecordRepository;
+  final String? currentUserId;
+  final String? currentUserEmail;
   static const _syncQueueType = OfflineSyncItem.typeScanRecordMockSave;
 
   Future<void> loadQueue() async {
@@ -129,6 +137,8 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
       payloadJson: jsonEncode(payload),
       status: OfflineSyncItem.statusPending,
       createdAt: now,
+      ownerUserId: currentUserId,
+      ownerUserEmail: currentUserEmail,
     );
 
     await offlineSyncRepository.addItem(item);
@@ -210,7 +220,10 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
   }
 
   Future<void> clearSynced() async {
-    await offlineSyncRepository.clearSynced(onlyType: _syncQueueType);
+    await offlineSyncRepository.clearSynced(
+      onlyType: _syncQueueType,
+      matches: _belongsToCurrentUser,
+    );
     await loadQueue();
     state = state.copyWith(
       successMessage:
@@ -219,6 +232,12 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
   }
 
   Future<void> removeItem(String id) async {
+    final item = await _findItem(id);
+    if (item == null) {
+      state = state.copyWith(errorMessage: 'Queued item was not found.');
+      return;
+    }
+
     await offlineSyncRepository.removeItem(id);
     await loadQueue();
     state = state.copyWith(
@@ -228,19 +247,34 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
   }
 
   Future<void> restoreRecentlyDeletedItem(String id) async {
+    final item = await _findRecentlyDeletedItem(id);
+    if (item == null) {
+      state = state.copyWith(errorMessage: 'Deleted item was not found.');
+      return;
+    }
+
     await offlineSyncRepository.restoreRecentlyDeletedItem(id);
     await loadQueue();
     state = state.copyWith(successMessage: 'Deleted item restored.');
   }
 
   Future<void> permanentlyDeleteRecentlyDeletedItem(String id) async {
+    final item = await _findRecentlyDeletedItem(id);
+    if (item == null) {
+      state = state.copyWith(errorMessage: 'Deleted item was not found.');
+      return;
+    }
+
     await offlineSyncRepository.permanentlyDeleteRecentlyDeletedItem(id);
     await loadQueue();
     state = state.copyWith(successMessage: 'Recently deleted item removed.');
   }
 
   Future<void> clearRecentlyDeleted() async {
-    await offlineSyncRepository.clearRecentlyDeleted(onlyType: _syncQueueType);
+    await offlineSyncRepository.clearRecentlyDeleted(
+      onlyType: _syncQueueType,
+      matches: _belongsToCurrentUser,
+    );
     await loadQueue();
     state = state.copyWith(successMessage: 'Recently Deleted cleared.');
   }
@@ -250,13 +284,30 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
   }
 
   bool _isSyncQueueItem(OfflineSyncItem item) {
-    return item.type == _syncQueueType;
+    return item.type == _syncQueueType && _belongsToCurrentUser(item);
+  }
+
+  bool _belongsToCurrentUser(OfflineSyncItem item) {
+    return item.belongsToOwner(
+      userId: currentUserId,
+      userEmail: currentUserEmail,
+    );
   }
 
   Future<OfflineSyncItem?> _findItem(String id) async {
     final items = await offlineSyncRepository.getItems();
     for (final item in items) {
-      if (item.id == id) {
+      if (item.id == id && _isSyncQueueItem(item)) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  Future<OfflineSyncItem?> _findRecentlyDeletedItem(String id) async {
+    final items = await offlineSyncRepository.getRecentlyDeletedItems();
+    for (final item in items) {
+      if (item.id == id && _isSyncQueueItem(item)) {
         return item;
       }
     }
@@ -264,6 +315,10 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
   }
 
   Future<bool> _syncItem(OfflineSyncItem item) async {
+    if (!_isSyncQueueItem(item)) {
+      return false;
+    }
+
     final attemptAt = DateTime.now();
     final syncingItem = item.copyWith(
       status: OfflineSyncItem.statusSyncing,

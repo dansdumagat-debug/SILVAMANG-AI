@@ -1,10 +1,17 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../../shared/models/scan_record_model.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../data/repositories/scan_record_repository.dart';
 
 final recordsControllerProvider =
     StateNotifierProvider<RecordsController, RecordsState>((ref) {
+      ref.watch(
+        authControllerProvider.select(
+          (state) => state.user?.email.trim().toLowerCase(),
+        ),
+      );
       return RecordsController(
         repository: ref.watch(scanRecordRepositoryProvider),
       );
