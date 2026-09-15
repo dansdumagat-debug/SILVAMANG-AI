@@ -16,10 +16,14 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AdminUserSeeder::class,
             SpeciesSeeder::class,
+            PanelSpeciesSeeder::class,
             MangroveEducationSeeder::class,
+            PanelSpeciesEducationSeeder::class,
             AiModelSeeder::class,
             MangroveKnowledgeSeeder::class,
+            PanelMangroveKnowledgeSeeder::class,
             DemoScanRecordSeeder::class,
+            TransectDemoSeeder::class,
         ]);
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Species;
 use App\Services\AIService;
 use App\Support\ApiAccess;
 use App\Support\ApiId;
+use App\Support\SpeciesTaxonomy;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
@@ -395,7 +396,7 @@ class AIController extends Controller
             'validation_status' => 'pending',
             'latitude' => $request->input('latitude'),
             'longitude' => $request->input('longitude'),
-            'notes' => $noteLabel . '. Timestamp: ' . now()->toDateTimeString() . '. Result: ' . json_encode($response),
+            'notes' => $noteLabel.'. Timestamp: '.now()->toDateTimeString().'. Result: '.json_encode($response),
             'captured_at' => now(),
         ]);
 
@@ -455,14 +456,12 @@ class AIController extends Controller
 
     private function displaySpeciesName(mixed $value): string
     {
-        $name = trim(str_replace('_', ' ', (string) $value));
-
-        return preg_replace('/\s+/', ' ', $name) ?? '';
+        return SpeciesTaxonomy::canonicalName($value);
     }
 
     private function speciesLookupKey(mixed $value): string
     {
-        return Str::lower($this->displaySpeciesName($value));
+        return SpeciesTaxonomy::lookupKey($value);
     }
 
     private function nullableFloat(mixed $value): ?float
@@ -489,12 +488,12 @@ class AIController extends Controller
         ];
 
         if (! empty($response['warning'])) {
-            $parts[] = 'Warning: ' . (string) $response['warning'];
+            $parts[] = 'Warning: '.(string) $response['warning'];
         }
 
         foreach (['reference_object', 'calibration'] as $key) {
             if (! empty($response[$key]) && is_array($response[$key])) {
-                $parts[] = Str::headline($key) . ': ' . json_encode($response[$key]);
+                $parts[] = Str::headline($key).': '.json_encode($response[$key]);
             }
         }
 
@@ -509,7 +508,7 @@ class AIController extends Controller
     private function recordCode(): string
     {
         do {
-            $code = 'AI-' . now()->format('Ymd-His') . '-' . Str::upper(Str::random(5));
+            $code = 'AI-'.now()->format('Ymd-His').'-'.Str::upper(Str::random(5));
         } while (ScanRecord::withTrashed()->where('record_code', $code)->exists());
 
         return $code;

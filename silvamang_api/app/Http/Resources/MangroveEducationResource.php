@@ -24,6 +24,7 @@ class MangroveEducationResource extends JsonResource
             'display_name' => $species?->scientific_name,
             'common_name' => $species?->common_name,
             'family' => $species?->family,
+            'cnn_supported' => (bool) $species?->cnn_supported,
             'overview' => $this->overview,
             'description' => $this->overview,
             'physical_characteristics' => $this->physical_characteristics ?? [],

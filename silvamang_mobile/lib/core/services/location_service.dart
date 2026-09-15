@@ -12,6 +12,7 @@ class DeviceLocation {
     required this.address,
     required this.timestamp,
     required this.source,
+    this.altitude,
   });
 
   final double latitude;
@@ -21,6 +22,7 @@ class DeviceLocation {
   final String address;
   final DateTime timestamp;
   final String source;
+  final double? altitude;
 }
 
 class DeviceLocationResult {
@@ -63,6 +65,26 @@ class LocationService {
   Future<DeviceLocation?> getCurrentLocation() async {
     final result = await getCurrentLocationResult();
     return result.location;
+  }
+
+  Stream<DeviceLocation> watchLocations({int distanceFilterMeters = 2}) {
+    return Geolocator.getPositionStream(
+      locationSettings: LocationSettings(
+        accuracy: LocationAccuracy.bestForNavigation,
+        distanceFilter: distanceFilterMeters,
+      ),
+    ).map(
+      (position) => DeviceLocation(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracy: position.accuracy,
+        altitude: position.altitude,
+        locationName: 'Current GPS Location',
+        address: 'Captured from device GPS',
+        timestamp: position.timestamp,
+        source: 'gps_tracking',
+      ),
+    );
   }
 
   Future<DeviceLocationResult> getCurrentLocationResult({
@@ -126,6 +148,7 @@ class LocationService {
         address: 'Captured from device GPS',
         timestamp: position.timestamp,
         source: 'gps',
+        altitude: position.altitude,
       );
 
       if (kDebugMode) {

@@ -1,3 +1,5 @@
+import '../utils/species_taxonomy.dart';
+
 class SpeciesModel {
   const SpeciesModel({
     required this.id,
@@ -14,6 +16,7 @@ class SpeciesModel {
     this.nativeStatus = '',
     this.maxHeightM,
     this.status = '',
+    this.cnnSupported = false,
   });
 
   final int id;
@@ -30,11 +33,12 @@ class SpeciesModel {
   final String nativeStatus;
   final double? maxHeightM;
   final String status;
+  final bool cnnSupported;
 
   factory SpeciesModel.fromJson(Map<String, dynamic> json) {
     return SpeciesModel(
       id: _asInt(json['id']),
-      scientificName: _asString(
+      scientificName: canonicalSpeciesName(
         json['scientific_name'] ?? json['scientificName'],
       ),
       commonName: _asString(json['common_name'] ?? json['commonName']),
@@ -57,6 +61,7 @@ class SpeciesModel {
       nativeStatus: _asString(json['native_status'] ?? json['nativeStatus']),
       maxHeightM: _asDouble(json['max_height_m'] ?? json['maxHeightM']),
       status: _asString(json['status']),
+      cnnSupported: _asBool(json['cnn_supported'] ?? json['cnnSupported']),
     );
   }
 
@@ -76,6 +81,7 @@ class SpeciesModel {
       'native_status': nativeStatus,
       'max_height_m': maxHeightM,
       'status': status,
+      'cnn_supported': cnnSupported,
     };
   }
 
@@ -98,5 +104,13 @@ class SpeciesModel {
       return value.toDouble();
     }
     return double.tryParse(value.toString());
+  }
+
+  static bool _asBool(Object? value) {
+    if (value is bool) {
+      return value;
+    }
+
+    return const {'1', 'true', 'yes'}.contains(value?.toString().toLowerCase());
   }
 }

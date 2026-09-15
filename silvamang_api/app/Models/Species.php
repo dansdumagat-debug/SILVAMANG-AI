@@ -24,10 +24,12 @@ class Species extends Model
         'native_status',
         'max_height_m',
         'status',
+        'cnn_supported',
     ];
 
     protected $casts = [
         'max_height_m' => 'decimal:2',
+        'cnn_supported' => 'boolean',
     ];
 
     public function images()

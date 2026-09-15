@@ -115,8 +115,8 @@ class MangroveEducationSeeder extends Seeder
                 'interesting_facts' => ['Pneumatophores act like breathing structures above the mud.', 'This species can tolerate high salinity.', 'Leaves can help manage excess salt.'],
                 'references' => $references,
             ],
-            'Avicennia marina var. rumphiana' => [
-                'overview' => 'Avicennia marina var. rumphiana is a variety associated with intertidal mangrove habitats. It shares the salt tolerance and breathing-root adaptations of Avicennia mangroves.',
+            'Avicennia rumphiana' => [
+                'overview' => 'Avicennia rumphiana is a Philippine mangrove of muddy seashores and tidal streams. It shares the salt tolerance and breathing-root adaptations of other Avicennia mangroves.',
                 'physical_characteristics' => ['Mangrove tree or shrub with grey mangrove traits.', 'Salt-tolerant leaves.', 'Pneumatophores in suitable muddy substrates.'],
                 'leaf_characteristics' => 'Leaves are thick and adapted to salty coastal environments.',
                 'root_characteristics' => 'Breathing roots help oxygen exchange where sediment is waterlogged.',

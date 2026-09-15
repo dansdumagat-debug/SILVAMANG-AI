@@ -29,6 +29,7 @@ class SpeciesResource extends JsonResource
             'native_status' => $this->native_status,
             'max_height_m' => $this->max_height_m !== null ? (float) $this->max_height_m : null,
             'status' => $this->status,
+            'cnn_supported' => (bool) $this->cnn_supported,
             'images' => SpeciesImageResource::collection($this->whenLoaded('images')),
             'distributions' => SpeciesDistributionResource::collection($this->whenLoaded('distributions')),
             'created_at' => $this->created_at,

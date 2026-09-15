@@ -2386,6 +2386,7 @@ MockIdentificationResult _resultWithManualMeasurements(
 
 bool _isUsableManualMeasurement(CameraMeasurementResult? result) {
   return result != null &&
+      result.qualityAccepted &&
       result.estimatedValueM.isFinite &&
       result.estimatedValueM > 0;
 }

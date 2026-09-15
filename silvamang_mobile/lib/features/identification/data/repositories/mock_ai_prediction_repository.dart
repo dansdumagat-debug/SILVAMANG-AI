@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/connectivity_service.dart';
+import '../../../../shared/utils/species_taxonomy.dart';
 import '../../../capture/data/models/captured_plant_part_image.dart';
 import '../models/mock_ai_prediction_response.dart';
 import '../services/offline_prediction_service.dart';
@@ -459,7 +460,7 @@ class MockAiPredictionRepository {
   }
 
   String _displaySpeciesName(Object? value) {
-    return value?.toString().replaceAll('_', ' ').trim() ?? '';
+    return canonicalSpeciesName(value);
   }
 
   String _offlineFailureMessage(Object error) {

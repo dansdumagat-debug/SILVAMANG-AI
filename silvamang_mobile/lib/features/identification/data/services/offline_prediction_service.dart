@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 import 'package:image/image.dart' as image_lib;
 
+import '../../../../shared/utils/species_taxonomy.dart';
 import '../models/mock_ai_prediction_response.dart';
 
 class OfflinePredictionException implements Exception {
@@ -549,7 +550,7 @@ class OfflinePredictionService {
   }
 
   String _displaySpeciesName(String value) {
-    return value.replaceAll('_', ' ').trim();
+    return canonicalSpeciesName(value);
   }
 
   String _failureReason(Object error, String fallback) {

@@ -1,3 +1,5 @@
+import '../../../../shared/utils/species_taxonomy.dart';
+
 class SpeciesEducationModel {
   const SpeciesEducationModel({
     required this.scientificName,
@@ -52,8 +54,8 @@ class SpeciesEducationModel {
     final conservation = _asStringList(json['conservation_information']);
 
     return SpeciesEducationModel(
-      scientificName: _asString(json['scientific_name']),
-      displayName: _asString(json['display_name']),
+      scientificName: canonicalSpeciesName(json['scientific_name']),
+      displayName: canonicalSpeciesName(json['display_name']),
       commonName: _asString(json['common_name']),
       family: _asString(json['family']),
       distribution: _asStringList(json['distribution']),
@@ -68,10 +70,9 @@ class SpeciesEducationModel {
       conservationInformation: conservation,
       trivia: _asStringList(json['interesting_facts'] ?? json['trivia']),
       locationValidationHint: _asString(json['location_validation_hint']),
-      conservationNote:
-          _asString(json['conservation_note']).isNotEmpty
-              ? _asString(json['conservation_note'])
-              : conservation.take(2).join(' '),
+      conservationNote: _asString(json['conservation_note']).isNotEmpty
+          ? _asString(json['conservation_note'])
+          : conservation.take(2).join(' '),
       references: _asStringList(json['references']),
       imageAsset: _asNullableString(json['image_asset']),
     );
@@ -119,11 +120,7 @@ class SpeciesEducationModel {
   }
 
   static String normalizedKey(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[\s\-_]+'), '_')
-        .replaceAll(RegExp(r'[^a-z0-9_]'), '');
+    return normalizedSpeciesKey(value);
   }
 
   static const _fallbackDescription =

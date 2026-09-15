@@ -10,7 +10,10 @@ class SpeciesEducationRepository {
 
   static final instance = SpeciesEducationRepository._();
 
-  static const _assetPath = 'assets/data/mangrove_education.json';
+  static const _assetPaths = [
+    'assets/data/mangrove_education.json',
+    'assets/data/panel_mangrove_education.json',
+  ];
   static const _onlineTimeout = Duration(seconds: 3);
 
   Map<String, SpeciesEducationModel>? _cache;
@@ -26,10 +29,12 @@ class SpeciesEducationRepository {
     }
 
     try {
-      final response = await ApiClient.instance.get<Map<String, dynamic>>(
-        '/mangrove-education',
-        query: {'species_name': name.replaceAll('_', ' ')},
-      ).timeout(_onlineTimeout);
+      final response = await ApiClient.instance
+          .get<Map<String, dynamic>>(
+            '/mangrove-education',
+            query: {'species_name': name.replaceAll('_', ' ')},
+          )
+          .timeout(_onlineTimeout);
       final payload = _educationPayload(response.data);
       if (payload != null) {
         final onlineEducation = SpeciesEducationModel.fromJson(payload);
@@ -50,43 +55,46 @@ class SpeciesEducationRepository {
       return _cache!;
     }
 
-    try {
-      final rawJson = await rootBundle.loadString(_assetPath);
-      final decoded = jsonDecode(rawJson);
-      if (decoded is! List) {
-        _cache = const {};
-        return _cache!;
-      }
+    final entries = <String, SpeciesEducationModel>{};
 
-      final entries = <String, SpeciesEducationModel>{};
-      for (final item in decoded) {
-        if (item is! Map) {
+    for (final assetPath in _assetPaths) {
+      try {
+        final rawJson = await rootBundle.loadString(assetPath);
+        final decoded = jsonDecode(rawJson);
+        if (decoded is! List) {
           continue;
         }
 
-        final json = item.map((key, value) => MapEntry(key.toString(), value));
-        final model = SpeciesEducationModel.fromJson(json);
-        final names = [
-          model.scientificName,
-          model.displayName,
-          model.scientificName.replaceAll('_', ' '),
-          model.displayName.replaceAll(' ', '_'),
-        ];
+        for (final item in decoded) {
+          if (item is! Map) {
+            continue;
+          }
 
-        for (final name in names) {
-          final key = SpeciesEducationModel.normalizedKey(name);
-          if (key.isNotEmpty) {
-            entries[key] = model;
+          final json = item.map(
+            (key, value) => MapEntry(key.toString(), value),
+          );
+          final model = SpeciesEducationModel.fromJson(json);
+          final names = [
+            model.scientificName,
+            model.displayName,
+            model.scientificName.replaceAll('_', ' '),
+            model.displayName.replaceAll(' ', '_'),
+          ];
+
+          for (final name in names) {
+            final key = SpeciesEducationModel.normalizedKey(name);
+            if (key.isNotEmpty) {
+              entries[key] = model;
+            }
           }
         }
+      } catch (_) {
+        // A missing optional guide must not hide entries from the other asset.
       }
-
-      _cache = entries;
-      return entries;
-    } catch (_) {
-      _cache = const {};
-      return _cache!;
     }
+
+    _cache = entries;
+    return entries;
   }
 }
 

@@ -115,6 +115,46 @@ pip install -r silvamang_ai_service/requirements-cnn.txt
 Next phase:
 Phase 17 will prepare YOLOv8 plant-part detection and annotation workflow.
 
+## Licensed candidate image collection
+
+Audit image-bearing GBIF occurrences without downloading files:
+
+```powershell
+python scripts/collect_gbif_candidates.py --mode audit --all-new
+```
+
+Download a resumable species-level candidate pool for one species:
+
+```powershell
+python scripts/collect_gbif_candidates.py --mode download --species "Acanthus ebracteatus" --target 200
+```
+
+Candidates are stored under `../dataset/candidates/<species>/unclassified/` and recorded in
+`../dataset/metadata/candidate_image_manifest.csv`. The downloader accepts only CC0, public-domain,
+CC BY, and CC BY-SA media and excludes NC/ND licenses. Every candidate must still be reviewed for
+the correct species and assigned to `leaves`, `bark`, `roots`, or `flowers` before it enters
+`dataset/raw`. Do not use candidate files directly for training.
+
+Review candidates locally in a browser without editing the CSV by hand:
+
+```powershell
+python scripts/review_gbif_candidates.py
+```
+
+Then open `http://127.0.0.1:8765`. Use the suggested-part filter to review leaves, flowers, roots,
+or bark separately. Approving a candidate records its reviewed plant part in the candidate
+manifest. It does not move the image into `dataset/raw` or make it training-ready by itself.
+
+Search Wikimedia Commons for additional open-license candidates suggested by plant-part metadata:
+
+```powershell
+python scripts/collect_commons_part_candidates.py --mode download --all-new `
+  --part leaves --part flowers --part roots --part bark --target-per-part 10
+```
+
+These search suggestions still require species and plant-part review. A matching search term is not
+a verified image label.
+
 ## Phase 17A - YOLOv8 Detection and Segmentation Preparation
 
 Created:

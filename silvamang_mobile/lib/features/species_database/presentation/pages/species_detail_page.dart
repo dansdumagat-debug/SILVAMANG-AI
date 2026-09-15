@@ -187,6 +187,14 @@ class _SpeciesDetailPageState extends ConsumerState<SpeciesDetailPage> {
                             : '${species!.maxHeightM!.toStringAsFixed(1)} m',
                       ),
                       _InfoRow(label: 'Status', value: species?.status ?? ''),
+                      _InfoRow(
+                        label: 'Identification Support',
+                        value: species == null
+                            ? ''
+                            : species.cnnSupported
+                            ? 'CNN trained'
+                            : 'Field guide only',
+                      ),
                     ],
                   ),
                 ),

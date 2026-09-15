@@ -116,6 +116,7 @@ class MapRecordSyncService {
       'location_name': _locationName(record),
       'address': _locationName(record),
       'notes': _notes(record),
+      'offline_reference': record.localId,
       'captured_at': record.createdAt.toIso8601String(),
     };
   }

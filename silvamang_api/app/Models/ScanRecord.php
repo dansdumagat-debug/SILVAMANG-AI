@@ -81,4 +81,10 @@ class ScanRecord extends Model
     {
         return $this->hasMany(AssistantLog::class);
     }
+
+    public function transects()
+    {
+        return $this->belongsToMany(Transect::class, 'transect_observations')
+            ->withTimestamps();
+    }
 }

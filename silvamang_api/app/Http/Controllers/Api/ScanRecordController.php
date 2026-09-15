@@ -51,13 +51,28 @@ class ScanRecordController extends Controller
     public function store(StoreScanRecordRequest $request)
     {
         $data = $request->validated();
-        $data['record_code'] = $data['record_code'] ?? $this->generateRecordCode();
 
         if (ApiAccess::canViewAllRecords(Auth::user())) {
             $data['user_id'] = $data['user_id'] ?? Auth::id();
         } else {
             $data['user_id'] = Auth::id();
         }
+
+        if (! empty($data['offline_reference'])) {
+            $existing = ScanRecord::query()
+                ->where('user_id', $data['user_id'])
+                ->where('offline_reference', $data['offline_reference'])
+                ->first();
+
+            if ($existing) {
+                return response()->json([
+                    'message' => 'Offline scan record synchronized successfully.',
+                    'data' => new ScanRecordResource($existing->load(['species', 'images', 'predictions.species', 'measurement', 'locationValidation.species'])),
+                ]);
+            }
+        }
+
+        $data['record_code'] = $data['record_code'] ?? $this->generateRecordCode();
 
         $scanRecord = ScanRecord::create($data);
 

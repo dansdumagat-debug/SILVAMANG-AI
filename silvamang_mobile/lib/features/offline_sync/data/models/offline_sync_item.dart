@@ -15,6 +15,7 @@ class OfflineSyncItem {
   });
 
   static const typeScanRecordMockSave = 'scan_record_mock_save';
+  static const typeTransectRecord = 'transect_record';
   static const statusPending = 'pending';
   static const statusSyncing = 'syncing';
   static const statusSynced = 'synced';

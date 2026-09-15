@@ -50,12 +50,12 @@ class SpeciesSeeder extends Seeder
                 'native_status' => 'Native',
             ],
             [
-                'scientific_name' => 'Avicennia marina var. rumphiana',
-                'common_name' => 'Api-api / gray mangrove variety',
+                'scientific_name' => 'Avicennia rumphiana',
+                'common_name' => 'Api-api / Rumph mangrove',
                 'family' => 'Acanthaceae',
-                'identification_notes' => 'CNN class label: Avicennia_marina_var_rumphiana',
+                'identification_notes' => 'Accepted Philippine display name: Avicennia rumphiana. Legacy CNN class label: Avicennia_marina_var_rumphiana.',
                 'habitat' => 'Coastal and intertidal mangrove zones',
-                'conservation_status' => 'Least Concern',
+                'conservation_status' => 'Vulnerable',
                 'native_status' => 'Native',
             ],
             [
@@ -100,7 +100,7 @@ class SpeciesSeeder extends Seeder
                 'family' => 'Meliaceae',
                 'identification_notes' => 'CNN class label: Xylocarpus_granatum',
                 'habitat' => 'Mangrove forests and tidal areas',
-                'conservation_status' => 'Vulnerable',
+                'conservation_status' => 'Least Concern',
                 'native_status' => 'Native',
             ],
         ];
@@ -139,7 +139,7 @@ class SpeciesSeeder extends Seeder
         foreach ($speciesList as $speciesData) {
             $species = Species::updateOrCreate(
                 ['scientific_name' => $speciesData['scientific_name']],
-                $speciesData + ['status' => 'active']
+                $speciesData + ['status' => 'active', 'cnn_supported' => true]
             );
 
             foreach ($distributions as $distribution) {

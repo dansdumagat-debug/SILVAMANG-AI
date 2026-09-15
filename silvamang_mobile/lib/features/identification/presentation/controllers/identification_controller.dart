@@ -222,7 +222,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
 
       final isOnline = await connectivityService.isOnline();
       if (!isOnline) {
-        await _queueOfflineSave(
+        final offlineReference = await _queueOfflineSave(
           result: resultWithLocation,
           capturedImages: capturedImages,
           locationAccuracy: locationAccuracy,
@@ -244,6 +244,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           manualBarangay: manualBarangay,
           fieldDistanceMeasurement: fieldDistanceMeasurement,
           syncStatus: MapScanRecord.pending,
+          localId: offlineReference,
         );
         return;
       }
@@ -340,7 +341,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
             address: address,
             barangay: barangay,
           );
-      await _queueOfflineSave(
+      final offlineReference = await _queueOfflineSave(
         result: failedResultWithLocation,
         capturedImages: capturedImages,
         locationAccuracy: locationAccuracy,
@@ -362,6 +363,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         manualBarangay: manualBarangay,
         fieldDistanceMeasurement: fieldDistanceMeasurement,
         syncStatus: MapScanRecord.pending,
+        localId: offlineReference,
       );
     }
   }
@@ -419,6 +421,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
 
   bool _isUsableManualMeasurement(CameraMeasurementResult? result) {
     return result != null &&
+        result.qualityAccepted &&
         result.estimatedValueM.isFinite &&
         result.estimatedValueM > 0;
   }
@@ -486,15 +489,17 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     FieldDistanceMeasurement? fieldDistanceMeasurement,
     required String syncStatus,
     String? serverId,
+    String? localId,
   }) async {
     try {
       final now = DateTime.now();
       final createdAt = locationCapturedAt ?? now;
       await localMapScanRepository.saveLocalRecord(
         MapScanRecord(
-          localId: serverId == null
-              ? 'local_${now.microsecondsSinceEpoch}'
-              : 'server_$serverId',
+          localId: localId ??
+              (serverId == null
+                  ? 'local_${now.microsecondsSinceEpoch}'
+                  : 'server_$serverId'),
           serverId: serverId,
           userId: currentUserId,
           userEmail: currentUserEmail,
@@ -578,7 +583,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     return modelVersion.isEmpty ? 'transfer-learning-0.1.0' : modelVersion;
   }
 
-  Future<void> _queueOfflineSave({
+  Future<String> _queueOfflineSave({
     required MockIdentificationResult result,
     List<CapturedPlantPartImage> capturedImages = const [],
     double? locationAccuracy,
@@ -590,6 +595,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     required String successMessage,
   }) async {
     final now = DateTime.now();
+    final offlineReference = 'scan_${now.microsecondsSinceEpoch}';
     final scanCapturedAt = locationCapturedAt ?? now;
     final offlineLocationNote = [
       'Offline queued scan.',
@@ -709,6 +715,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           'canopy_width_m': _finiteOrNull(result.canopyWidthM),
         },
         'notes': offlineLocationNote,
+        'offline_reference': offlineReference,
         'captured_at': scanCapturedAt.toIso8601String(),
       },
       'predictions': result.predictions
@@ -740,7 +747,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
 
     await offlineSyncRepository.addItem(
       OfflineSyncItem(
-        id: 'scan_${now.microsecondsSinceEpoch}',
+        id: offlineReference,
         type: OfflineSyncItem.typeScanRecordMockSave,
         payloadJson: jsonEncode(payload),
         status: OfflineSyncItem.statusPending,
@@ -757,6 +764,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       warningMessage:
           'Image upload requires internet connection and will be finalized during sync.',
     );
+    return offlineReference;
   }
 
   Future<void> saveMockResult({

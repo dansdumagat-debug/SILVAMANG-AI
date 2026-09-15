@@ -20,13 +20,13 @@
     "conservation_note": "Mangroves support biodiversity, coastal protection, and climate resilience."
   },
   {
-    "scientific_name": "Avicennia_marina_var_rumphiana",
-    "display_name": "Avicennia marina var. rumphiana",
-    "common_name": "Api-api / Grey Mangrove Variety",
+    "scientific_name": "Avicennia_rumphiana",
+    "display_name": "Avicennia rumphiana",
+    "common_name": "Api-api / Rumph Mangrove",
     "family": "Acanthaceae",
     "distribution": ["Philippines", "Southeast Asia", "Malesian region"],
     "habitat": ["Coastal intertidal zones", "Sheltered muddy shores", "Brackish mangrove margins"],
-    "description": "Avicennia marina var. rumphiana is a variety associated with intertidal mangrove habitats. It shares the salt tolerance and breathing-root adaptations of Avicennia mangroves.",
+    "description": "Avicennia rumphiana is a Philippine mangrove of muddy seashores and tidal streams. It shares the salt tolerance and breathing-root adaptations of other Avicennia mangroves.",
     "physical_characteristics": ["Grey mangrove growth form", "Salt-tolerant foliage", "Breathing roots in suitable muddy sediment"],
     "leaf_characteristics": "Leaves are thick and adapted to salty coastal environments.",
     "root_characteristics": "Breathing roots help oxygen exchange where sediment is waterlogged.",

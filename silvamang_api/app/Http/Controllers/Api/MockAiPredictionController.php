@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MockPredictionRequest;
 use App\Models\Species;
 use App\Services\PythonAiService;
+use App\Support\SpeciesTaxonomy;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 
@@ -220,14 +221,12 @@ class MockAiPredictionController extends Controller
 
     private function displaySpeciesName(mixed $value): string
     {
-        $name = trim(str_replace('_', ' ', (string) $value));
-
-        return preg_replace('/\s+/', ' ', $name) ?? '';
+        return SpeciesTaxonomy::canonicalName($value);
     }
 
     private function speciesLookupKey(mixed $value): string
     {
-        return strtolower($this->displaySpeciesName($value));
+        return SpeciesTaxonomy::lookupKey($value);
     }
 
     /**
@@ -251,7 +250,7 @@ class MockAiPredictionController extends Controller
                 return;
             }
 
-            $key = $file->getRealPath() . '|' . $file->getClientOriginalName();
+            $key = $file->getRealPath().'|'.$file->getClientOriginalName();
             if (isset($seen[$key])) {
                 return;
             }

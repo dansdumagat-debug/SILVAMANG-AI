@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/utils/species_taxonomy.dart';
+
 final offlineMangroveKnowledgeServiceProvider =
     Provider<OfflineMangroveKnowledgeService>((ref) {
       return const OfflineMangroveKnowledgeService();
@@ -11,8 +13,10 @@ final offlineMangroveKnowledgeServiceProvider =
 class OfflineMangroveKnowledgeService {
   const OfflineMangroveKnowledgeService();
 
-  static const String _assetPath =
+  static const String _knowledgeAssetPath =
       'assets/data/offline_mangrove_knowledge.json';
+  static const String _panelSpeciesAssetPath =
+      'assets/data/panel_mangrove_education.json';
 
   static List<OfflineMangroveKnowledgeEntry>? _cachedEntries;
 
@@ -62,17 +66,33 @@ class OfflineMangroveKnowledgeService {
       return cached;
     }
 
-    final rawJson = await rootBundle.loadString(_assetPath);
-    final decoded = jsonDecode(rawJson);
-    if (decoded is! List) {
-      _cachedEntries = const [];
-      return _cachedEntries!;
+    final entries = <OfflineMangroveKnowledgeEntry>[];
+
+    final rawKnowledge = await rootBundle.loadString(_knowledgeAssetPath);
+    final decodedKnowledge = jsonDecode(rawKnowledge);
+    if (decodedKnowledge is List) {
+      entries.addAll(
+        decodedKnowledge.whereType<Map<String, dynamic>>().map(
+          OfflineMangroveKnowledgeEntry.fromJson,
+        ),
+      );
     }
 
-    _cachedEntries = decoded
-        .whereType<Map<String, dynamic>>()
-        .map(OfflineMangroveKnowledgeEntry.fromJson)
-        .toList(growable: false);
+    try {
+      final rawSpecies = await rootBundle.loadString(_panelSpeciesAssetPath);
+      final decodedSpecies = jsonDecode(rawSpecies);
+      if (decodedSpecies is List) {
+        entries.addAll(
+          decodedSpecies.whereType<Map<String, dynamic>>().map(
+            OfflineMangroveKnowledgeEntry.fromSpeciesEducationJson,
+          ),
+        );
+      }
+    } catch (_) {
+      // The general offline assistant remains usable if this optional guide is absent.
+    }
+
+    _cachedEntries = entries.toList(growable: false);
 
     return _cachedEntries!;
   }
@@ -117,9 +137,7 @@ class OfflineMangroveKnowledgeService {
   }
 
   String _composeResponse(OfflineMangroveKnowledgeEntry entry) {
-    final lines = <String>[
-      entry.answer,
-    ];
+    final lines = <String>[entry.answer];
 
     if (entry.relatedSpecies.isNotEmpty) {
       lines.add('Related species: ${entry.relatedSpecies.join(', ')}.');
@@ -133,12 +151,7 @@ class OfflineMangroveKnowledgeService {
   }
 
   String _normalize(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll('_', ' ')
-        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return normalizedSpeciesText(value);
   }
 
   Set<String> _tokens(String value) {
@@ -198,10 +211,51 @@ class OfflineMangroveKnowledgeEntry {
       keywords: _stringList(json['keywords']),
       relatedSpecies: _stringList(
         json['related_species'] ?? json['relatedSpecies'],
-      ),
+      ).map(canonicalSpeciesName).toList(growable: false),
       suggestedQuestions: _stringList(
         json['suggested_questions'] ?? json['suggestedQuestions'],
       ),
+    );
+  }
+
+  factory OfflineMangroveKnowledgeEntry.fromSpeciesEducationJson(
+    Map<String, dynamic> json,
+  ) {
+    final scientificName = canonicalSpeciesName(
+      json['display_name'] ?? json['scientific_name'],
+    );
+    final commonName = _string(json['common_name']);
+    final family = _string(json['family']);
+    final description = _string(json['description']);
+    final leaf = _string(json['leaf_characteristics']);
+    final root = _string(json['root_characteristics']);
+    final physical = _stringList(json['physical_characteristics']);
+
+    final answerParts = <String>[
+      description,
+      if (leaf.isNotEmpty) 'Leaf: $leaf',
+      if (root.isNotEmpty) 'Root: $root',
+      if (physical.isNotEmpty)
+        'Other identification characteristics: ${physical.join('; ')}.',
+    ].where((part) => part.isNotEmpty).toList(growable: false);
+
+    return OfflineMangroveKnowledgeEntry(
+      category: 'species_information',
+      question: 'How can I identify $scientificName?',
+      answer: answerParts.join(' '),
+      keywords: [
+        scientificName,
+        commonName,
+        family,
+        'identification',
+        'mangrove',
+      ].where((item) => item.isNotEmpty).toList(growable: false),
+      relatedSpecies: [scientificName],
+      suggestedQuestions: [
+        'Where does $scientificName grow?',
+        'What are the leaves and roots of $scientificName?',
+        'What is the conservation status of $scientificName?',
+      ],
     );
   }
 

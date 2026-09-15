@@ -61,6 +61,10 @@ final cameraMeasurementResultProvider = StateProvider<CameraMeasurementResult?>(
 );
 
 void useCameraMeasurementResult(WidgetRef ref, CameraMeasurementResult result) {
+  if (!result.qualityAccepted) {
+    return;
+  }
+
   final selection = ref.read(cameraMeasurementSelectionProvider).select(result);
   ref.read(cameraMeasurementSelectionProvider.notifier).state = selection;
   ref.read(cameraMeasurementResultProvider.notifier).state =

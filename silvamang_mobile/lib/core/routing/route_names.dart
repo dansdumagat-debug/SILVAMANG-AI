@@ -24,4 +24,7 @@ class RouteNames {
   static const helpAbout = 'helpAbout';
   static const offlineQueue = 'offlineQueue';
   static const offlineMapManager = 'offlineMapManager';
+  static const transects = 'transects';
+  static const transectCreate = 'transectCreate';
+  static const transectDetail = 'transectDetail';
 }

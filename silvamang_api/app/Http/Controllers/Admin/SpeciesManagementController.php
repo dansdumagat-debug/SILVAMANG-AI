@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Species;
+use App\Support\SpeciesTaxonomy;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,8 +14,11 @@ class SpeciesManagementController extends Controller
     {
         $query = Species::query()
             ->when(request('search'), function ($query, $search) {
-                $query->where(function ($query) use ($search) {
+                $canonicalSearch = SpeciesTaxonomy::canonicalName($search);
+
+                $query->where(function ($query) use ($search, $canonicalSearch) {
                     $query->where('scientific_name', 'like', "%{$search}%")
+                        ->orWhere('scientific_name', 'like', "%{$canonicalSearch}%")
                         ->orWhere('common_name', 'like', "%{$search}%")
                         ->orWhere('family', 'like', "%{$search}%");
                 });
@@ -88,6 +92,12 @@ class SpeciesManagementController extends Controller
 
     private function validatedData(Request $request, ?Species $species = null): array
     {
+        if ($request->filled('scientific_name')) {
+            $request->merge([
+                'scientific_name' => SpeciesTaxonomy::canonicalName($request->input('scientific_name')),
+            ]);
+        }
+
         return $request->validate([
             'scientific_name' => [
                 'required',

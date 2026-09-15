@@ -1,4 +1,5 @@
 import '../../../../shared/models/prediction_model.dart';
+import '../../../../shared/utils/species_taxonomy.dart';
 import 'mock_ai_prediction_response.dart';
 
 class MockIdentificationResult {
@@ -198,5 +199,5 @@ class MockIdentificationResult {
 }
 
 String _displaySpeciesName(String value) {
-  return value.replaceAll('_', ' ').trim();
+  return canonicalSpeciesName(value);
 }

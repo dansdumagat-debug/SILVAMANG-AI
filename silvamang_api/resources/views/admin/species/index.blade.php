@@ -37,7 +37,7 @@
         @else
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Scientific Name</th><th>Common Name</th><th>Family</th><th>Conservation Status</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Scientific Name</th><th>Common Name</th><th>Family</th><th>Conservation Status</th><th>Identification</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                     @foreach ($species as $item)
                         <tr>
@@ -45,6 +45,7 @@
                             <td>{{ $item->common_name ?? 'N/A' }}</td>
                             <td>{{ $item->family ?? 'N/A' }}</td>
                             <td>{{ $item->conservation_status ?? 'N/A' }}</td>
+                            <td>{{ $item->cnn_supported ? 'CNN trained' : 'Guide only' }}</td>
                             <td>@include('admin.partials.status-badge', ['status' => $item->status])</td>
                             <td>
                                 <div class="action-row">

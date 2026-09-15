@@ -10,6 +10,7 @@ use App\Models\Measurement;
 use App\Models\Prediction;
 use App\Models\ScanImage;
 use App\Models\ScanRecord;
+use App\Models\Transect;
 use App\Support\ApiId;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -67,6 +68,7 @@ class RouteServiceProvider extends ServiceProvider
             'scan_image' => ScanImage::class,
             'scanRecord' => ScanRecord::class,
             'scan_record' => ScanRecord::class,
+            'transect' => Transect::class,
         ];
 
         foreach ($bindings as $parameter => $modelClass) {

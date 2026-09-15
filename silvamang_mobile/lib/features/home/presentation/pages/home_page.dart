@@ -28,12 +28,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () {
-        ref.read(offlineSyncControllerProvider.notifier).loadQueue();
-        ref.read(recordsControllerProvider.notifier).loadRecords();
-      },
-    );
+    Future.microtask(() {
+      ref.read(offlineSyncControllerProvider.notifier).loadQueue();
+      ref.read(recordsControllerProvider.notifier).loadRecords();
+    });
   }
 
   @override
@@ -309,6 +307,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 icon: Icons.cloud_queue_rounded,
                 background: const Color(0xFFFFF4EA),
                 onTap: () => context.pushNamed(RouteNames.offlineQueue),
+              ),
+              _QuickActionCard(
+                title: 'Digital Transects',
+                subtitle: 'Record GPS field paths',
+                icon: Icons.route_rounded,
+                background: const Color(0xFFF2F0FF),
+                onTap: () => context.pushNamed(RouteNames.transects),
               ),
             ],
           ),

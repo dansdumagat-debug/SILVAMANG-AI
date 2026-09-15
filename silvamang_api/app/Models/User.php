@@ -48,6 +48,11 @@ class User extends Authenticatable
         return $this->hasMany(ScanRecord::class);
     }
 
+    public function transects()
+    {
+        return $this->hasMany(Transect::class);
+    }
+
     public function assistantLogs()
     {
         return $this->hasMany(AssistantLog::class);

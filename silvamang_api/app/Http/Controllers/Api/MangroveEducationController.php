@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\MangroveEducationResource;
 use App\Models\MangroveEducation;
 use App\Models\Species;
+use App\Support\SpeciesTaxonomy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 
 class MangroveEducationController extends Controller
 {
@@ -52,11 +52,7 @@ class MangroveEducationController extends Controller
 
     private function normalizeSpeciesName(string $name): string
     {
-        return Str::of($name)
-            ->replace('_', ' ')
-            ->squish()
-            ->lower()
-            ->toString();
+        return SpeciesTaxonomy::lookupKey($name);
     }
 
     /**
@@ -71,6 +67,7 @@ class MangroveEducationController extends Controller
             'display_name' => $species->scientific_name,
             'common_name' => $species->common_name,
             'family' => $species->family,
+            'cnn_supported' => (bool) $species->cnn_supported,
             'overview' => $species->description,
             'description' => $species->description,
             'physical_characteristics' => array_values(array_filter([

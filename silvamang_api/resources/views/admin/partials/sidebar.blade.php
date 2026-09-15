@@ -5,6 +5,7 @@
     $links = [
         ['label' => 'Dashboard', 'route' => 'admin.dashboard', 'match' => 'admin.dashboard'],
         ['label' => 'My Map', 'route' => 'admin.my-map', 'match' => 'admin.my-map', 'mobile_only' => true],
+        ['label' => 'Digital Transects', 'route' => 'admin.transects.index', 'match' => 'admin.transects.*'],
         ['label' => 'Species Management', 'route' => 'admin.species.index', 'match' => 'admin.species.*', 'roles' => $adminConsoleRoles],
         ['label' => 'Mangrove Scan Monitoring', 'route' => 'admin.scan-monitoring.index', 'match' => 'admin.scan-*', 'roles' => $adminConsoleRoles],
         ['label' => 'Dataset Verification', 'route' => 'admin.dataset-verification.index', 'match' => 'admin.dataset-verification.*', 'roles' => $adminConsoleRoles],

@@ -24,6 +24,9 @@ import '../../features/settings/presentation/pages/help_about_page.dart';
 import '../../features/species_database/presentation/pages/species_detail_page.dart';
 import '../../features/species_database/presentation/pages/species_list_page.dart';
 import '../../features/splash/presentation/pages/splash_page.dart';
+import '../../features/transects/presentation/pages/create_transect_page.dart';
+import '../../features/transects/presentation/pages/transect_detail_page.dart';
+import '../../features/transects/presentation/pages/transect_history_page.dart';
 import '../widgets/bottom_nav_shell.dart';
 import 'route_names.dart';
 
@@ -163,6 +166,23 @@ class AppRouter {
             path: '/offline-map-manager',
             name: RouteNames.offlineMapManager,
             builder: (context, state) => const OfflineMapManagerPage(),
+          ),
+          GoRoute(
+            path: '/transects',
+            name: RouteNames.transects,
+            builder: (context, state) => const TransectHistoryPage(),
+          ),
+          GoRoute(
+            path: '/transects/create',
+            name: RouteNames.transectCreate,
+            builder: (context, state) => const CreateTransectPage(),
+          ),
+          GoRoute(
+            path: '/transects/:id',
+            name: RouteNames.transectDetail,
+            builder: (context, state) => TransectDetailPage(
+              transectId: state.pathParameters['id'] ?? '',
+            ),
           ),
         ],
       ),

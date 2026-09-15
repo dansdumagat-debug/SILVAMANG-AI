@@ -22,6 +22,7 @@
             <div><span>Native Status</span><strong>{{ $species->native_status ?? 'N/A' }}</strong></div>
             <div><span>Max Height</span><strong>{{ $species->max_height_m ? $species->max_height_m . ' m' : 'N/A' }}</strong></div>
             <div><span>Status</span><strong>@include('admin.partials.status-badge', ['status' => $species->status])</strong></div>
+            <div><span>Identification Support</span><strong>{{ $species->cnn_supported ? 'CNN trained' : 'Field guide only' }}</strong></div>
         </div>
         <div class="metadata-section"><span>Description</span><p>{{ $species->description ?? 'N/A' }}</p></div>
         <div class="metadata-section"><span>Distribution Notes</span><p>{{ $species->distribution_notes ?? 'N/A' }}</p></div>

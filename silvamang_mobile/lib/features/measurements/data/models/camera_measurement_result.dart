@@ -49,6 +49,10 @@ class CameraMeasurementResult {
     required this.reliability,
     required this.warningMessage,
     required this.createdAt,
+    this.angularSpanDegrees,
+    this.viewingAngleDegrees,
+    this.recommendedDistanceM,
+    this.qualityAccepted = true,
     this.basePoint,
     this.topPoint,
     this.leftEdgePoint,
@@ -70,6 +74,10 @@ class CameraMeasurementResult {
   final String reliability;
   final String warningMessage;
   final DateTime createdAt;
+  final double? angularSpanDegrees;
+  final double? viewingAngleDegrees;
+  final double? recommendedDistanceM;
+  final bool qualityAccepted;
 
   Map<String, dynamic> toJson() {
     return {
@@ -87,6 +95,10 @@ class CameraMeasurementResult {
       'ar_used': arUsed,
       'reliability': reliability,
       'warning_message': warningMessage,
+      'angular_span_degrees': angularSpanDegrees,
+      'viewing_angle_degrees': viewingAngleDegrees,
+      'recommended_distance_m': recommendedDistanceM,
+      'quality_accepted': qualityAccepted,
       'created_at': createdAt.toIso8601String(),
     };
   }

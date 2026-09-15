@@ -93,6 +93,7 @@ flutter:
     - assets/models/efficientnet_b0_silvamang.onnx.data
     - assets/geo/barangay_boundaries.geojson
     - assets/data/mangrove_education.json
+    - assets/data/panel_mangrove_education.json
     - assets/data/offline_mangrove_knowledge.json
 
   # To add assets to your application, add an assets section, like this:

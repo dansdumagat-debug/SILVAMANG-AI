@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSpeciesRequest;
 use App\Http\Requests\UpdateSpeciesRequest;
 use App\Http\Resources\SpeciesResource;
 use App\Models\Species;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Support\SpeciesTaxonomy;
 
 class SpeciesController extends Controller
 {
@@ -19,8 +19,11 @@ class SpeciesController extends Controller
         $species = Species::query()
             ->with(['images', 'distributions'])
             ->when(request('search'), function ($query, $search) {
-                $query->where(function ($query) use ($search) {
+                $canonicalSearch = SpeciesTaxonomy::canonicalName($search);
+
+                $query->where(function ($query) use ($search, $canonicalSearch) {
                     $query->where('scientific_name', 'like', "%{$search}%")
+                        ->orWhere('scientific_name', 'like', "%{$canonicalSearch}%")
                         ->orWhere('common_name', 'like', "%{$search}%");
                 });
             })

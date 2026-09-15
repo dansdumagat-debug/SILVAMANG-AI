@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\SpeciesTaxonomy;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSpeciesRequest extends FormRequest
@@ -12,6 +13,15 @@ class StoreSpeciesRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('scientific_name')) {
+            $this->merge([
+                'scientific_name' => SpeciesTaxonomy::canonicalName($this->input('scientific_name')),
+            ]);
+        }
     }
 
     /**
