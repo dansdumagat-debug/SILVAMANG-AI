@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Transect;
 use App\Models\User;
+use App\Services\VegetationWorkbookExportService;
 use App\Support\ApiAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransectController extends Controller
@@ -122,9 +124,36 @@ class TransectController extends Controller
             }
 
             fclose($output);
-        }, 'silvamang-transects-' . now()->format('Y-m-d') . '.csv', [
+        }, 'silvamang-transects-'.now()->format('Y-m-d').'.csv', [
             'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
+    }
+
+    public function exportExcel(Request $request, VegetationWorkbookExportService $exporter): BinaryFileResponse
+    {
+        $validated = $request->validate([
+            'plot_area_m2' => ['nullable', 'numeric', 'gt:0', 'max:1000000'],
+        ]);
+        $transects = $this->filteredQuery($request)
+            ->with([
+                'user:id,name,email',
+                'observations.user:id,name,email',
+                'observations.species',
+                'observations.measurement',
+            ])
+            ->orderByRaw('COALESCE(recorded_at, created_at) desc')
+            ->get();
+
+        $path = $exporter->create(
+            $transects,
+            isset($validated['plot_area_m2']) ? (float) $validated['plot_area_m2'] : null
+        );
+
+        return response()->download(
+            $path,
+            'silvamang-vegetation-'.now()->format('Y-m-d').'.xlsx',
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+        )->deleteFileAfterSend(true);
     }
 
     private function filteredQuery(Request $request): Builder
@@ -135,6 +164,7 @@ class TransectController extends Controller
         }
 
         return $query
+            ->when($request->filled('transect_id'), fn (Builder $builder) => $builder->whereKey($request->query('transect_id')))
             ->when($request->filled('search'), function (Builder $builder) use ($request) {
                 $search = trim((string) $request->query('search'));
                 $builder->where(function (Builder $nested) use ($search) {
@@ -163,10 +193,15 @@ class TransectController extends Controller
 
     private function mapPayload(Transect $transect): array
     {
+        preg_match('/\b(?:transect|t)\s*[-#]?\s*(\d+)\b/i', $transect->transect_name ?? '', $namedNumber);
+        preg_match('/-(\d+)$/', $transect->transect_code ?? '', $codeNumber);
+        $transectNumber = $namedNumber[1] ?? $codeNumber[1] ?? '1';
+
         return [
             'id' => $transect->id,
             'code' => $transect->transect_code,
             'name' => $transect->transect_name,
+            'map_label' => 'T' . (int) $transectNumber,
             'location' => $transect->location_name,
             'researcher' => $transect->user?->name,
             'mode' => $transect->mode,
@@ -180,6 +215,17 @@ class TransectController extends Controller
                 'longitude' => (float) $point->longitude,
                 'accuracy_m' => $point->accuracy_m !== null ? (float) $point->accuracy_m : null,
             ])->values(),
+            'segments' => collect($transect->contributions ?? [])
+                ->map(function ($contribution) {
+                    $points = $contribution['points'] ?? [];
+                    if (count($points) < 2) {
+                        return null;
+                    }
+                    return [
+                        ['latitude' => (float) $points[0]['latitude'], 'longitude' => (float) $points[0]['longitude']],
+                        ['latitude' => (float) $points[array_key_last($points)]['latitude'], 'longitude' => (float) $points[array_key_last($points)]['longitude']],
+                    ];
+                })->filter()->values(),
             'observations' => $transect->observations->map(function ($record) {
                 $latitude = $record->latitude ?? $record->locationValidation?->latitude;
                 $longitude = $record->longitude ?? $record->locationValidation?->longitude;

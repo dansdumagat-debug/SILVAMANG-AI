@@ -44,7 +44,12 @@ if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
 fi
 
 php artisan migrate --force
-php artisan db:seed --force
+
+# Seed only when explicitly bootstrapping an empty database. Re-seeding on
+# every deploy can overwrite field data and reset demo account passwords.
+if [ "${SEED_ON_START:-false}" = "true" ]; then
+    php artisan db:seed --force
+fi
 
 php artisan config:clear
 php artisan storage:link || true

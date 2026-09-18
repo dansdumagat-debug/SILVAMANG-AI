@@ -22,12 +22,13 @@
         </div>
         <div class="action-row">
             @include('admin.partials.status-badge', ['status' => $transect->status])
+            <a href="{{ route('admin.transects.export-excel', ['transect_id' => $transect->id]) }}" class="primary-action">Export Excel</a>
             <a href="{{ route('admin.transects.index') }}" class="secondary-action">Back</a>
         </div>
     </div>
 
     <section class="stats-grid transect-stats">
-        @include('admin.partials.stat-card', ['label' => 'Distance', 'value' => number_format((float) $transect->total_distance_m, 1) . ' m', 'hint' => 'Calculated polyline length', 'icon' => 'M'])
+        @include('admin.partials.stat-card', ['label' => 'Start to end distance', 'value' => number_format((float) $transect->total_distance_m, 1) . ' m', 'hint' => 'Sum of each user’s straight-line segment', 'icon' => 'M'])
         @include('admin.partials.stat-card', ['label' => 'Direction', 'value' => $direction, 'hint' => $transect->bearing_degrees !== null ? number_format((float) $transect->bearing_degrees, 1) . ' degrees' : 'Bearing unavailable', 'icon' => 'DIR'])
         @include('admin.partials.stat-card', ['label' => 'GPS Points', 'value' => $transect->points->count(), 'hint' => 'Start, intermediate, and end', 'icon' => 'GPS'])
         @include('admin.partials.stat-card', ['label' => 'Observations', 'value' => $transect->observations->count(), 'hint' => 'Linked scan records', 'icon' => 'OBS'])
@@ -158,14 +159,16 @@
         const transect = @json($mapTransect);
         const coordinates = transect.points.map((point) => [point.latitude, point.longitude]);
         const center = coordinates.length > 0 ? coordinates[0] : [10.3347, 125.0750];
-        const map = L.map('transect-detail-map', { preferCanvas: true }).setView(center, coordinates.length > 0 ? 16 : 9);
+        const map = L.map('transect-detail-map', { preferCanvas: true, maxZoom: 24, zoomSnap: 0.5, zoomDelta: 0.5 }).setView(center, coordinates.length > 0 ? 16 : 9);
 
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 24,
+            maxNativeZoom: 19,
             attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            maxZoom: 24,
+            maxNativeZoom: 19,
             attribution: 'Tiles &copy; Esri, Earthstar Geographics, and the GIS User Community',
         });
         L.control.layers({ Street: streetLayer, Satellite: satelliteLayer }).addTo(map);
@@ -185,12 +188,23 @@
 
         if (coordinates.length >= 2) {
             const lineColor = transect.mode === 'gps_tracking' ? '#2F7D46' : '#2472B8';
-            L.polyline(coordinates, { color: lineColor, weight: 6, opacity: 0.92 }).addTo(map);
-            L.marker(coordinates[0], { icon: endpointIcon('S', '#2F7D46') }).addTo(map).bindPopup('Transect start');
-            L.marker(coordinates[coordinates.length - 1], { icon: endpointIcon('E', '#C53A3A') }).addTo(map).bindPopup('Transect end');
+            const segments = transect.segments.length ? transect.segments : [[transect.points[0], transect.points[transect.points.length - 1]]];
+            segments.forEach((segment, index) => {
+                const start = [segment[0].latitude, segment[0].longitude];
+                const end = [segment[1].latitude, segment[1].longitude];
+                L.polyline([start, end], { color: '#FFFFFF', weight: 12, opacity: 0.98 }).addTo(map);
+                L.polyline([start, end], { color: lineColor, weight: 8, opacity: 1 }).addTo(map);
+                L.marker([(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], {
+                    icon: endpointIcon(escapeHtml(transect.map_label.slice(1)), lineColor),
+                }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} line`);
+                L.marker(start, { icon: endpointIcon('S', '#2F7D46') }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} segment ${index + 1} start`);
+                L.marker(end, { icon: endpointIcon('E', '#C53A3A') }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} segment ${index + 1} end`);
+            });
         }
 
-        const bounds = [...coordinates];
+        const bounds = transect.segments.length
+            ? transect.segments.flatMap((segment) => segment.map((point) => [point.latitude, point.longitude]))
+            : [coordinates[0], coordinates[coordinates.length - 1]].filter(Boolean);
         transect.observations.forEach((observation) => {
             const coordinate = [observation.latitude, observation.longitude];
             bounds.push(coordinate);
@@ -207,7 +221,7 @@
         });
 
         if (bounds.length > 0) {
-            map.fitBounds(bounds, { padding: [48, 48], maxZoom: 18 });
+            map.fitBounds(bounds, { padding: [48, 48], maxZoom: 21 });
         }
     </script>
 @endpush

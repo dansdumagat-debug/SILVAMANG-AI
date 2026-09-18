@@ -40,7 +40,9 @@
                 <div><span>File Size</span><strong>{{ $fileSize }}</strong></div>
                 <div><span>Image Dimensions</span><strong>{{ $dimensions }}</strong></div>
                 <div><span>Uploaded At</span><strong>{{ $scanImage->created_at?->format('M d, Y h:i A') ?? 'N/A' }}</strong></div>
-                <div><span>Linked Species</span><strong>{{ $scanImage->scanRecord?->species?->scientific_name ?? 'N/A' }}</strong></div>
+                <div><span>{{ $scanImage->scanRecord?->suggested_species_source ?? 'App prediction' }}</span><strong>{{ $scanImage->scanRecord?->suggested_species_name ?? 'No prediction' }}</strong></div>
+                <div><span>Prediction confidence</span><strong>{{ $scanImage->scanRecord?->confidence !== null && $scanImage->scanRecord?->capture_mode !== 'manual_species' ? number_format((float) $scanImage->scanRecord->confidence, 1) . '%' : 'N/A' }}</strong></div>
+                <div><span>Verified species</span><strong>{{ $scanImage->verifiedSpecies?->scientific_name ?? 'Not verified' }}</strong></div>
                 <div><span>Dataset Status</span><strong>@include('admin.partials.status-badge', ['status' => $scanImage->dataset_status ?? 'pending'])</strong></div>
                 <div><span>Exported At</span><strong>{{ $scanImage->dataset_exported_at?->format('M d, Y h:i A') ?? 'N/A' }}</strong></div>
             </div>
@@ -56,12 +58,13 @@
 
     <article class="detail-card verification-form-card">
         <h3>Verification Form</h3>
+        <p>Compare the app result with the image, then select the correct species. Your verified species is the label used for future dataset exports; the original app result remains recorded.</p>
         <form method="POST" action="{{ route('admin.dataset-verification.update', $scanImage) }}" class="admin-form-grid">
             @csrf
             @method('PATCH')
 
             <label>
-                <span>Verified Species</span>
+                <span>Verified / Corrected Species</span>
                 <select name="verified_species_id">
                     <option value="">Select species</option>
                     @foreach ($speciesOptions as $species)

@@ -4,7 +4,7 @@
 @endphp
 
 <header class="admin-topbar">
-    <button type="button" class="mobile-nav-toggle" data-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="false">
+    <button type="button" class="mobile-nav-toggle" data-sidebar-toggle aria-controls="admin-sidebar" aria-expanded="true" aria-label="Hide navigation menu">
         <span class="mobile-nav-bars" aria-hidden="true">
             <span></span>
             <span></span>
@@ -20,7 +20,6 @@
 
     <div class="topbar-actions">
         <span class="system-status">AI System Status: Online</span>
-        <span class="notification-dot" aria-label="Notifications">1</span>
         <div class="profile-chip">
             <div class="avatar">{{ strtoupper(substr($user?->name ?? 'A', 0, 1)) }}</div>
             <div>

@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class TransectGeometryServiceTest extends TestCase
 {
-    public function test_it_calculates_an_eighty_five_meter_eastbound_polyline(): void
+    public function test_it_calculates_an_eighty_five_meter_eastbound_start_to_end_distance(): void
     {
         $summary = (new TransectGeometryService())->summarize([
             ['latitude' => 0.0, 'longitude' => 0.0],
@@ -18,7 +18,18 @@ class TransectGeometryServiceTest extends TestCase
         $this->assertEqualsWithDelta(85.0, $summary['distance_m'], 0.25);
         $this->assertEqualsWithDelta(90.0, $summary['bearing_degrees'], 0.01);
         $this->assertSame('LineString', $summary['geometry']['type']);
-        $this->assertCount(3, $summary['geometry']['coordinates']);
-        $this->assertSame([0.0007645, 0.0], $summary['geometry']['coordinates'][2]);
+        $this->assertCount(2, $summary['geometry']['coordinates']);
+        $this->assertSame([0.0007645, 0.0], $summary['geometry']['coordinates'][1]);
+    }
+
+    public function test_returning_toward_the_start_does_not_add_walked_distance(): void
+    {
+        $summary = (new TransectGeometryService())->summarize([
+            ['latitude' => 0.0, 'longitude' => 0.0],
+            ['latitude' => 0.0, 'longitude' => 0.001],
+            ['latitude' => 0.0, 'longitude' => 0.0005],
+        ]);
+
+        $this->assertEqualsWithDelta(55.6, $summary['distance_m'], 0.3);
     }
 }

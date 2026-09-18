@@ -12,11 +12,9 @@ class TransectGeometryService
      */
     public function summarize(array $points): array
     {
-        $distance = 0.0;
-
-        for ($index = 1; $index < count($points); $index++) {
-            $distance += $this->distanceMeters($points[$index - 1], $points[$index]);
-        }
+        $distance = count($points) >= 2
+            ? $this->distanceMeters($points[0], $points[array_key_last($points)])
+            : 0.0;
 
         return [
             'distance_m' => round($distance, 2),
@@ -27,7 +25,7 @@ class TransectGeometryService
                 'type' => 'LineString',
                 'coordinates' => array_map(
                     fn (array $point) => [(float) $point['longitude'], (float) $point['latitude']],
-                    $points
+                    count($points) >= 2 ? [$points[0], $points[array_key_last($points)]] : $points
                 ),
             ],
         ];

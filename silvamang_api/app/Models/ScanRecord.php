@@ -67,6 +67,18 @@ class ScanRecord extends Model
         return $this->hasMany(Prediction::class);
     }
 
+    public function getSuggestedSpeciesNameAttribute(): ?string
+    {
+        return $this->top_scientific_name
+            ?: $this->predictions->sortBy('rank')->first()?->scientific_name
+            ?: $this->species?->scientific_name;
+    }
+
+    public function getSuggestedSpeciesSourceAttribute(): string
+    {
+        return $this->capture_mode === 'manual_species' ? 'User entered species' : 'App prediction';
+    }
+
     public function measurement()
     {
         return $this->hasOne(Measurement::class);

@@ -86,6 +86,7 @@
                             <div class="metadata-row"><span>Uploaded plant part</span><strong>{{ $uploadedPlantPart }}</strong></div>
                             <div class="metadata-row"><span>Verified plant part</span><strong>{{ $verifiedPlantPart }}</strong></div>
                             <div class="metadata-row"><span>Record</span><strong>{{ $scanImage->scanRecord?->record_code ?? 'N/A' }}</strong></div>
+                            <div class="metadata-row"><span>{{ $scanImage->scanRecord?->suggested_species_source ?? 'App prediction' }}</span><strong>{{ $scanImage->scanRecord?->suggested_species_name ?? 'No prediction' }}</strong></div>
                             <div class="metadata-row"><span>Verified species</span><strong>{{ $scanImage->verifiedSpecies?->scientific_name ?? 'Not verified' }}</strong></div>
                             <div class="metadata-row"><span>Image quality</span><strong class="quality-badge quality-{{ $scanImage->image_quality ?? 'none' }}">{{ $scanImage->image_quality ?? 'N/A' }}</strong></div>
                             <a href="{{ route('admin.dataset-verification.show', $scanImage) }}" class="icon-button">View/Review</a>

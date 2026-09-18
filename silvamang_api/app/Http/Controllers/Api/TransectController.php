@@ -131,6 +131,17 @@ class TransectController extends Controller
     private function persist(Transect $transect, array $data, User $user, bool $isStore): void
     {
         $points = $data['points'] ?? null;
+        $handoffTarget = $data['target_distance_m'] ?? null;
+        if ($handoffTarget !== null) {
+            $contributions = $data['contributions'] ?? [];
+            abort_if(empty($contributions), 422, 'A handed-off transect needs contributions.');
+            $ids = array_column($contributions, 'id');
+            abort_if(count($ids) !== count(array_unique($ids)), 422, 'Duplicate contribution IDs.');
+            $completed = round(array_sum(array_map(fn ($item) => (float) ($item['distance_m'] ?? 0), $contributions)), 2);
+            abort_if(abs($completed - (float) ($data['total_distance_m'] ?? -1)) > 0.1, 422, 'Transect distance does not match contributions.');
+            abort_if(($data['status'] ?? null) !== 'completed' || $completed < (float) $handoffTarget,
+                422, 'Only completed handed-off transects can be synchronized.');
+        }
         $observationReferencesProvided = array_key_exists('observation_references', $data);
         $observationReferences = $data['observation_references'] ?? [];
         unset($data['points'], $data['observation_references']);
@@ -158,6 +169,9 @@ class TransectController extends Controller
             $transect->end_latitude = $last['latitude'];
             $transect->end_longitude = $last['longitude'];
             $transect->total_distance_m = $summary['distance_m'];
+            if ($handoffTarget !== null) {
+                $transect->total_distance_m = $completed;
+            }
             $transect->bearing_degrees = $summary['bearing_degrees'];
             $transect->geometry = $summary['geometry'];
             $transect->gps_accuracy_m = $accuracies->isNotEmpty()

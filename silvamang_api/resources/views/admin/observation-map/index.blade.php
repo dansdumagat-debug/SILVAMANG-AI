@@ -148,6 +148,9 @@
         const map = L.map('observation-map', {
             zoomControl: true,
             preferCanvas: true,
+            maxZoom: 24,
+            zoomSnap: 0.5,
+            zoomDelta: 0.5,
         }).setView(defaultCenter, 9);
 
         map.createPane('labels');
@@ -155,12 +158,14 @@
         map.getPane('labels').style.pointerEvents = 'none';
 
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            maxZoom: 24,
+            maxNativeZoom: 19,
             attribution: 'Tiles &copy; Esri, Earthstar Geographics, and the GIS User Community',
         }).addTo(map);
 
         L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            maxZoom: 24,
+            maxNativeZoom: 19,
             pane: 'labels',
             attribution: 'Labels &copy; Esri',
         }).addTo(map);
@@ -245,7 +250,7 @@
         const fitVisibleMarkers = () => {
             const bounds = visibleMarkers().map((record) => [record.latitude, record.longitude]);
             if (bounds.length > 0) {
-                map.fitBounds(bounds, { padding: [46, 46], maxZoom: selectedSpecies === allSpeciesLabel ? 16 : 17 });
+                map.fitBounds(bounds, { padding: [46, 46], maxZoom: selectedSpecies === allSpeciesLabel ? 18 : 21 });
             }
         };
 

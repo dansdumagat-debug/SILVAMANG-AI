@@ -87,6 +87,15 @@ Admin routes are protected by authentication and role middleware. Change all dem
 
 ## 9. Deployment Commands
 
+On Render, the Docker startup script runs migrations automatically. It does
+not seed on each restart. Set `SEED_ON_START=true` only for the first boot of
+an empty database, then remove it. Existing demo user passwords are preserved
+if the seeder is run again.
+
+Before redeploying, confirm that `DB_CONNECTION` points to a persistent
+database or that the SQLite database and uploaded files are on a Render
+persistent disk. The Dockerfile's default SQLite path is inside the container.
+
 ```powershell
 composer install --optimize-autoloader --no-dev
 php artisan key:generate

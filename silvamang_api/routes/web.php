@@ -80,6 +80,7 @@ Route::prefix('admin')
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::get('/my-map', [ObservationMapController::class, 'personal'])->name('my-map');
         Route::get('/transects/export', [TransectController::class, 'export'])->name('transects.export');
+        Route::get('/transects/export-excel', [TransectController::class, 'exportExcel'])->name('transects.export-excel');
         Route::get('/transects', [TransectController::class, 'index'])->name('transects.index');
         Route::get('/transects/{transect}', [TransectController::class, 'show'])->name('transects.show');
         Route::middleware('role:super_admin,admin,researcher')->group(function () {

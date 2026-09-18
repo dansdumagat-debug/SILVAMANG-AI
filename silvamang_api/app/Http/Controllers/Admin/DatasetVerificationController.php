@@ -23,12 +23,14 @@ class DatasetVerificationController extends Controller
     public function index(Request $request)
     {
         $query = ScanImage::query()
-            ->with(['scanRecord.species', 'verifiedSpecies', 'verifier'])
+            ->with(['scanRecord.species', 'scanRecord.predictions', 'verifiedSpecies', 'verifier'])
             ->when($request->query('search'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('original_filename', 'like', "%{$search}%")
                         ->orWhere('plant_part', 'like', "%{$search}%")
-                        ->orWhereHas('scanRecord', fn ($query) => $query->where('record_code', 'like', "%{$search}%"))
+                        ->orWhereHas('scanRecord', fn ($query) => $query->where('record_code', 'like', "%{$search}%")
+                            ->orWhere('top_scientific_name', 'like', "%{$search}%"))
+                        ->orWhereHas('scanRecord.predictions', fn ($query) => $query->where('scientific_name', 'like', "%{$search}%"))
                         ->orWhereHas('scanRecord.species', fn ($query) => $query->where('scientific_name', 'like', "%{$search}%"))
                         ->orWhereHas('verifiedSpecies', fn ($query) => $query->where('scientific_name', 'like', "%{$search}%"));
                 });
@@ -53,7 +55,7 @@ class DatasetVerificationController extends Controller
 
     public function show(ScanImage $scanImage)
     {
-        $scanImage->load(['scanRecord.species', 'scanRecord.user', 'verifiedSpecies', 'verifier']);
+        $scanImage->load(['scanRecord.species', 'scanRecord.predictions', 'scanRecord.user', 'verifiedSpecies', 'verifier']);
 
         return view('admin.dataset-verification.show', [
             'scanImage' => $scanImage,

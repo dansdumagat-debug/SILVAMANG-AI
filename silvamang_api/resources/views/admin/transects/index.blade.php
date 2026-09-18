@@ -12,7 +12,20 @@
             <h2>{{ $canViewAll ? 'Digital Transects' : 'My Digital Transects' }}</h2>
             <p>GPS-based survey paths, field observations, and ecological monitoring summaries.</p>
         </div>
-        <a href="{{ route('admin.transects.export', request()->query()) }}" class="primary-action">Export CSV</a>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            <form method="GET" action="{{ route('admin.transects.export-excel') }}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+                @foreach(request()->except('plot_area_m2') as $key => $value)
+                    @if(is_scalar($value))
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endif
+                @endforeach
+                <label for="plot-area-m2">Plot area (m²)</label>
+                <input id="plot-area-m2" type="number" name="plot_area_m2" min="0.01" step="any" value="{{ request('plot_area_m2') }}" placeholder="Optional" style="width:100px" title="Enter the sampled plot area for density and per-hectare formulas">
+                <button type="submit" class="primary-action">Export Excel</button>
+            </form>
+            <a href="{{ route('admin.transects.export', request()->query()) }}" class="secondary-action">Export CSV</a>
+            <small>Excel uses linked scans. Enter plot area for density and per-hectare formulas.</small>
+        </div>
     </div>
 
     <section class="stats-grid transect-stats">
@@ -26,7 +39,7 @@
         <div class="panel-header transect-panel-header">
             <div>
                 <h3>Transect Map</h3>
-                <p>Green lines are GPS-tracked paths. Blue lines are manually placed paths.</p>
+                <p>Lines connect each segment's recorded start and end. Green is GPS; blue is manual.</p>
             </div>
             <div class="transect-map-legend" aria-label="Map legend">
                 <span><i class="legend-line gps"></i>GPS</span>
@@ -136,14 +149,16 @@
     <script>
         const transects = @json($mapTransects);
         const defaultCenter = [10.3347, 125.0750];
-        const map = L.map('transect-map', { preferCanvas: true }).setView(defaultCenter, 9);
+        const map = L.map('transect-map', { preferCanvas: true, maxZoom: 24, zoomSnap: 0.5, zoomDelta: 0.5 }).setView(defaultCenter, 9);
 
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
+            maxZoom: 24,
+            maxNativeZoom: 19,
             attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19,
+            maxZoom: 24,
+            maxNativeZoom: 19,
             attribution: 'Tiles &copy; Esri, Earthstar Geographics, and the GIS User Community',
         });
         L.control.layers({ Street: streetLayer, Satellite: satelliteLayer }).addTo(map);
@@ -167,7 +182,6 @@
             const coordinates = transect.points.map((point) => [point.latitude, point.longitude]);
             if (coordinates.length < 2) return;
 
-            coordinates.forEach((coordinate) => allCoordinates.push(coordinate));
             const color = transect.mode === 'gps_tracking' ? '#2F7D46' : '#2472B8';
             const popup = `
                 <strong>${escapeHtml(transect.code)}: ${escapeHtml(transect.name)}</strong><br>
@@ -177,15 +191,25 @@
                 <a href="${escapeHtml(transect.detail_url)}">Open details</a>
             `;
 
-            L.polyline(coordinates, { color, weight: 5, opacity: 0.92 })
-                .addTo(map)
-                .bindPopup(popup);
-            L.marker(coordinates[0], { icon: endpointIcon('S', '#2F7D46') })
-                .addTo(map)
-                .bindTooltip(`${transect.code} start`);
-            L.marker(coordinates[coordinates.length - 1], { icon: endpointIcon('E', '#C53A3A') })
-                .addTo(map)
-                .bindTooltip(`${transect.code} end`);
+            const segments = transect.segments.length ? transect.segments : [[transect.points[0], transect.points[transect.points.length - 1]]];
+            segments.forEach((segment, index) => {
+                const start = [segment[0].latitude, segment[0].longitude];
+                const end = [segment[1].latitude, segment[1].longitude];
+                allCoordinates.push(start, end);
+                L.polyline([start, end], { color: '#FFFFFF', weight: 11, opacity: 0.98 }).addTo(map);
+                L.polyline([start, end], { color, weight: 7, opacity: 1 })
+                    .addTo(map)
+                    .bindPopup(popup);
+                L.marker([(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], {
+                    icon: endpointIcon(escapeHtml(transect.map_label.slice(1)), color),
+                }).addTo(map).bindTooltip(`${transect.map_label} line`);
+                L.marker(start, { icon: endpointIcon('S', '#2F7D46') })
+                    .addTo(map)
+                    .bindTooltip(`${transect.map_label} segment ${index + 1} start`);
+                L.marker(end, { icon: endpointIcon('E', '#C53A3A') })
+                    .addTo(map)
+                    .bindTooltip(`${transect.map_label} segment ${index + 1} end`);
+            });
 
             transect.observations.forEach((observation) => {
                 const coordinate = [observation.latitude, observation.longitude];
@@ -205,7 +229,7 @@
         });
 
         if (allCoordinates.length > 0) {
-            map.fitBounds(allCoordinates, { padding: [42, 42], maxZoom: 17 });
+            map.fitBounds(allCoordinates, { padding: [42, 42], maxZoom: 20 });
         }
     </script>
 @endpush
