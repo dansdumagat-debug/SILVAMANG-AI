@@ -35,7 +35,9 @@ import '../../data/repositories/species_education_repository.dart';
 import '../controllers/identification_controller.dart';
 
 class IdentificationResultPage extends ConsumerStatefulWidget {
-  const IdentificationResultPage({super.key});
+  const IdentificationResultPage({super.key, this.transectLocalId});
+
+  final String? transectLocalId;
 
   @override
   ConsumerState<IdentificationResultPage> createState() =>
@@ -529,7 +531,9 @@ class _IdentificationResultPageState
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      state.errorMessage != null && selectedImage != null
+                      predictionResponse?.isRejected == true
+                          ? '${predictionResponse!.rejectionMessage} ${predictionResponse.rejectionRecommendation}'
+                          : state.errorMessage != null && selectedImage != null
                           ? 'No valid AI prediction result was produced. Check the failure reason above, then retry.'
                           : 'No valid AI prediction result. Please capture or select an image and try again.',
                       style: AppTextStyles.bodyMedium,
@@ -864,6 +868,7 @@ class _IdentificationResultPageState
                       : () => ref
                             .read(identificationControllerProvider.notifier)
                             .saveCurrentResult(
+                              transectLocalId: widget.transectLocalId,
                               capturedImages: captureState.capturedImages,
                               latitude: locationState.hasLocation
                                   ? locationState.latitude
@@ -912,7 +917,16 @@ class _IdentificationResultPageState
                   text: 'Scan Again',
                   icon: Icons.camera_alt_rounded,
                   type: SilvamangButtonType.outline,
-                  onPressed: () => context.pushNamed(RouteNames.captureGuide),
+                  onPressed: () {
+                    ref.read(captureControllerProvider.notifier).clearImages();
+                    context.pushNamed(
+                      RouteNames.captureGuide,
+                      queryParameters: {
+                        if (widget.transectLocalId != null)
+                          'transectId': widget.transectLocalId!,
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -939,15 +953,17 @@ class _IdentificationResultPageState
               text: 'View Records',
               icon: Icons.history_rounded,
               type: SilvamangButtonType.outline,
-              onPressed: () => context.pushNamed(RouteNames.records),
+              onPressed: () => widget.transectLocalId == null
+                  ? context.pushNamed(RouteNames.records)
+                  : context.goNamed(
+                      RouteNames.transectDetail,
+                      pathParameters: {'id': widget.transectLocalId!},
+                    ),
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
           TextButton.icon(
-            onPressed: () => context.pushNamed(
-              RouteNames.measurement,
-              extra: _preferredMeasurementImage(captureState.capturedImages),
-            ),
+            onPressed: () => context.pushNamed(RouteNames.measurement),
             icon: const Icon(Icons.straighten_rounded),
             label: const Text('Continue to Measurement'),
           ),
@@ -2099,8 +2115,13 @@ class _ScanLocationMapPreview extends StatelessWidget {
                 options: MapOptions(
                   initialCenter: latlong.LatLng(latitude!, longitude!),
                   initialZoom: 16,
+                  minZoom: 4,
+                  maxZoom: 24,
                   interactionOptions: const InteractionOptions(
-                    flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
+                    flags:
+                        InteractiveFlag.pinchZoom |
+                        InteractiveFlag.doubleTapZoom |
+                        InteractiveFlag.drag,
                   ),
                 ),
                 children: [
@@ -2108,11 +2129,15 @@ class _ScanLocationMapPreview extends StatelessWidget {
                     urlTemplate: OfflineMapCacheService.tileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
+                    maxZoom: 24,
+                    maxNativeZoom: 19,
                   ),
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
+                    maxZoom: 24,
+                    maxNativeZoom: 19,
                   ),
                   MarkerLayer(
                     markers: [
@@ -2205,17 +2230,25 @@ String _plantPartLabel(String plantPart) {
   };
 }
 
-String _predictionBadgeLabel(dynamic predictionResponse) {
+String _predictionBadgeLabel(MockAiPredictionResponse? predictionResponse) {
   if (predictionResponse == null) {
     return 'Waiting';
+  }
+  if (predictionResponse.isRejected) {
+    return 'Not identified';
   }
   return _isCnnMode(predictionResponse.mode)
       ? _modeLabel(predictionResponse.mode)
       : 'Mock Fallback';
 }
 
-SilvamangBadgeType _predictionBadgeType(dynamic predictionResponse) {
+SilvamangBadgeType _predictionBadgeType(
+  MockAiPredictionResponse? predictionResponse,
+) {
   if (predictionResponse == null) {
+    return SilvamangBadgeType.warning;
+  }
+  if (predictionResponse.isRejected) {
     return SilvamangBadgeType.warning;
   }
   return _isCnnMode(predictionResponse.mode)
@@ -2223,18 +2256,24 @@ SilvamangBadgeType _predictionBadgeType(dynamic predictionResponse) {
       : SilvamangBadgeType.warning;
 }
 
-String _predictionTitle(dynamic predictionResponse) {
+String _predictionTitle(MockAiPredictionResponse? predictionResponse) {
   if (predictionResponse == null) {
     return 'Waiting for selected image';
+  }
+  if (predictionResponse.isRejected) {
+    return 'Mangrove species not confirmed';
   }
   return _isCnnMode(predictionResponse.mode)
       ? '${_modeLabel(predictionResponse.mode)} prediction ready'
       : 'Mock fallback prediction ready';
 }
 
-String _predictionDescription(dynamic predictionResponse) {
+String _predictionDescription(MockAiPredictionResponse? predictionResponse) {
   if (predictionResponse == null) {
     return 'Select or capture a mangrove image to start AI identification.';
+  }
+  if (predictionResponse.isRejected) {
+    return '${predictionResponse.rejectionMessage} ${predictionResponse.rejectionRecommendation}';
   }
   return _isCnnMode(predictionResponse.mode)
       ? 'Prediction generated using the trained EfficientNet CNN model.'
@@ -2314,20 +2353,6 @@ Color _triviaColor(int index) {
     2 => const Color(0xFF3D7FA6),
     _ => AppColors.primaryGreen,
   };
-}
-
-CapturedPlantPartImage? _preferredMeasurementImage(
-  List<CapturedPlantPartImage> images,
-) {
-  for (final preferredPart in const ['full_tree', 'canopy']) {
-    for (final image in images) {
-      if (image.plantPart == preferredPart) {
-        return image;
-      }
-    }
-  }
-
-  return images.isEmpty ? null : images.first;
 }
 
 bool _hasValidConfidence(double confidence) {

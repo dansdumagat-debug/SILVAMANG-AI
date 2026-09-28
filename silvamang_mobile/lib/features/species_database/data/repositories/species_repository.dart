@@ -7,6 +7,14 @@ final speciesRepositoryProvider = Provider<SpeciesRepository>((ref) {
   return SpeciesRepository(apiClient: ApiClient.instance);
 });
 
+// Fetch the complete registry independently of scan history and guide filters.
+final registeredSpeciesCountProvider = FutureProvider.autoDispose<int>((
+  ref,
+) async {
+  final species = await ref.watch(speciesRepositoryProvider).getSpecies();
+  return species.length;
+});
+
 class SpeciesRepository {
   const SpeciesRepository({required this.apiClient});
 

@@ -11,6 +11,8 @@ from urllib.error import HTTPError, URLError
 
 from collect_commons_part_candidates import (
     COMMONS_API,
+    COMMONS_THUMBNAIL_WIDTH,
+    CommonsCooldownError,
     REQUEST_DELAY_SECONDS,
     SUPPORTED_MIME_TYPES,
     candidate_text,
@@ -62,7 +64,7 @@ def commons_species_pages(species: str, max_results: int) -> Iterable[dict[str, 
             "gsrlimit": limit,
             "prop": "imageinfo",
             "iiprop": "url|extmetadata|mime|size",
-            "iiurlwidth": 960,
+            "iiurlwidth": COMMONS_THUMBNAIL_WIDTH,
         }
         if offset is not None:
             params["gsroffset"] = offset
@@ -133,6 +135,8 @@ def collect_species(species: str, target: int, max_search_results: int) -> None:
 
             try:
                 payload, extension = download_commons_image(image_url)
+            except CommonsCooldownError:
+                raise
             except (HTTPError, URLError, TimeoutError, ValueError, OSError) as error:
                 failures += 1
                 print(f"  skip {image_url}: {error}", file=sys.stderr, flush=True)

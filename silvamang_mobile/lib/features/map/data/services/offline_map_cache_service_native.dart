@@ -8,6 +8,13 @@ final offlineMapCacheServiceProvider = Provider<OfflineMapCacheService>((ref) {
   return OfflineMapCacheService();
 });
 
+final offlineMapNativeZoomProvider = FutureProvider.autoDispose<int>((
+  ref,
+) async {
+  final status = await ref.watch(offlineMapCacheServiceProvider).status();
+  return status.maxDownloadedZoom ?? 13;
+});
+
 class OfflineMapCacheStatus {
   const OfflineMapCacheStatus({
     required this.initialized,
@@ -15,6 +22,7 @@ class OfflineMapCacheStatus {
     required this.tileCount,
     required this.sizeKiB,
     required this.message,
+    this.maxDownloadedZoom,
   });
 
   final bool initialized;
@@ -22,6 +30,7 @@ class OfflineMapCacheStatus {
   final int tileCount;
   final double sizeKiB;
   final String message;
+  final int? maxDownloadedZoom;
 
   bool get hasCachedTiles => storeReady && tileCount > 0;
 }
@@ -128,6 +137,9 @@ class OfflineMapCacheService {
       final recordedTileCount = int.tryParse(
         metadata[_downloadedTileCountKey] ?? '',
       );
+      final maxDownloadedZoom = int.tryParse(
+        metadata[_downloadMaxZoomKey] ?? '',
+      );
       final effectiveTileCount = stats.length > 0
           ? stats.length
           : recordedTileCount ?? 0;
@@ -137,6 +149,7 @@ class OfflineMapCacheService {
         storeReady: true,
         tileCount: effectiveTileCount,
         sizeKiB: stats.size,
+        maxDownloadedZoom: maxDownloadedZoom,
         message: effectiveTileCount > 0
             ? 'Offline map cache ready.'
             : 'No offline map area downloaded yet.',

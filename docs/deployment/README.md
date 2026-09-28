@@ -4,6 +4,8 @@ This folder prepares SILVAMANG AI for local demo, APK build, capstone defense te
 
 ## Guides
 
+- [Production Docker Compose / Dokploy deployment](dokploy_production.md)
+
 - [Local Demo Guide](local_demo_guide.md)
 - [Laravel Backend Deployment Guide](laravel_backend_deployment.md)
 - [Flutter APK Build Guide](flutter_apk_build_guide.md)

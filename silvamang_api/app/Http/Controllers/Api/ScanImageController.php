@@ -51,6 +51,10 @@ class ScanImageController extends Controller
         $dimensions = @getimagesize($image->getRealPath());
         $path = $image->store("scan-images/{$scanRecord->id}", 'public');
 
+        if ($path === false) {
+            throw new \RuntimeException('Unable to store the scan image. Check the configured public storage path.');
+        }
+
         $scanImage = ScanImage::create([
             'scan_record_id' => $scanRecord->id,
             'plant_part' => $data['plant_part'],

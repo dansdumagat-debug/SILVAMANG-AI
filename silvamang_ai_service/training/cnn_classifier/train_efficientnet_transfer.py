@@ -1,7 +1,7 @@
 import argparse
 import csv
-import json
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
@@ -12,16 +12,34 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, models, transforms
 from tqdm import tqdm
 
-
-AI_SERVICE_ROOT = Path(__file__).resolve().parents[2]
-PROJECT_ROOT = AI_SERVICE_ROOT.parent
-DATASET_ROOT = PROJECT_ROOT / "dataset" / "processed" / "cnn_classification"
-MODEL_DIR = AI_SERVICE_ROOT / "models" / "cnn_classifier"
-REPORT_DIR = AI_SERVICE_ROOT / "reports" / "efficientnet_transfer"
-CHECKPOINT_PATH = MODEL_DIR / "efficientnet_b0_best.pth"
-CLASS_ORDER_PATH = MODEL_DIR / "class_order.json"
-HISTORY_CSV_PATH = REPORT_DIR / "training_history.csv"
-VAL_METRICS_PATH = REPORT_DIR / "val_metrics.json"
+try:
+    from .experiment_artifacts import (
+        DEFAULT_DATASET_ROOT,
+        RUNTIME_IMAGE_SIZE,
+        RUNTIME_RESIZE_SIZE,
+        dataset_fingerprint,
+        file_sha256,
+        initialize_training_run,
+        require_same_dataset_fingerprint,
+        timestamped_run_dir,
+        assert_path_outside_dataset,
+        validate_dataset_class_order,
+        write_json,
+    )
+except ImportError:
+    from experiment_artifacts import (
+        DEFAULT_DATASET_ROOT,
+        RUNTIME_IMAGE_SIZE,
+        RUNTIME_RESIZE_SIZE,
+        dataset_fingerprint,
+        file_sha256,
+        initialize_training_run,
+        require_same_dataset_fingerprint,
+        timestamped_run_dir,
+        assert_path_outside_dataset,
+        validate_dataset_class_order,
+        write_json,
+    )
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
@@ -32,8 +50,7 @@ def ensure_dir(path: Path) -> None:
 
 
 def save_json(data: dict | list, path: Path) -> None:
-    ensure_dir(path.parent)
-    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    write_json(data, path)
 
 
 def get_device() -> torch.device:
@@ -47,6 +64,10 @@ def set_seed(seed: int) -> None:
 
 
 def build_transforms(image_size: int) -> tuple[transforms.Compose, transforms.Compose]:
+    if image_size != RUNTIME_IMAGE_SIZE:
+        raise ValueError(
+            f"EfficientNet preprocessing requires image_size={RUNTIME_IMAGE_SIZE}."
+        )
     train_transform = transforms.Compose(
         [
             transforms.RandomResizedCrop(image_size),
@@ -65,7 +86,7 @@ def build_transforms(image_size: int) -> tuple[transforms.Compose, transforms.Co
 
     val_transform = transforms.Compose(
         [
-            transforms.Resize(int(image_size * 1.15)),
+            transforms.Resize(RUNTIME_RESIZE_SIZE),
             transforms.CenterCrop(image_size),
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
@@ -75,16 +96,22 @@ def build_transforms(image_size: int) -> tuple[transforms.Compose, transforms.Co
     return train_transform, val_transform
 
 
-def build_model(model_name: str, num_classes: int) -> nn.Module:
+def build_model(model_name: str, num_classes: int, *, pretrained: bool = True) -> nn.Module:
     normalized_name = model_name.lower()
     if normalized_name != "efficientnet_b0":
         raise ValueError("Only efficientnet_b0 is supported in this script.")
 
-    try:
-        weights = models.EfficientNet_B0_Weights.DEFAULT
-        model = models.efficientnet_b0(weights=weights)
-    except AttributeError:
-        model = models.efficientnet_b0(pretrained=True)
+    if pretrained:
+        try:
+            weights = models.EfficientNet_B0_Weights.DEFAULT
+            model = models.efficientnet_b0(weights=weights)
+        except AttributeError:
+            model = models.efficientnet_b0(pretrained=True)
+    else:
+        try:
+            model = models.efficientnet_b0(weights=None)
+        except TypeError:
+            model = models.efficientnet_b0(pretrained=False)
 
     in_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(in_features, num_classes)
@@ -159,9 +186,42 @@ def append_history_row(path: Path, row: dict) -> None:
         writer.writerow(row)
 
 
-def main() -> None:
+def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Train SILVAMANG AI EfficientNet transfer-learning classifier."
+        description=(
+            "Train a SILVAMANG AI EfficientNet experiment in an isolated, versioned run. "
+            "The active server and Flutter model assets are never overwritten."
+        )
+    )
+    parser.add_argument(
+        "--dataset-root",
+        type=Path,
+        default=DEFAULT_DATASET_ROOT,
+        help="Dataset root containing train/, val/, and held-out test/ directories.",
+    )
+    parser.add_argument(
+        "--run-dir",
+        type=Path,
+        help=(
+            "New, empty staging run directory. When omitted, a UTC timestamped directory "
+            "is created under silvamang_ai_service/artifacts/efficientnet_transfer."
+        ),
+    )
+    parser.add_argument(
+        "--expected-class-order",
+        type=Path,
+        help=(
+            "Optional class-order JSON to enforce. A class_order.json at the dataset root "
+            "is enforced automatically when present."
+        ),
+    )
+    parser.add_argument(
+        "--allow-legacy-dataset",
+        action="store_true",
+        help=(
+            "Explicitly allow a legacy dataset without the staged-builder evidence bundle. "
+            "This is forbidden for the 29-class or unknown-class workflow."
+        ),
     )
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch-size", type=int, default=16)
@@ -171,40 +231,99 @@ def main() -> None:
     parser.add_argument("--weight-decay", type=float, default=1e-4)
     parser.add_argument("--patience", type=int, default=7)
     parser.add_argument("--seed", type=int, default=42)
-    args = parser.parse_args()
+    parser.add_argument("--num-workers", type=int, default=2)
+    return parser
 
-    train_dir = DATASET_ROOT / "train"
-    val_dir = DATASET_ROOT / "val"
-    if not train_dir.exists() or not val_dir.exists():
-        raise FileNotFoundError("Expected train and val folders under dataset/processed/cnn_classification.")
+
+def main() -> None:
+    args = build_argument_parser().parse_args()
+
+    if args.epochs < 1:
+        raise ValueError("--epochs must be at least 1.")
+    if args.batch_size < 1:
+        raise ValueError("--batch-size must be at least 1.")
+    if args.image_size != RUNTIME_IMAGE_SIZE:
+        raise ValueError(
+            f"--image-size must be exactly {RUNTIME_IMAGE_SIZE} because the server and "
+            "Flutter preprocessing contracts are fixed to that size."
+        )
+    if args.num_workers < 0:
+        raise ValueError("--num-workers cannot be negative.")
+
+    dataset_root = args.dataset_root.expanduser().resolve()
+    run_dir = assert_path_outside_dataset(
+        args.run_dir or timestamped_run_dir(),
+        dataset_root,
+        label="Training run directory",
+    )
+    class_order = validate_dataset_class_order(
+        dataset_root,
+        splits=("train", "val", "test"),
+        expected_class_order_path=args.expected_class_order,
+        allow_legacy_dataset=args.allow_legacy_dataset,
+    )
+    dataset_contract = (
+        "staged_builder_v1"
+        if (dataset_root / "BUILD_COMPLETE.json").is_file()
+        else "legacy_explicit"
+    )
+    initial_dataset_fingerprint = dataset_fingerprint(dataset_root)
+    paths = initialize_training_run(run_dir)
+
+    train_dir = dataset_root / "train"
+    val_dir = dataset_root / "val"
 
     set_seed(args.seed)
-    ensure_dir(MODEL_DIR)
-    ensure_dir(REPORT_DIR)
-    if HISTORY_CSV_PATH.exists():
-        HISTORY_CSV_PATH.unlink()
 
     train_transform, val_transform = build_transforms(args.image_size)
     train_dataset = datasets.ImageFolder(train_dir, transform=train_transform)
     val_dataset = datasets.ImageFolder(val_dir, transform=val_transform)
 
-    if len(train_dataset.classes) == 0:
-        raise RuntimeError("No classes found in training dataset.")
+    if train_dataset.classes != class_order or val_dataset.classes != class_order:
+        raise RuntimeError(
+            "Dataset class order changed after validation. Stop the run and rebuild the "
+            "versioned dataset before training."
+        )
 
-    save_json(train_dataset.classes, CLASS_ORDER_PATH)
+    save_json(class_order, paths.class_order)
+    save_json(
+        {
+            "schema_version": 1,
+            "status": "training",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "dataset_root": str(dataset_root),
+            "run_dir": str(paths.run_dir),
+            "class_count": len(class_order),
+            "class_order": class_order,
+            "dataset_contract": dataset_contract,
+            "dataset_fingerprint": initial_dataset_fingerprint,
+            "training": {
+                "model": args.model,
+                "epochs": args.epochs,
+                "batch_size": args.batch_size,
+                "image_size": args.image_size,
+                "learning_rate": args.learning_rate,
+                "weight_decay": args.weight_decay,
+                "patience": args.patience,
+                "seed": args.seed,
+                "num_workers": args.num_workers,
+            },
+        },
+        paths.run_manifest,
+    )
 
     train_loader = DataLoader(
         train_dataset,
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=2,
+        num_workers=args.num_workers,
         pin_memory=torch.cuda.is_available(),
     )
     val_loader = DataLoader(
         val_dataset,
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=2,
+        num_workers=args.num_workers,
         pin_memory=torch.cuda.is_available(),
     )
 
@@ -244,7 +363,7 @@ def main() -> None:
             "val_macro_f1": val_metrics["macro_f1"],
             "learning_rate": optimizer.param_groups[0]["lr"],
         }
-        append_history_row(HISTORY_CSV_PATH, row)
+        append_history_row(paths.training_history, row)
 
         print(
             f"Epoch {epoch}/{args.epochs} "
@@ -260,7 +379,7 @@ def main() -> None:
             best_macro_f1 = val_metrics["macro_f1"]
             best_metrics = {
                 "model": args.model,
-                "classes": train_dataset.classes,
+                "classes": class_order,
                 "image_size": args.image_size,
                 "best_epoch": epoch,
                 "best_val_macro_f1": best_macro_f1,
@@ -275,14 +394,14 @@ def main() -> None:
                 {
                     "model_name": args.model,
                     "model_state_dict": model.state_dict(),
-                    "classes": train_dataset.classes,
+                    "classes": class_order,
                     "image_size": args.image_size,
                     "best_val_macro_f1": best_macro_f1,
                     "best_epoch": epoch,
                 },
-                CHECKPOINT_PATH,
+                paths.checkpoint,
             )
-            save_json(best_metrics, VAL_METRICS_PATH)
+            save_json(best_metrics, paths.validation_metrics)
             epochs_without_improvement = 0
         else:
             epochs_without_improvement += 1
@@ -291,10 +410,46 @@ def main() -> None:
             print(f"Early stopping after {args.patience} epochs without validation macro F1 improvement.")
             break
 
-    print(f"Best checkpoint saved to: {CHECKPOINT_PATH}")
-    print(f"Class order saved to: {CLASS_ORDER_PATH}")
-    print(f"Training history saved to: {HISTORY_CSV_PATH}")
-    print(f"Validation metrics saved to: {VAL_METRICS_PATH}")
+    if not paths.checkpoint.is_file():
+        raise RuntimeError("Training ended without producing a best checkpoint.")
+
+    final_dataset_fingerprint = dataset_fingerprint(dataset_root)
+    require_same_dataset_fingerprint(
+        initial_dataset_fingerprint,
+        final_dataset_fingerprint,
+        expected_name="dataset at training start",
+        actual_name="dataset at training completion",
+    )
+
+    completed_at = datetime.now(timezone.utc).isoformat()
+    manifest = {
+        "schema_version": 1,
+        "status": "complete",
+        "created_at": started_at,
+        "completed_at": completed_at,
+        "dataset_root": str(dataset_root),
+        "run_dir": str(paths.run_dir),
+        "class_count": len(class_order),
+        "class_order": class_order,
+        "dataset_contract": dataset_contract,
+        "image_size": args.image_size,
+        "dataset_fingerprint": final_dataset_fingerprint,
+        "checkpoint": str(paths.checkpoint),
+        "checkpoint_sha256": file_sha256(paths.checkpoint),
+        "class_order_sha256": file_sha256(paths.class_order),
+        "validation_metrics": str(paths.validation_metrics),
+        "best_epoch": best_metrics.get("best_epoch"),
+        "best_val_macro_f1": best_metrics.get("best_val_macro_f1"),
+    }
+    save_json(manifest, paths.run_manifest)
+    paths.incomplete_marker.unlink(missing_ok=True)
+    save_json(manifest, paths.complete_marker)
+
+    print(f"Experiment run: {paths.run_dir}")
+    print(f"Best checkpoint saved to: {paths.checkpoint}")
+    print(f"Class order saved to: {paths.class_order}")
+    print(f"Training history saved to: {paths.training_history}")
+    print(f"Validation metrics saved to: {paths.validation_metrics}")
 
 
 if __name__ == "__main__":

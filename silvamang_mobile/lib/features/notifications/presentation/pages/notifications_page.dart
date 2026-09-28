@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +6,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routing/route_names.dart';
-import '../../../../core/services/local_storage_service.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/silvamang_back_button.dart';
@@ -17,6 +14,7 @@ import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
+import '../controllers/notification_controller.dart';
 
 class NotificationsPage extends ConsumerStatefulWidget {
   const NotificationsPage({super.key});
@@ -26,15 +24,9 @@ class NotificationsPage extends ConsumerStatefulWidget {
 }
 
 class _NotificationsPageState extends ConsumerState<NotificationsPage> {
-  static const _readStorageKey = 'app_notification_read_ids';
-
-  final _storage = LocalStorageService.instance;
-  Set<String> _readIds = <String>{};
-
   @override
   void initState() {
     super.initState();
-    _readIds = _loadReadIds();
     Future.microtask(_refresh);
   }
 
@@ -43,60 +35,12 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     await ref.read(authControllerProvider.notifier).refreshCurrentUser();
   }
 
-  Future<void> _markAllRead(List<_AppNotification> notifications) async {
-    setState(() {
-      _readIds = {
-        ..._readIds,
-        for (final notification in notifications) notification.id,
-      };
-    });
-    await _saveReadIds();
-  }
-
-  Future<void> _markRead(_AppNotification notification) async {
-    if (_readIds.contains(notification.id)) {
-      return;
-    }
-
-    setState(() => _readIds = {..._readIds, notification.id});
-    await _saveReadIds();
-  }
-
-  Future<void> _resetUnread() async {
-    setState(() => _readIds = <String>{});
-    await _saveReadIds();
-  }
-
-  Set<String> _loadReadIds() {
-    final raw = _storage.getString(_readStorageKey);
-    if (raw == null || raw.isEmpty) {
-      return <String>{};
-    }
-
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is List) {
-        return decoded.map((value) => value.toString()).toSet();
-      }
-    } catch (_) {
-      return <String>{};
-    }
-
-    return <String>{};
-  }
-
-  Future<void> _saveReadIds() {
-    return _storage.saveString(_readStorageKey, jsonEncode(_readIds.toList()));
-  }
-
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authControllerProvider);
     final offlineState = ref.watch(offlineSyncControllerProvider);
-    final notifications = _notificationsFor(authState, offlineState);
-    final unreadCount = notifications
-        .where((notification) => !_readIds.contains(notification.id))
-        .length;
+    final notifications = ref.watch(appNotificationsProvider);
+    final readIds = ref.watch(notificationReadControllerProvider);
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
@@ -166,7 +110,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                     type: SilvamangButtonType.outline,
                     onPressed: notifications.isEmpty
                         ? null
-                        : () => _markAllRead(notifications),
+                        : () => ref
+                              .read(notificationReadControllerProvider.notifier)
+                              .markAllRead(notifications),
                   ),
                 ),
               ],
@@ -176,7 +122,11 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
               text: 'Reset Unread State',
               icon: Icons.mark_email_unread_rounded,
               type: SilvamangButtonType.outline,
-              onPressed: _readIds.isEmpty ? null : _resetUnread,
+              onPressed: readIds.isEmpty
+                  ? null
+                  : () => ref
+                        .read(notificationReadControllerProvider.notifier)
+                        .resetUnread(),
             ),
             const SizedBox(height: AppSpacing.lg),
             if (notifications.isEmpty)
@@ -192,12 +142,18 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: _NotificationCard(
                     notification: notification,
-                    isRead: _readIds.contains(notification.id),
-                    onMarkRead: () => _markRead(notification),
+                    isRead: notification.isRead(readIds),
+                    onMarkRead: () => ref
+                        .read(notificationReadControllerProvider.notifier)
+                        .markRead(notification),
                     onOpen: notification.routeName == null
                         ? null
                         : () async {
-                            await _markRead(notification);
+                            await ref
+                                .read(
+                                  notificationReadControllerProvider.notifier,
+                                )
+                                .markRead(notification);
                             if (context.mounted) {
                               context.pushNamed(notification.routeName!);
                             }
@@ -210,101 +166,6 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
       ),
     );
   }
-
-  List<_AppNotification> _notificationsFor(
-    AuthState authState,
-    OfflineSyncState offlineState,
-  ) {
-    final notifications = <_AppNotification>[];
-
-    if (authState.isOfflineSession) {
-      notifications.add(
-        const _AppNotification(
-          id: 'auth.offline_session',
-          title: 'Offline session active',
-          message:
-              'The app cannot reach the Laravel API right now. Saved scans will sync when the server is reachable again.',
-          icon: Icons.cloud_off_rounded,
-          color: AppColors.warningOrange,
-          routeName: RouteNames.appSettings,
-        ),
-      );
-    }
-
-    if (offlineState.pendingCount > 0) {
-      notifications.add(
-        _AppNotification(
-          id: 'sync.pending.${offlineState.pendingCount}',
-          title: 'Pending sync items',
-          message:
-              '${offlineState.pendingCount} offline scan item(s) are waiting to be uploaded.',
-          icon: Icons.cloud_upload_rounded,
-          color: AppColors.warningOrange,
-          routeName: RouteNames.offlineQueue,
-        ),
-      );
-    }
-
-    if (offlineState.failedCount > 0) {
-      notifications.add(
-        _AppNotification(
-          id: 'sync.failed.${offlineState.failedCount}',
-          title: 'Sync needs attention',
-          message:
-              '${offlineState.failedCount} item(s) failed to sync. Open the queue to retry.',
-          icon: Icons.error_outline_rounded,
-          color: AppColors.dangerRed,
-          routeName: RouteNames.offlineQueue,
-        ),
-      );
-    }
-
-    if (offlineState.recentlyDeletedCount > 0) {
-      notifications.add(
-        _AppNotification(
-          id: 'sync.deleted.${offlineState.recentlyDeletedCount}',
-          title: 'Recently deleted queue records',
-          message:
-              '${offlineState.recentlyDeletedCount} deleted item(s) can still be restored.',
-          icon: Icons.restore_from_trash_rounded,
-          color: AppColors.mutedText,
-          routeName: RouteNames.offlineQueue,
-        ),
-      );
-    }
-
-    notifications.add(
-      const _AppNotification(
-        id: 'map.offline_download_reminder',
-        title: 'Offline map reminder',
-        message:
-            'Download a field map area before going offline. Scan pins can still save even if map tiles are unavailable.',
-        icon: Icons.download_for_offline_rounded,
-        color: AppColors.primaryGreen,
-        routeName: RouteNames.offlineMapManager,
-      ),
-    );
-
-    return notifications;
-  }
-}
-
-class _AppNotification {
-  const _AppNotification({
-    required this.id,
-    required this.title,
-    required this.message,
-    required this.icon,
-    required this.color,
-    this.routeName,
-  });
-
-  final String id;
-  final String title;
-  final String message;
-  final IconData icon;
-  final Color color;
-  final String? routeName;
 }
 
 class _NotificationCard extends StatelessWidget {
@@ -315,7 +176,7 @@ class _NotificationCard extends StatelessWidget {
     required this.onOpen,
   });
 
-  final _AppNotification notification;
+  final AppNotification notification;
   final bool isRead;
   final VoidCallback onMarkRead;
   final VoidCallback? onOpen;
@@ -353,18 +214,19 @@ class _NotificationCard extends StatelessWidget {
                           ),
                         ),
                         SilvamangBadge(
-                          label: isRead ? 'Read' : 'New',
-                          type: isRead
+                          label: notification.readKeys.isEmpty
+                              ? 'Info'
+                              : isRead
+                              ? 'Read'
+                              : 'New',
+                          type: notification.readKeys.isEmpty || isRead
                               ? SilvamangBadgeType.neutral
                               : SilvamangBadgeType.info,
                         ),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      notification.message,
-                      style: AppTextStyles.bodyMedium,
-                    ),
+                    Text(notification.message, style: AppTextStyles.bodyMedium),
                   ],
                 ),
               ),

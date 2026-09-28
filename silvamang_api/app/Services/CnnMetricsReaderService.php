@@ -10,7 +10,7 @@ class CnnMetricsReaderService
 
     public function __construct()
     {
-        $this->reportPath = base_path('../silvamang_ai_service/reports/efficientnet_transfer');
+        $this->reportPath = config('deployment.model_reports_root');
     }
 
     public function metrics(): array

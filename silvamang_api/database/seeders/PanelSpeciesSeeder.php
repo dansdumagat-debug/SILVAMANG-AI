@@ -30,7 +30,6 @@ class PanelSpeciesSeeder extends Seeder
                         'Bark: '.$entry['bark'],
                         'Flower: '.$entry['flower'],
                         'Fruit/propagule: '.$entry['fruit'],
-                        'Knowledge-base species only; not supported by the current 10-class CNN.',
                     ]),
                     'conservation_status' => $entry['conservation_status'],
                     'native_status' => $entry['native_status'],

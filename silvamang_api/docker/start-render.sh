@@ -36,11 +36,33 @@ echo "Render startup AI_SERVICE_URL=$AI_SERVICE_URL"
 mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache database
 chmod -R 775 storage bootstrap/cache database || true
 
+# Scan uploads and training exports must live under the Render disk mount when
+# local files need to survive deployments.
+if [ -n "${PUBLIC_STORAGE_ROOT:-}" ]; then
+    mkdir -p "$PUBLIC_STORAGE_ROOT"
+    if [ ! -w "$PUBLIC_STORAGE_ROOT" ]; then
+        echo "PUBLIC_STORAGE_ROOT is not writable: $PUBLIC_STORAGE_ROOT"
+        exit 1
+    fi
+fi
+
+if [ -n "${DATASET_EXPORT_ROOT:-}" ]; then
+    mkdir -p "$DATASET_EXPORT_ROOT"
+    if [ ! -w "$DATASET_EXPORT_ROOT" ]; then
+        echo "DATASET_EXPORT_ROOT is not writable: $DATASET_EXPORT_ROOT"
+        exit 1
+    fi
+fi
+
 if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then
     DB_FILE="${DB_DATABASE:-/var/www/html/database/database.sqlite}"
     mkdir -p "$(dirname "$DB_FILE")"
     touch "$DB_FILE"
     chmod 664 "$DB_FILE" || true
+    if [ ! -w "$DB_FILE" ]; then
+        echo "SQLite database is not writable: $DB_FILE"
+        exit 1
+    fi
 fi
 
 php artisan migrate --force

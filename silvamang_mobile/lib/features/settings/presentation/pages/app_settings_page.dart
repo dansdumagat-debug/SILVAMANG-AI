@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/config/api_config.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_spacing.dart';
@@ -93,8 +93,8 @@ class AppSettingsPage extends ConsumerWidget {
                         label: status == null
                             ? 'Checking'
                             : status.apiReachable
-                                ? 'Online'
-                                : 'Offline',
+                            ? 'Online'
+                            : 'Offline',
                         type: status?.apiReachable == true
                             ? SilvamangBadgeType.success
                             : SilvamangBadgeType.warning,
@@ -106,18 +106,18 @@ class AppSettingsPage extends ConsumerWidget {
                       value: status == null
                           ? 'Checking...'
                           : status.hasNetwork
-                              ? 'Connected'
-                              : 'Unavailable',
+                          ? 'Connected'
+                          : 'Unavailable',
                     ),
                     _SettingsRow(
                       label: 'Server',
                       value: status == null
                           ? 'Checking...'
                           : status.apiReachable
-                              ? 'Reachable'
-                              : 'Not reachable',
+                          ? 'Reachable'
+                          : 'Not reachable',
                     ),
-                    _SettingsRow(label: 'API URL', value: _apiBaseUrl()),
+                    _SettingsRow(label: 'API URL', value: ApiConfig.baseUrl),
                   ],
                 );
               },
@@ -179,21 +179,6 @@ class AppSettingsPage extends ConsumerWidget {
       apiReachable: apiReachable,
     );
   }
-
-  String _apiBaseUrl() {
-    const dartDefinedUrl = String.fromEnvironment('API_BASE_URL');
-    final definedUrl = dartDefinedUrl.trim();
-    if (definedUrl.isNotEmpty) {
-      return definedUrl;
-    }
-
-    final envUrl = dotenv.env['API_BASE_URL']?.trim();
-    if (envUrl != null && envUrl.isNotEmpty) {
-      return envUrl;
-    }
-
-    return 'https://silvamang-api-service.onrender.com/api';
-  }
 }
 
 class _ConnectionStatus {
@@ -207,11 +192,7 @@ class _ConnectionStatus {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({
-    required this.icon,
-    required this.title,
-    this.trailing,
-  });
+  const _SectionTitle({required this.icon, required this.title, this.trailing});
 
   final IconData icon;
   final String title;
@@ -224,7 +205,7 @@ class _SectionTitle extends StatelessWidget {
         Icon(icon, color: AppColors.primaryDarkGreen),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: Text(title, style: AppTextStyles.titleMedium)),
-        if (trailing != null) trailing!,
+        ?trailing,
       ],
     );
   }

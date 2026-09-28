@@ -19,6 +19,10 @@ import '../../data/models/transect_observation_model.dart';
 import '../../data/models/transect_point_model.dart';
 import '../../data/models/transect_record_model.dart';
 import '../controllers/transects_controller.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../capture/presentation/controllers/capture_controller.dart';
+import 'create_transect_page.dart';
+import 'transect_handoff_page.dart';
 import '../widgets/transect_field_map.dart';
 
 class TransectDetailPage extends ConsumerStatefulWidget {
@@ -60,15 +64,27 @@ class _TransectDetailPageState extends ConsumerState<TransectDetailPage> {
     if (!mounted || record == null || record.points.isEmpty) {
       return;
     }
-    final coordinates = record.points
-        .map((point) => LatLng(point.latitude, point.longitude))
+    final segments = record.contributions
+        .where((contribution) => contribution.points.length >= 2)
+        .map((contribution) => contribution.points)
         .toList();
+    final coordinates = segments.isNotEmpty
+        ? [
+            for (final segment in segments)
+              LatLng(segment.first.latitude, segment.first.longitude),
+            for (final segment in segments)
+              LatLng(segment.last.latitude, segment.last.longitude),
+          ]
+        : [
+            LatLng(record.points.first.latitude, record.points.first.longitude),
+            LatLng(record.points.last.latitude, record.points.last.longitude),
+          ];
     try {
       _mapController.fitCamera(
         CameraFit.coordinates(
           coordinates: coordinates,
           padding: const EdgeInsets.all(52),
-          maxZoom: 18,
+          maxZoom: 21,
         ),
       );
     } catch (_) {
@@ -157,6 +173,81 @@ class _TransectDetailPageState extends ConsumerState<TransectDetailPage> {
               ),
               children: [
                 _RecordHeader(record: record),
+                const SizedBox(height: AppSpacing.md),
+                SilvamangButton(
+                  text: 'Scan Mangrove for This Transect',
+                  icon: Icons.camera_alt_rounded,
+                  onPressed: () {
+                    ref.read(captureControllerProvider.notifier).clearImages();
+                    context.pushNamed(
+                      RouteNames.captureGuide,
+                      queryParameters: {'transectId': record.localId},
+                    );
+                  },
+                ),
+                if (record.isHandoffTransect) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Target: ${record.targetDistanceM!.toStringAsFixed(1)} m',
+                          ),
+                          Text(
+                            'Completed: ${record.totalDistanceM.toStringAsFixed(1)} m',
+                          ),
+                          Text(
+                            'Remaining: ${record.remainingDistanceM.toStringAsFixed(1)} m',
+                          ),
+                          ...record.contributions.map(
+                            (item) => Text(
+                              '${item.userName}: ${item.distanceM.toStringAsFixed(1)} m · ${item.observations.length} scans',
+                            ),
+                          ),
+                          if (record.status !=
+                              TransectRecordModel.statusCompleted) ...[
+                            FilledButton(
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => CreateTransectPage(
+                                      continueRecord: record,
+                                    ),
+                                  ),
+                                );
+                                if (mounted) await _loadRecord();
+                              },
+                              child: const Text('Record my section'),
+                            ),
+                            OutlinedButton(
+                              onPressed:
+                                  record.contributions.isNotEmpty &&
+                                      record.contributions.last.userId ==
+                                          ref
+                                              .watch(authControllerProvider)
+                                              .user
+                                              ?.id
+                                  ? () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            TransectPassPage(record: record),
+                                      ),
+                                    )
+                                  : null,
+                              child: const Text('PASS by QR'),
+                            ),
+                          ] else
+                            const Text('COMPLETED'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
                 if (state.errorMessage != null) ...[
                   const SizedBox(height: AppSpacing.md),
                   _Notice(
@@ -209,6 +300,14 @@ class _TransectDetailPageState extends ConsumerState<TransectDetailPage> {
                   child: TransectFieldMap(
                     mapController: _mapController,
                     points: record.points,
+                    transectLabel: TransectFieldMap.labelFor(
+                      record.transectName,
+                      record.transectCode,
+                    ),
+                    segments: record.contributions
+                        .where((contribution) => contribution.points.length >= 2)
+                        .map((contribution) => contribution.points)
+                        .toList(),
                     observations: record.observations,
                     isOnline: state.isOnline,
                     layer: _mapLayer,
@@ -396,7 +495,7 @@ class _MetricGrid extends StatelessWidget {
           children: [
             _MetricTile(
               width: width,
-              label: 'Distance',
+              label: 'Start to end distance',
               value: _distance(record.totalDistanceM),
               icon: Icons.straighten_rounded,
             ),

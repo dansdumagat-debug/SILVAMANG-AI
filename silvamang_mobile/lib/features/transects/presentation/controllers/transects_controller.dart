@@ -6,6 +6,8 @@ import '../../../../core/services/connectivity_service.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
 import '../../data/models/transect_record_model.dart';
+import '../../data/models/transect_observation_model.dart';
+import '../../data/models/transect_contribution_model.dart';
 import '../../data/repositories/local_transect_repository.dart';
 import '../../data/repositories/transect_repository.dart';
 
@@ -185,6 +187,87 @@ class TransectsController extends StateNotifier<TransectsState> {
       );
       return null;
     }
+  }
+
+  Future<void> attachObservation({
+    required String transectLocalId,
+    required TransectObservationModel observation,
+  }) async {
+    final current = await localRepository.findForUser(
+      localId: transectLocalId,
+      userId: currentUserId,
+      userEmail: currentUserEmail,
+    );
+    if (current == null) {
+      throw StateError('Transect was not found on this device.');
+    }
+    final alreadyAttached = current.observations.any(
+      (item) =>
+          item.reference == observation.reference ||
+          (observation.serverId != null &&
+              item.serverId == observation.serverId) ||
+          (observation.offlineReference != null &&
+              item.offlineReference == observation.offlineReference),
+    );
+    if (alreadyAttached) return;
+    final contributions = [...current.contributions];
+    if (contributions.isNotEmpty &&
+        contributions.last.userId == currentUserId) {
+      final last = contributions.removeLast();
+      contributions.add(
+        TransectContributionModel(
+          id: last.id,
+          userId: last.userId,
+          userName: last.userName,
+          distanceM: last.distanceM,
+          points: last.points,
+          observations: [...last.observations, observation],
+          recordedAt: last.recordedAt,
+        ),
+      );
+    }
+    final updated = current.copyWith(
+      observations: [...current.observations, observation],
+      contributions: contributions,
+      updatedAt: DateTime.now(),
+      syncStatus: TransectRecordModel.syncPending,
+    );
+    await localRepository.save(updated);
+    state = state.copyWith(
+      records: await localRepository.getForUser(
+        userId: currentUserId,
+        userEmail: currentUserEmail,
+      ),
+      selectedRecord: updated,
+      successMessage: 'Scan added to ${current.transectName}.',
+    );
+    if (updated.status == TransectRecordModel.statusCompleted &&
+        authenticated) {
+      unawaited(syncPending(automatic: true));
+    }
+  }
+
+  Future<bool> importHandoff(TransectRecordModel incoming) async {
+    final existing = await localRepository.findForUser(
+      localId: incoming.localId,
+      userId: currentUserId,
+      userEmail: currentUserEmail,
+    );
+    if (existing != null &&
+        existing.handoffSequence >= incoming.handoffSequence) {
+      return false;
+    }
+    await localRepository.save(incoming);
+    final records = await localRepository.getForUser(
+      userId: currentUserId,
+      userEmail: currentUserEmail,
+    );
+    state = state.copyWith(
+      records: records,
+      selectedRecord: incoming,
+      successMessage: 'Transect received. Continue recording your section.',
+    );
+    return true;
   }
 
   Future<void> syncPending({bool automatic = false}) async {

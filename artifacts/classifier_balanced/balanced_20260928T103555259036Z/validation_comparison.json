@@ -1,0 +1,15 @@
+{
+  "current": {
+    "loss": 1.189388098089603,
+    "accuracy": 0.7052154195011338,
+    "macro_f1": 0.6764394648793004
+  },
+  "candidate": {
+    "loss": 1.1596704518713918,
+    "accuracy": 0.7086167800453514,
+    "macro_f1": 0.6850227334143476
+  },
+  "improved_validation_macro_f1": true,
+  "deployed": false,
+  "test_used_for_selection": false
+}

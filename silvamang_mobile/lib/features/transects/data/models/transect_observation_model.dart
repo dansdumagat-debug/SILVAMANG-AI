@@ -1,5 +1,6 @@
 import '../../../map/data/models/map_scan_record.dart';
 import '../../../../shared/models/scan_record_model.dart';
+import '../../../../shared/utils/species_taxonomy.dart';
 
 class TransectObservationModel {
   const TransectObservationModel({
@@ -116,7 +117,7 @@ class TransectObservationModel {
       serverId: serverId,
       offlineReference: offlineReference,
       recordCode: recordCode,
-      scientificName: _text(
+      scientificName: canonicalSpeciesName(
         json['scientific_name'] ??
             json['species_name'] ??
             json['top_scientific_name'],

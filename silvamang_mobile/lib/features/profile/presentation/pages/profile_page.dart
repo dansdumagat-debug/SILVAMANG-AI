@@ -15,6 +15,7 @@ import '../../../../core/widgets/silvamang_card.dart';
 import '../../../../core/widgets/silvamang_logo.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
+import '../../../species_database/data/repositories/species_repository.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -33,6 +34,13 @@ class ProfilePage extends ConsumerWidget {
         ? user!.roles.first
         : 'Mobile User';
     final offlineState = ref.watch(offlineSyncControllerProvider);
+    final speciesValue = ref
+        .watch(registeredSpeciesCountProvider)
+        .when(
+          data: (count) => count.toString(),
+          loading: () => '...',
+          error: (_, _) => '--',
+        );
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
@@ -61,7 +69,7 @@ class ProfilePage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const Row(
+          Row(
             children: [
               Expanded(
                 child: MetricCard(
@@ -74,7 +82,7 @@ class ProfilePage extends ConsumerWidget {
               Expanded(
                 child: MetricCard(
                   title: 'Species',
-                  value: '8',
+                  value: speciesValue,
                   icon: Icons.eco_rounded,
                   color: AppColors.successGreen,
                 ),
@@ -139,7 +147,7 @@ class ProfilePage extends ConsumerWidget {
                 : () async {
                     await ref.read(authControllerProvider.notifier).logout();
                     if (context.mounted) {
-                      context.goNamed(RouteNames.login);
+                      context.goNamed(RouteNames.guestScan);
                     }
                   },
           ),

@@ -156,6 +156,7 @@ class ScanRecordRepository {
       if (hasMeasurementEstimate && _finiteOrNull(result.canopyWidthM) != null)
         'canopy_width_m': _finiteOrNull(result.canopyWidthM),
       'notes': _scanNotes(
+        captureMode: result.captureMode,
         barangay: result.barangay,
         manualBarangay: manualBarangay,
         locationAccuracy: locationAccuracy,
@@ -213,7 +214,9 @@ class ScanRecordRepository {
             'dbh_cm': _finiteOrNull(result.dbhCm),
             'measurement_method': result.measurementMethod,
             'confidence': _finiteOrNull(result.measurementConfidence),
-            'notes': 'Measurement estimate attached to CNN scan result.',
+            'notes': result.captureMode == 'manual_species'
+                ? 'Manual species measurement.'
+                : 'Measurement estimate attached to CNN scan result.',
             'measured_at': capturedAt,
           },
         );
@@ -307,6 +310,7 @@ class ScanRecordRepository {
   }
 
   String _scanNotes({
+    required String captureMode,
     String? barangay,
     String? manualBarangay,
     double? locationAccuracy,
@@ -315,7 +319,9 @@ class ScanRecordRepository {
     FieldDistanceMeasurement? fieldDistanceMeasurement,
   }) {
     final notes = <String>[
-      'SILVAMANG CNN identification result.',
+      captureMode == 'manual_species'
+          ? 'Species entered by the user; AI identification was skipped.'
+          : 'SILVAMANG CNN identification result.',
       if (barangay != null && barangay.trim().isNotEmpty)
         'Barangay: $barangay.',
       if (manualBarangay != null && manualBarangay.trim().isNotEmpty)

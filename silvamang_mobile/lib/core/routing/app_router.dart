@@ -3,10 +3,11 @@ import 'package:go_router/go_router.dart';
 import '../../features/ai_assistant/presentation/pages/ai_assistant_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/capture/data/models/captured_plant_part_image.dart';
 import '../../features/capture/presentation/pages/capture_guide_page.dart';
+import '../../features/capture/presentation/pages/manual_species_measurement_page.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/identification/presentation/pages/identification_result_page.dart';
+import '../../features/identification/presentation/pages/guest_scan_page.dart';
 import '../../features/identification/presentation/pages/offline_model_diagnostic_page.dart';
 import '../../features/location_validation/presentation/pages/location_validation_page.dart';
 import '../../features/map/presentation/pages/offline_map_manager_page.dart';
@@ -28,6 +29,7 @@ import '../../features/transects/presentation/pages/create_transect_page.dart';
 import '../../features/transects/presentation/pages/transect_detail_page.dart';
 import '../../features/transects/presentation/pages/transect_history_page.dart';
 import '../widgets/bottom_nav_shell.dart';
+import '../services/local_storage_service.dart';
 import 'route_names.dart';
 
 class AppRouter {
@@ -35,11 +37,22 @@ class AppRouter {
 
   static final router = GoRouter(
     initialLocation: '/',
+    redirect: (context, state) {
+      const publicPaths = {'/', '/guest', '/login', '/register'};
+      if (publicPaths.contains(state.uri.path)) return null;
+      final token = LocalStorageService.instance.getToken();
+      return token == null || token.isEmpty ? '/guest' : null;
+    },
     routes: [
       GoRoute(
         path: '/',
         name: RouteNames.splash,
         builder: (context, state) => const SplashPage(),
+      ),
+      GoRoute(
+        path: '/guest',
+        name: RouteNames.guestScan,
+        builder: (context, state) => const GuestScanPage(),
       ),
       GoRoute(
         path: '/login',
@@ -63,7 +76,23 @@ class AppRouter {
           GoRoute(
             path: '/capture-guide',
             name: RouteNames.captureGuide,
-            builder: (context, state) => const CaptureGuidePage(),
+            builder: (context, state) => CaptureGuidePage(
+              transectLocalId: state.uri.queryParameters['transectId'],
+            ),
+          ),
+          GoRoute(
+            path: '/manual-species-measurement',
+            name: RouteNames.manualSpeciesMeasurement,
+            builder: (context, state) {
+              final species = state.extra is Map<String, String>
+                  ? state.extra! as Map<String, String>
+                  : const <String, String>{};
+              return ManualSpeciesMeasurementPage(
+                scientificName: species['scientificName'] ?? '',
+                commonName: species['commonName'] ?? '',
+                transectLocalId: state.uri.queryParameters['transectId'],
+              );
+            },
           ),
           GoRoute(
             path: '/field-distance',
@@ -73,7 +102,9 @@ class AppRouter {
           GoRoute(
             path: '/identification-result',
             name: RouteNames.identificationResult,
-            builder: (context, state) => const IdentificationResultPage(),
+            builder: (context, state) => IdentificationResultPage(
+              transectLocalId: state.uri.queryParameters['transectId'],
+            ),
           ),
           GoRoute(
             path: '/offline-model-diagnostic',
@@ -83,12 +114,7 @@ class AppRouter {
           GoRoute(
             path: '/measurement',
             name: RouteNames.measurement,
-            builder: (context, state) {
-              final extra = state.extra;
-              return MeasurementPage(
-                initialImage: extra is CapturedPlantPartImage ? extra : null,
-              );
-            },
+            builder: (context, state) => const MeasurementPage(),
           ),
           GoRoute(
             path: '/camera-pointing-measurement',

@@ -1,5 +1,6 @@
 import 'transect_observation_model.dart';
 import 'transect_point_model.dart';
+import 'transect_contribution_model.dart';
 
 class TransectRecordModel {
   const TransectRecordModel({
@@ -26,6 +27,9 @@ class TransectRecordModel {
     this.pendingObservationReferences = const [],
     this.syncedAt,
     this.syncError,
+    this.targetDistanceM,
+    this.contributions = const [],
+    this.handoffSequence = 0,
   });
 
   static const modeGpsTracking = 'gps_tracking';
@@ -59,6 +63,15 @@ class TransectRecordModel {
   final DateTime updatedAt;
   final String syncStatus;
   final String? syncError;
+  final double? targetDistanceM;
+  final List<TransectContributionModel> contributions;
+  final int handoffSequence;
+  double get remainingDistanceM => targetDistanceM == null
+      ? 0
+      : (targetDistanceM! - totalDistanceM)
+            .clamp(0, double.infinity)
+            .toDouble();
+  bool get isHandoffTransect => targetDistanceM != null;
 
   TransectPointModel? get startPoint => points.isEmpty ? null : points.first;
   TransectPointModel? get endPoint => points.isEmpty ? null : points.last;
@@ -168,6 +181,11 @@ class TransectRecordModel {
             : syncPending,
       ),
       syncError: _nullableText(json['sync_error'] ?? json['syncError']),
+      targetDistanceM: _asNullableDouble(json['target_distance_m']),
+      contributions: _asMaps(
+        json['contributions'],
+      ).map(TransectContributionModel.fromJson).toList(),
+      handoffSequence: (json['handoff_sequence'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -198,6 +216,9 @@ class TransectRecordModel {
       'updated_at': updatedAt.toIso8601String(),
       'sync_status': syncStatus,
       'sync_error': syncError,
+      'target_distance_m': targetDistanceM,
+      'contributions': contributions.map((item) => item.toJson()).toList(),
+      'handoff_sequence': handoffSequence,
     };
   }
 
@@ -221,6 +242,11 @@ class TransectRecordModel {
       'recorded_at': recordedAt.toIso8601String(),
       'points': points.map((point) => point.toJson()).toList(),
       'observation_references': references.toList(),
+      if (targetDistanceM != null) 'target_distance_m': targetDistanceM,
+      if (targetDistanceM != null)
+        'contributions': contributions.map((item) => item.toJson()).toList(),
+      if (targetDistanceM != null) 'handoff_sequence': handoffSequence,
+      if (targetDistanceM != null) 'total_distance_m': totalDistanceM,
     };
   }
 
@@ -240,20 +266,28 @@ class TransectRecordModel {
     String? syncStatus,
     String? syncError,
     bool clearSyncError = false,
+    String? ownerUserIdOverride,
+    String? ownerUserEmailOverride,
+    double? targetDistanceM,
+    List<TransectContributionModel>? contributions,
+    int? handoffSequence,
+    String? status,
+    List<TransectPointModel>? points,
   }) {
     return TransectRecordModel(
       localId: localId,
       serverId: serverId ?? this.serverId,
-      ownerUserId: ownerUserId ?? this.ownerUserId,
-      ownerUserEmail: ownerUserEmail ?? this.ownerUserEmail,
+      ownerUserId: ownerUserIdOverride ?? ownerUserId ?? this.ownerUserId,
+      ownerUserEmail:
+          ownerUserEmailOverride ?? ownerUserEmail ?? this.ownerUserEmail,
       researcherName: researcherName ?? this.researcherName,
       transectCode: transectCode ?? this.transectCode,
       transectName: transectName,
       locationName: locationName,
       description: description,
       mode: mode,
-      status: status,
-      points: points,
+      status: status ?? this.status,
+      points: points ?? this.points,
       observations: observations ?? this.observations,
       totalDistanceM: totalDistanceM ?? this.totalDistanceM,
       bearingDegrees: bearingDegrees ?? this.bearingDegrees,
@@ -266,6 +300,9 @@ class TransectRecordModel {
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
       syncError: clearSyncError ? null : syncError ?? this.syncError,
+      targetDistanceM: targetDistanceM ?? this.targetDistanceM,
+      contributions: contributions ?? this.contributions,
+      handoffSequence: handoffSequence ?? this.handoffSequence,
     );
   }
 

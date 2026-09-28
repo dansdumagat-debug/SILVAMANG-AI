@@ -20,10 +20,9 @@ class TransectGeometryService {
   static const double earthRadiusM = 6371000;
 
   TransectGeometrySummary summarize(List<TransectPointModel> points) {
-    var distanceM = 0.0;
-    for (var index = 1; index < points.length; index++) {
-      distanceM += distanceBetween(points[index - 1], points[index]);
-    }
+    final distanceM = points.length >= 2
+        ? distanceBetween(points.first, points.last)
+        : 0.0;
 
     final accuracies = points
         .map((point) => point.accuracyM)

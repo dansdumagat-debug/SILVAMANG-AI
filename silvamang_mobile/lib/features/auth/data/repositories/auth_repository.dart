@@ -26,7 +26,7 @@ class AuthRepository {
   }) async {
     final response = await apiClient.post<Map<String, dynamic>>(
       '/login',
-      data: {'email': email, 'password': password},
+      data: {'email': email.trim().toLowerCase(), 'password': password},
     );
 
     final auth = AuthResponseModel.fromJson(response.data ?? {});
@@ -44,7 +44,7 @@ class AuthRepository {
       '/register',
       data: {
         'name': name,
-        'email': email,
+        'email': email.trim().toLowerCase(),
         'password': password,
         'password_confirmation': passwordConfirmation,
       },

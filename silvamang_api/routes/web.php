@@ -19,8 +19,10 @@ use App\Http\Controllers\Admin\SpeciesManagementController;
 use App\Http\Controllers\Admin\TransectController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Api\AssistantChatController as ApiAssistantChatController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -50,12 +52,16 @@ Route::post('/login', function (Request $request) {
         'password' => ['required', 'string'],
     ]);
 
-    if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+    $email = strtolower(trim($credentials['email']));
+    $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
+
+    if (! $user || ! Hash::check($credentials['password'], $user->password)) {
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->onlyInput('email');
     }
 
+    Auth::login($user, $request->boolean('remember'));
     $request->session()->regenerate();
 
     if (! $request->user()?->hasAnyRole(['super_admin', 'admin', 'researcher'])) {

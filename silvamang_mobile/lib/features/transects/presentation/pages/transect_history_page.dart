@@ -14,6 +14,7 @@ import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../../data/models/transect_record_model.dart';
 import '../controllers/transects_controller.dart';
+import 'transect_handoff_page.dart';
 
 enum _HistoryFilter { all, gps, manual }
 
@@ -86,10 +87,47 @@ class _TransectHistoryPageState extends ConsumerState<TransectHistoryPage> {
               hasServerWarning: state.errorMessage != null,
             ),
             const SizedBox(height: AppSpacing.md),
-            SilvamangButton(
-              text: 'Create Transect',
-              icon: Icons.add_location_alt_rounded,
-              onPressed: () => context.pushNamed(RouteNames.transectCreate),
+            Row(
+              children: [
+                Expanded(
+                  child: SilvamangButton(
+                    text: 'Create Transect',
+                    icon: Icons.add_location_alt_rounded,
+                    onPressed: () =>
+                        context.pushNamed(RouteNames.transectCreate),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Tooltip(
+                  message: 'Scan QR to continue a transect',
+                  child: SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final received = await Navigator.push<bool>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TransectReceivePage(),
+                          ),
+                        );
+                        if (received == true && context.mounted) {
+                          await ref
+                              .read(transectsControllerProvider.notifier)
+                              .load();
+                        }
+                      },
+                      child: const Icon(Icons.qr_code_scanner_rounded),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             _MetricStrip(state: state),

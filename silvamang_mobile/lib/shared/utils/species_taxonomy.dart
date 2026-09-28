@@ -45,7 +45,6 @@ String _rawSpeciesKey(Object? value) {
 const _canonicalNames = <String, String>{
   'acanthus_ebracteatus': 'Acanthus ebracteatus',
   'acanthus_ilicifolius': 'Acanthus ilicifolius',
-  'acanthus_volubilis': 'Acanthus volubilis',
   'aegiceras_corniculatum': 'Aegiceras corniculatum',
   'aegiceras_floridum': 'Aegiceras floridum',
   'avicennia_alba': 'Avicennia alba',
@@ -78,6 +77,6 @@ const _canonicalNames = <String, String>{
   'sonneratia_alba': 'Sonneratia alba',
   'sonneratia_ovata': 'Sonneratia ovata',
   'xylocarpus_granatum': 'Xylocarpus granatum',
-  'xylocarpus_moluccensis': 'Xylocarpus rumphii',
-  'xylocarpus_rumphii': 'Xylocarpus rumphii',
+  'xylocarpus_moluccensis': 'Xylocarpus moluccensis',
+  'xylocarpus_rumphii': 'Xylocarpus moluccensis',
 };

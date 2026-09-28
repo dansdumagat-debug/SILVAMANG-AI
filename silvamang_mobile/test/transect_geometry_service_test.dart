@@ -20,7 +20,7 @@ void main() {
     );
   }
 
-  test('calculates Haversine polyline distance and east bearing', () {
+  test('calculates start-to-end distance and east bearing', () {
     final summary = geometry.summarize([
       point(0, 0, accuracy: 4),
       point(0, 0.0005, accuracy: 6),
@@ -30,6 +30,16 @@ void main() {
     expect(summary.distanceM, closeTo(111.2, 0.5));
     expect(summary.bearingDegrees, closeTo(90, 0.1));
     expect(summary.averageAccuracyM, closeTo(5, 0.01));
+  });
+
+  test('turning back does not add walked distance', () {
+    final summary = geometry.summarize([
+      point(0, 0),
+      point(0, 0.001),
+      point(0, 0.0005),
+    ]);
+
+    expect(summary.distanceM, closeTo(55.6, 0.3));
   });
 
   test('rejects inaccurate and stationary GPS samples', () {

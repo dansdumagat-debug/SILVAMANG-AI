@@ -1,4 +1,25 @@
 .env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+backups/
+*.sql
+*.sql.gz
+*.sqlite*
+silvamang_ai_service/tmp/
+silvamang_ai_service/models old copy/
+silvamang_api/storage/framework/PsySH/
+silvamang_api/storage/app/**
+!silvamang_api/storage/app/.gitignore
+!silvamang_api/storage/app/public/
+!silvamang_api/storage/app/public/.gitignore
 .DS_Store
 node_modules/
 vendor/
@@ -25,3 +46,5 @@ open-silvamang-lan-firewall.ps1
 # Generated reports and exports
 silvamang_ai_service/export/
 silvamang_ai_service/reports/
+silvamang_ai_service/artifacts/
+silvamang_ai_service/tests/.test-artifacts/

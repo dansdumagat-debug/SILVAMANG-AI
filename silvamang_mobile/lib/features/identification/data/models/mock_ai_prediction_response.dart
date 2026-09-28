@@ -1,7 +1,12 @@
 import '../../../../shared/models/prediction_model.dart';
+import '../../../../shared/utils/species_taxonomy.dart';
+import '../../../../core/config/ai_identification_config.dart';
 
 class MockAiPredictionResponse {
   const MockAiPredictionResponse({
+    this.status = 'success',
+    this.message,
+    this.recommendation,
     required this.mode,
     required this.source,
     this.warning,
@@ -18,6 +23,9 @@ class MockAiPredictionResponse {
     this.storage = const <String, dynamic>{},
   });
 
+  final String status;
+  final String? message;
+  final String? recommendation;
   final String mode;
   final String source;
   final String? warning;
@@ -42,12 +50,74 @@ class MockAiPredictionResponse {
     );
   }
 
+  String get normalizedStatus => status.trim().toLowerCase();
+
+  bool get isUnknownClass {
+    return _isUnknownClassName(topPrediction.scientificName);
+  }
+
+  bool get isBelowConfidenceThreshold {
+    final confidence = topPrediction.confidence;
+    if (!confidence.isFinite || confidence < 0 || confidence > 100) {
+      return true;
+    }
+
+    return confidence / 100 < AiIdentificationConfig.confidenceThreshold;
+  }
+
+  bool get isRejected {
+    return const {
+          'unknown',
+          'uncertain',
+          'no_structure',
+        }.contains(normalizedStatus) ||
+        _isUnknownClassName(normalizedStatus) ||
+        isUnknownClass ||
+        isBelowConfidenceThreshold;
+  }
+
+  String get rejectionMessage {
+    final configuredMessage = message?.trim();
+    if (configuredMessage != null && configuredMessage.isNotEmpty) {
+      return configuredMessage;
+    }
+    if (normalizedStatus == 'no_structure') {
+      return 'No mangrove structure detected. Please capture a valid mangrove image.';
+    }
+    if (isUnknownClass || _isUnknownClassName(normalizedStatus)) {
+      return 'The captured image does not appear to be a supported mangrove species.';
+    }
+
+    return 'The captured image could not be identified as a supported mangrove species with enough confidence.';
+  }
+
+  String get rejectionRecommendation {
+    final configuredRecommendation = recommendation?.trim();
+    if (configuredRecommendation != null &&
+        configuredRecommendation.isNotEmpty) {
+      return configuredRecommendation;
+    }
+
+    if (isUnknownClass || _isUnknownClassName(normalizedStatus)) {
+      return 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+    }
+
+    if (normalizedStatus == 'uncertain' || isBelowConfidenceThreshold) {
+      return 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.';
+    }
+
+    return 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+  }
+
   bool get isValidCnnResult {
     final normalizedMode = mode.trim().toLowerCase();
     final normalizedSource = source.trim().toLowerCase();
     final normalizedWarning = warning?.trim().toLowerCase() ?? '';
 
     if (normalizedMode == 'mock' || normalizedMode.contains('fallback')) {
+      return false;
+    }
+    if (isRejected) {
       return false;
     }
     if (normalizedMode != 'cnn_baseline' &&
@@ -83,12 +153,19 @@ class MockAiPredictionResponse {
 
   List<PredictionModel> get validPredictions {
     return predictions
-        .where((prediction) => prediction.scientificName.trim().isNotEmpty)
+        .where(
+          (prediction) =>
+              prediction.scientificName.trim().isNotEmpty &&
+              !_isUnknownClassName(prediction.scientificName),
+        )
         .toList();
   }
 
   factory MockAiPredictionResponse.fromJson(Map<String, dynamic> json) {
     return MockAiPredictionResponse(
+      status: _asString(json['status'], fallback: 'success'),
+      message: _asNullableString(json['message']),
+      recommendation: _asNullableString(json['recommendation']),
       mode: _asString(json['mode'], fallback: 'mock'),
       source: _asString(json['source'], fallback: 'mock_fallback'),
       warning: _asNullableString(json['warning']),
@@ -120,6 +197,24 @@ class MockAiPredictionResponse {
         .map(PredictionModel.fromJson)
         .toList();
   }
+}
+
+String _normalizedClassName(Object? value) {
+  return value
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'^_+|_+$'), '');
+}
+
+bool _isUnknownClassName(Object? value) {
+  return const {
+    'unknown',
+    'non_mangrove',
+    'nonmangrove',
+    'not_mangrove',
+  }.contains(_normalizedClassName(value));
 }
 
 class MockAiModelInfo {
@@ -158,7 +253,7 @@ class MockTopPrediction {
   factory MockTopPrediction.fromJson(Map<String, dynamic> json) {
     return MockTopPrediction(
       speciesId: _asNullableInt(json['species_id'] ?? json['speciesId']),
-      scientificName: _asString(
+      scientificName: canonicalSpeciesName(
         json['scientific_name'] ?? json['scientificName'],
       ),
       commonName: _asString(json['common_name'] ?? json['commonName']),

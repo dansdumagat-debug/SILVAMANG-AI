@@ -1,0 +1,189 @@
+{
+  "Acanthus_ebracteatus": {
+    "precision": 0.5909090909090909,
+    "recall": 0.7222222222222222,
+    "f1-score": 0.65,
+    "support": 18.0
+  },
+  "Acanthus_ilicifolius": {
+    "precision": 0.7,
+    "recall": 0.6774193548387096,
+    "f1-score": 0.6885245901639344,
+    "support": 31.0
+  },
+  "Aegiceras_corniculatum": {
+    "precision": 0.75,
+    "recall": 0.6428571428571429,
+    "f1-score": 0.6923076923076923,
+    "support": 14.0
+  },
+  "Avicennia_alba": {
+    "precision": 0.4117647058823529,
+    "recall": 0.4666666666666667,
+    "f1-score": 0.4375,
+    "support": 15.0
+  },
+  "Avicennia_marina": {
+    "precision": 0.6933333333333334,
+    "recall": 0.7027027027027027,
+    "f1-score": 0.697986577181208,
+    "support": 74.0
+  },
+  "Avicennia_officinalis": {
+    "precision": 0.8,
+    "recall": 0.4444444444444444,
+    "f1-score": 0.5714285714285714,
+    "support": 36.0
+  },
+  "Avicennia_rumphiana": {
+    "precision": 0.6176470588235294,
+    "recall": 0.8076923076923077,
+    "f1-score": 0.7,
+    "support": 26.0
+  },
+  "Bruguiera_cylindrica": {
+    "precision": 0.5,
+    "recall": 0.7,
+    "f1-score": 0.5833333333333334,
+    "support": 20.0
+  },
+  "Bruguiera_gymnorrhiza": {
+    "precision": 0.7049180327868853,
+    "recall": 0.6231884057971014,
+    "f1-score": 0.6615384615384615,
+    "support": 69.0
+  },
+  "Bruguiera_sexangula": {
+    "precision": 0.5769230769230769,
+    "recall": 0.6818181818181818,
+    "f1-score": 0.625,
+    "support": 22.0
+  },
+  "Camptostemon_philippinensis": {
+    "precision": 0.5,
+    "recall": 0.75,
+    "f1-score": 0.6,
+    "support": 4.0
+  },
+  "Ceriops_tagal": {
+    "precision": 0.7209302325581395,
+    "recall": 0.7948717948717948,
+    "f1-score": 0.7560975609756098,
+    "support": 39.0
+  },
+  "Ceriops_zippeliana": {
+    "precision": 0.5,
+    "recall": 0.2,
+    "f1-score": 0.2857142857142857,
+    "support": 10.0
+  },
+  "Excoecaria_agallocha": {
+    "precision": 0.6470588235294118,
+    "recall": 0.8301886792452831,
+    "f1-score": 0.7272727272727273,
+    "support": 53.0
+  },
+  "Heritiera_littoralis": {
+    "precision": 0.6216216216216216,
+    "recall": 0.8518518518518519,
+    "f1-score": 0.71875,
+    "support": 27.0
+  },
+  "Lumnitzera_littorea": {
+    "precision": 0.8421052631578947,
+    "recall": 0.5333333333333333,
+    "f1-score": 0.6530612244897959,
+    "support": 30.0
+  },
+  "Lumnitzera_racemosa": {
+    "precision": 0.7391304347826086,
+    "recall": 0.68,
+    "f1-score": 0.7083333333333334,
+    "support": 25.0
+  },
+  "Nypa_fruticans": {
+    "precision": 0.7407407407407407,
+    "recall": 0.8695652173913043,
+    "f1-score": 0.8,
+    "support": 23.0
+  },
+  "Osbornia_octodonta": {
+    "precision": 0.7391304347826086,
+    "recall": 0.7083333333333334,
+    "f1-score": 0.723404255319149,
+    "support": 24.0
+  },
+  "Pemphis_acidula": {
+    "precision": 0.875,
+    "recall": 0.7777777777777778,
+    "f1-score": 0.8235294117647058,
+    "support": 27.0
+  },
+  "Rhizophora_apiculata": {
+    "precision": 0.8958333333333334,
+    "recall": 0.9148936170212766,
+    "f1-score": 0.9052631578947369,
+    "support": 47.0
+  },
+  "Rhizophora_mucronata": {
+    "precision": 0.5151515151515151,
+    "recall": 0.4857142857142857,
+    "f1-score": 0.5,
+    "support": 35.0
+  },
+  "Rhizophora_stylosa": {
+    "precision": 0.8571428571428571,
+    "recall": 0.6428571428571429,
+    "f1-score": 0.7346938775510204,
+    "support": 56.0
+  },
+  "Scyphiphora_hydrophylacea": {
+    "precision": 0.6818181818181818,
+    "recall": 0.8823529411764706,
+    "f1-score": 0.7692307692307693,
+    "support": 17.0
+  },
+  "Sonneratia_alba": {
+    "precision": 0.7966101694915254,
+    "recall": 0.8545454545454545,
+    "f1-score": 0.8245614035087719,
+    "support": 55.0
+  },
+  "Sonneratia_ovata": {
+    "precision": 0.875,
+    "recall": 0.5833333333333334,
+    "f1-score": 0.7,
+    "support": 12.0
+  },
+  "Xylocarpus_granatum": {
+    "precision": 0.5666666666666667,
+    "recall": 0.6538461538461539,
+    "f1-score": 0.6071428571428571,
+    "support": 26.0
+  },
+  "Xylocarpus_moluccensis": {
+    "precision": 0.5384615384615384,
+    "recall": 0.4117647058823529,
+    "f1-score": 0.4666666666666667,
+    "support": 17.0
+  },
+  "unknown": {
+    "precision": 0.88,
+    "recall": 0.8148148148148148,
+    "f1-score": 0.8461538461538461,
+    "support": 27.0
+  },
+  "accuracy": 0.7007963594994312,
+  "macro avg": {
+    "precision": 0.6854447279964452,
+    "recall": 0.6796226160701875,
+    "f1-score": 0.670948089757637,
+    "support": 879.0
+  },
+  "weighted avg": {
+    "precision": 0.7127791361878318,
+    "recall": 0.7007963594994312,
+    "f1-score": 0.6977945070262171,
+    "support": 879.0
+  }
+}

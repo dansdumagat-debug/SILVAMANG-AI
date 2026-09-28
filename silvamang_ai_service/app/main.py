@@ -15,7 +15,13 @@ from app.services.mock_prediction_service import build_mock_prediction
 from app.services.yolo_vision_service import YOLOVisionService
 from app.utils.image_utils import count_uploaded_images
 
-app = FastAPI(title=settings.app_name, version=settings.mock_model_version)
+app = FastAPI(
+    title=settings.app_name,
+    version=settings.mock_model_version,
+    docs_url=None if settings.app_env == 'production' else '/docs',
+    redoc_url=None if settings.app_env == 'production' else '/redoc',
+    openapi_url=None if settings.app_env == 'production' else '/openapi.json',
+)
 cnn_prediction_service = CNNPredictionService()
 yolo_detection_service = YOLOVisionService("detection")
 yolo_segmentation_service = YOLOVisionService("segmentation")
@@ -23,7 +29,7 @@ midas_measurement_service = MidasMeasurementService()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
+    allow_origins=[] if settings.app_env == 'production' else [
         "http://127.0.0.1:8000",
         "http://localhost:8000",
         "http://10.0.2.2:8000",
@@ -40,6 +46,11 @@ async def root() -> dict:
         "message": "SILVAMANG AI Service is running.",
         "mode": settings.model_mode,
     }
+
+
+@app.get('/livez')
+async def liveness() -> dict:
+    return {'status': 'ok'}
 
 
 @app.get("/health")

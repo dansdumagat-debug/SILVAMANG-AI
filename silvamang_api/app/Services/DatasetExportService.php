@@ -70,7 +70,9 @@ class DatasetExportService
                     mkdir(dirname($absoluteExportPath), 0755, true);
                 }
 
-                copy(Storage::disk('public')->path($scanImage->image_path), $absoluteExportPath);
+                if (! copy(Storage::disk('public')->path($scanImage->image_path), $absoluteExportPath)) {
+                    throw new \RuntimeException("Unable to copy scan image {$scanImage->id} to the dataset export.");
+                }
 
                 $this->appendManifestRow($scanImage, $relativeExportPath);
 
@@ -151,7 +153,7 @@ class DatasetExportService
 
     private function datasetRootPath(): string
     {
-        return str_replace('\\', '/', realpath(base_path('..')) ?: base_path('..')) . '/dataset';
+        return rtrim((string) config('dataset.export_root'), '/\\');
     }
 
     private function manifestPath(): string

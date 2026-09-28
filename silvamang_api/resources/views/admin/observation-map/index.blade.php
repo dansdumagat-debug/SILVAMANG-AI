@@ -59,6 +59,17 @@
 
                 <div class="admin-map-species-row" id="species-choice-row"></div>
 
+                <div class="observation-status-legend" role="list" aria-label="Observation marker meanings">
+                    <span role="listitem"><i class="map-status-symbol is-verified" aria-hidden="true">&#10003;</i>Verified or synced</span>
+                    <span role="listitem"><i class="map-status-symbol is-pending" aria-hidden="true">&hellip;</i>Pending review</span>
+                    <span role="listitem"><i class="map-status-symbol is-issue" aria-hidden="true">!</i>Needs attention</span>
+                    <span role="listitem"><i class="map-status-symbol is-neutral" aria-hidden="true">?</i>Other or unknown</span>
+                    @if ($isPersonalMap && $mapScope === 'all')
+                        <span role="listitem"><i class="map-status-symbol is-community" aria-hidden="true">C</i>Community scan</span>
+                    @endif
+                    <span role="listitem"><i class="map-status-symbol is-selected" aria-hidden="true"></i>Selected pin</span>
+                </div>
+
                 <details class="admin-map-filter-details">
                     <summary>Filters</summary>
                     <form method="GET" action="{{ route($mapRoute) }}" class="admin-map-filter-grid">
@@ -170,35 +181,38 @@
             attribution: 'Labels &copy; Esri',
         }).addTo(map);
 
-        const markerColor = (record) => {
-            if (selectedMarkerId === record.id) {
-                return '#2472B8';
-            }
-
+        const markerState = (record) => {
             if (isPersonalMap && !record.is_mine) {
-                return '#138496';
+                return { className: 'is-community', symbol: 'C', label: 'Community scan' };
             }
 
             const status = record.sync_status || record.validation_status;
             const normalized = String(status || '').toLowerCase();
+
+            if (normalized.includes('mismatch') || normalized.includes('failed') || normalized.includes('rejected') || normalized.includes('error')) {
+                return { className: 'is-issue', symbol: '!', label: 'Needs attention' };
+            }
+            if (normalized.includes('pending') || normalized.includes('unsynced') || normalized.includes('not_synced') || normalized.includes('queued')) {
+                return { className: 'is-pending', symbol: '&hellip;', label: 'Pending review' };
+            }
             if (normalized.includes('synced') || normalized.includes('match') || normalized.includes('verified') || normalized.includes('online')) {
-                return '#2F7D46';
+                return { className: 'is-verified', symbol: '&#10003;', label: 'Verified or synced' };
             }
-            if (normalized.includes('mismatch') || normalized.includes('failed')) {
-                return '#A83B3B';
-            }
-            if (normalized.includes('pending')) {
-                return '#F5A33B';
-            }
-            return '#2472B8';
+
+            return { className: 'is-neutral', symbol: '?', label: 'Other or unknown status' };
         };
 
-        const markerIcon = (record) => L.divIcon({
-            className: 'observation-marker',
-            html: `<span style="background:${markerColor(record)}"><i></i></span>`,
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-        });
+        const markerIcon = (record) => {
+            const state = markerState(record);
+            const selectedClass = selectedMarkerId === record.id ? ' is-selected' : '';
+
+            return L.divIcon({
+                className: `observation-marker${selectedClass}`,
+                html: `<span class="${state.className}"><b aria-hidden="true">${state.symbol}</b></span>`,
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
+            });
+        };
 
         const setText = (id, value) => {
             document.getElementById(id).textContent =
@@ -341,6 +355,7 @@
 
         markers.forEach((record) => {
             const latLng = [record.latitude, record.longitude];
+            const accessibleMarkerLabel = `${speciesLabel(record)} - ${markerState(record).label}`;
 
             const popupHtml = `
                 <strong>${escapeHtml(record.species)}</strong><br>
@@ -353,7 +368,12 @@
                 Sync: ${escapeHtml(formatLabel(record.sync_status))}
             `;
 
-            const marker = L.marker(latLng, { icon: markerIcon(record) })
+            const marker = L.marker(latLng, {
+                icon: markerIcon(record),
+                title: accessibleMarkerLabel,
+                alt: accessibleMarkerLabel,
+                keyboard: true,
+            })
                 .addTo(map)
                 .bindPopup(popupHtml)
                 .on('click', () => showDetails(record));

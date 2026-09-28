@@ -95,6 +95,8 @@ if the seeder is run again.
 Before redeploying, confirm that `DB_CONNECTION` points to a persistent
 database or that the SQLite database and uploaded files are on a Render
 persistent disk. The Dockerfile's default SQLite path is inside the container.
+See [Render scan and photo persistence](render_persistence.md) for the backup,
+storage path, and verification steps before changing the live service.
 
 ```powershell
 composer install --optimize-autoloader --no-dev

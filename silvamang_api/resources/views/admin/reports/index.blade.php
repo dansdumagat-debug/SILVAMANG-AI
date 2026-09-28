@@ -58,10 +58,10 @@
         <article class="report-card">
             <div class="panel-header"><h3>Identification Analytics</h3><span>Top species and scan status</span></div>
             <div class="metric-grid report-metric-grid">
-                <div><span>Average Confidence</span><strong>{{ $averageConfidence }}%</strong></div>
-                <div><span>Completed</span><strong>{{ $completedScans }}</strong></div>
-                <div><span>Pending</span><strong>{{ $pendingScans }}</strong></div>
-                <div><span>Failed</span><strong>{{ $failedScans }}</strong></div>
+                <div class="summary-tone-info"><span>Average Confidence</span><strong>{{ $averageConfidence }}%</strong></div>
+                <div class="summary-tone-success"><span>Completed</span><strong>{{ $completedScans }}</strong></div>
+                <div class="summary-tone-warning"><span>Pending</span><strong>{{ $pendingScans }}</strong></div>
+                <div class="summary-tone-danger"><span>Failed</span><strong>{{ $failedScans }}</strong></div>
             </div>
             <hr class="report-divider">
             @forelse ($mostIdentifiedSpecies as $species)
@@ -76,10 +76,10 @@
         <article class="report-card">
             <div class="panel-header"><h3>Validation Breakdown</h3><span>Status mix</span></div>
             <div class="metric-grid report-metric-grid">
-                <div><span>Match</span><strong>{{ $validationMatches }}</strong></div>
-                <div><span>Mismatch</span><strong>{{ $validationMismatches }}</strong></div>
-                <div><span>Likely Found</span><strong>{{ $validationLikelyFound }}</strong></div>
-                <div><span>Unknown</span><strong>{{ $validationUnknown }}</strong></div>
+                <div class="summary-tone-success"><span>Match</span><strong>{{ $validationMatches }}</strong></div>
+                <div class="summary-tone-danger"><span>Mismatch</span><strong>{{ $validationMismatches }}</strong></div>
+                <div class="summary-tone-info"><span>Likely Found</span><strong>{{ $validationLikelyFound }}</strong></div>
+                <div class="summary-tone-neutral"><span>Unknown</span><strong>{{ $validationUnknown }}</strong></div>
             </div>
             <hr class="report-divider">
             @forelse ($validationBreakdown as $item)
@@ -133,11 +133,11 @@
             <div class="panel-header"><h3>CNN Baseline Evaluation</h3><span>File-based evidence</span></div>
             @if (! empty($cnnMetrics))
                 <div class="cnn-metric-grid">
-                    <div><span>Accuracy</span><strong>{{ $cnnMetrics['accuracy'] ?? 'N/A' }}%</strong></div>
-                    <div><span>Precision</span><strong>{{ $cnnMetrics['precision'] ?? 'N/A' }}%</strong></div>
-                    <div><span>Recall</span><strong>{{ $cnnMetrics['recall'] ?? 'N/A' }}%</strong></div>
-                    <div><span>F1-score</span><strong>{{ $cnnMetrics['f1_score'] ?? 'N/A' }}%</strong></div>
-                    <div><span>Top-3 Accuracy</span><strong>{{ $cnnMetrics['top_3_accuracy'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Accuracy</span><strong>{{ is_numeric($cnnMetrics['accuracy'] ?? null) ? number_format((float) $cnnMetrics['accuracy'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>Precision</span><strong>{{ is_numeric($cnnMetrics['precision'] ?? null) ? number_format((float) $cnnMetrics['precision'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>Recall</span><strong>{{ is_numeric($cnnMetrics['recall'] ?? null) ? number_format((float) $cnnMetrics['recall'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>F1-score</span><strong>{{ is_numeric($cnnMetrics['f1_score'] ?? null) ? number_format((float) $cnnMetrics['f1_score'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>Top-3 Accuracy</span><strong>{{ is_numeric($cnnMetrics['top_3_accuracy'] ?? null) ? number_format((float) $cnnMetrics['top_3_accuracy'], 2) . '%' : 'N/A' }}</strong></div>
                 </div>
                 @if ($cnnConfusionMatrixPreview)
                     <div class="confusion-matrix-preview">

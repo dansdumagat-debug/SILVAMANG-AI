@@ -131,6 +131,12 @@ class AuthController extends StateNotifier<AuthState> {
       final auth = await repository.login(email: email, password: password);
       state = AuthState(user: auth.user, token: auth.token);
       return true;
+    } on ApiException catch (error) {
+      final message = error.statusCode == 401
+          ? 'Email or password is incorrect, or this account is not registered on the connected server.'
+          : error.message;
+      state = state.copyWith(isLoading: false, errorMessage: message);
+      return false;
     } catch (error) {
       state = state.copyWith(isLoading: false, errorMessage: error.toString());
       return false;

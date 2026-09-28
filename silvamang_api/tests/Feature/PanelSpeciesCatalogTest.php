@@ -23,7 +23,6 @@ class PanelSpeciesCatalogTest extends TestCase
     private const NEW_NAMES = [
         'Acanthus ebracteatus',
         'Acanthus ilicifolius',
-        'Acanthus volubilis',
         'Avicennia alba',
         'Avicennia officinalis',
         'Nypa fruticans',
@@ -33,7 +32,7 @@ class PanelSpeciesCatalogTest extends TestCase
         'Sonneratia ovata',
         'Camptostemon philippinensis',
         'Heritiera littoralis',
-        'Xylocarpus rumphii',
+        'Xylocarpus moluccensis',
         'Osbornia octodonta',
         'Aegiceras corniculatum',
         'Aegiceras floridum',
@@ -43,16 +42,16 @@ class PanelSpeciesCatalogTest extends TestCase
         'Scyphiphora hydrophylacea',
     ];
 
-    public function test_panel_catalog_adds_all_twenty_missing_species(): void
+    public function test_panel_catalog_adds_all_nineteen_missing_species(): void
     {
         $this->seedCatalog();
 
-        $this->assertCount(20, PanelSpeciesCatalog::entries());
-        $this->assertSame(30, Species::query()->count());
-        $this->assertSame(30, Species::query()->distinct()->count('scientific_name'));
+        $this->assertCount(19, PanelSpeciesCatalog::entries());
+        $this->assertSame(29, Species::query()->count());
+        $this->assertSame(29, Species::query()->distinct()->count('scientific_name'));
         $this->assertSame(10, Species::query()->where('cnn_supported', true)->count());
-        $this->assertSame(20, Species::query()->where('cnn_supported', false)->count());
-        $this->assertSame(30, MangroveEducation::query()->count());
+        $this->assertSame(19, Species::query()->where('cnn_supported', false)->count());
+        $this->assertSame(29, MangroveEducation::query()->count());
 
         foreach (self::NEW_NAMES as $requestedName) {
             $canonical = SpeciesTaxonomy::canonicalName($requestedName);
@@ -65,14 +64,14 @@ class PanelSpeciesCatalogTest extends TestCase
 
         $panelNames = collect(PanelSpeciesCatalog::entries())->pluck('scientific_name');
         $this->assertSame(
-            20,
+            19,
             MangroveKnowledge::query()->whereIn('species_name', $panelNames)->count()
         );
         $this->assertDatabaseMissing('species', [
             'scientific_name' => 'Avicennia marina var. rumphiana',
         ]);
         $this->assertDatabaseMissing('species', [
-            'scientific_name' => 'Xylocarpus moluccensis',
+            'scientific_name' => 'Xylocarpus rumphii',
         ]);
         $this->assertDatabaseHas('species', [
             'scientific_name' => 'Avicennia rumphiana',
@@ -80,23 +79,40 @@ class PanelSpeciesCatalogTest extends TestCase
             'cnn_supported' => true,
         ]);
         $this->assertDatabaseHas('species', [
-            'scientific_name' => 'Xylocarpus rumphii',
+            'scientific_name' => 'Xylocarpus moluccensis',
             'cnn_supported' => false,
+        ]);
+        $this->assertDatabaseHas('species', [
+            'scientific_name' => 'Aegiceras floridum',
+            'status' => 'active',
+            'cnn_supported' => false,
+        ]);
+
+        $aegicerasFloridum = Species::query()
+            ->where('scientific_name', 'Aegiceras floridum')
+            ->firstOrFail();
+        $this->assertDatabaseHas('mangrove_education', [
+            'species_id' => $aegicerasFloridum->id,
+            'status' => 'active',
+        ]);
+        $this->assertDatabaseHas('mangrove_knowledge', [
+            'species_name' => 'Aegiceras floridum',
+            'status' => 'active',
         ]);
 
         $this->seed(PanelSpeciesSeeder::class);
         $this->seed(PanelSpeciesEducationSeeder::class);
         $this->seed(PanelMangroveKnowledgeSeeder::class);
 
-        $this->assertSame(30, Species::query()->count());
-        $this->assertSame(30, MangroveEducation::query()->count());
+        $this->assertSame(29, Species::query()->count());
+        $this->assertSame(29, MangroveEducation::query()->count());
         $this->assertSame(
-            20,
+            19,
             MangroveKnowledge::query()->whereIn('species_name', $panelNames)->count()
         );
     }
 
-    public function test_legacy_avicennia_name_finds_the_canonical_api_record(): void
+    public function test_legacy_species_names_find_the_canonical_api_records(): void
     {
         $this->seedCatalog();
 
@@ -110,10 +126,14 @@ class PanelSpeciesCatalogTest extends TestCase
             ->assertJsonPath('data.scientific_name', 'Avicennia rumphiana')
             ->assertJsonPath('data.cnn_supported', true);
 
-        $this->getJson('/api/species?search=Xylocarpus%20moluccensis')
+        $this->getJson('/api/species?search=Xylocarpus%20rumphii')
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.scientific_name', 'Xylocarpus rumphii');
+            ->assertJsonPath('data.0.scientific_name', 'Xylocarpus moluccensis');
+
+        $this->getJson('/api/mangrove-education?species_name=Xylocarpus_rumphii')
+            ->assertOk()
+            ->assertJsonPath('data.scientific_name', 'Xylocarpus moluccensis');
     }
 
     private function seedCatalog(): void

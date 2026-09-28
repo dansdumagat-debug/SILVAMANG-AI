@@ -53,7 +53,7 @@ class SpeciesSeeder extends Seeder
                 'scientific_name' => 'Avicennia rumphiana',
                 'common_name' => 'Api-api / Rumph mangrove',
                 'family' => 'Acanthaceae',
-                'identification_notes' => 'Accepted Philippine display name: Avicennia rumphiana. Legacy CNN class label: Avicennia_marina_var_rumphiana.',
+                'identification_notes' => 'Canonical CNN and display label: Avicennia_rumphiana. Legacy trained-model alias: Avicennia_marina_var_rumphiana.',
                 'habitat' => 'Coastal and intertidal mangrove zones',
                 'conservation_status' => 'Vulnerable',
                 'native_status' => 'Native',

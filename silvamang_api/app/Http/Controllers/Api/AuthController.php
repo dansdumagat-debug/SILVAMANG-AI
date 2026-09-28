@@ -34,7 +34,9 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
         $data = $request->validated();
-        $user = User::where('email', $data['email'])->first();
+        $user = User::query()
+            ->whereRaw('LOWER(email) = ?', [strtolower($data['email'])])
+            ->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             return response()->json([

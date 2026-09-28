@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             SpeciesSeeder::class,
             PanelSpeciesSeeder::class,
+            DeployedModelSpeciesSeeder::class,
             MangroveEducationSeeder::class,
             PanelSpeciesEducationSeeder::class,
             AiModelSeeder::class,

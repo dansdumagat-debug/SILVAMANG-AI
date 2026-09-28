@@ -2,16 +2,15 @@
 
 ## Purpose
 
-The SILVAMANG AI Assistant is a hybrid educational chatbot for students, researchers, environmental workers, and mangrove field users. It answers mangrove questions using verified local knowledge first, then optionally uses an OpenAI-compatible API when configured and available.
+The SILVAMANG AI Assistant is a hybrid educational chatbot for students, researchers, environmental workers, and mangrove field users. It grounds configured external AI responses with verified local knowledge and falls back to direct local answers when the provider is unavailable.
 
 ## Hybrid workflow
 
 1. The user asks a question from the Flutter AI Assistant.
 2. Flutter sends the message to Laravel through `/api/chatbot/message`.
-3. Laravel searches the `mangrove_knowledge` table.
-4. If a verified answer is found, Laravel returns it with `source: knowledge_base`.
-5. If no verified answer is found and an external AI API is configured, Laravel calls the configured OpenAI-compatible chat endpoint.
-6. If neither local knowledge nor the external API is available, Laravel returns `source: offline` with a clear unavailable message.
+3. Laravel searches the `mangrove_knowledge` table and builds authorized field context.
+4. If an external provider is configured, Laravel sends the question with relevant verified context.
+5. If the provider is unavailable, Laravel returns a verified knowledge entry or a local rule based answer.
 
 The existing `/api/ai/assistant/chat` endpoint is kept for compatibility.
 
@@ -27,13 +26,18 @@ The external AI provider is optional and replaceable. Configure it in `.env`:
 
 ```env
 AI_PROVIDER=openai
-AI_API_KEY=
-AI_MODEL=gpt-4o-mini
-AI_API_BASE_URL=https://api.openai.com/v1
+OPENAI_API_KEY=<set this only in the server environment>
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://api.openai.com/v1
 AI_CHATBOT_TIMEOUT=30
+AI_CHATBOT_MAX_OUTPUT_TOKENS=600
+AI_CHATBOT_INCLUDE_PRECISE_LOCATION=false
 ```
 
-OpenRouter or other OpenAI-compatible providers can be used by changing `AI_API_BASE_URL`, `AI_MODEL`, and `AI_API_KEY`.
+OpenRouter or another OpenAI-compatible provider can use `AI_API_URL`,
+`AI_MODEL`, and `AI_API_KEY` with the matching `AI_PROVIDER` value. Official
+OpenAI and compatible-provider settings are resolved separately, and Gemini
+uses only `GEMINI_API_KEY`.
 
 ## Knowledge database
 
@@ -71,7 +75,14 @@ Source values:
 
 ## Security considerations
 
-API keys must stay in `.env` and must not be hardcoded in code or Flutter assets. Laravel uses the authenticated API user when logging assistant interactions. External AI calls should not include passwords, tokens, or sensitive user data.
+API keys must stay in the Laravel or Render server environment and must not be
+hardcoded in source code, committed `.env` files, or Flutter assets. Laravel
+uses the authenticated API user when logging assistant interactions. External
+AI calls should not include passwords, tokens, or sensitive user data. Exact
+GPS coordinates and manual location notes are excluded from automatically
+built scan context by default. Caller-supplied context must follow the same
+privacy rule. External context is passed as untrusted user-level reference
+data, and OpenAI requests explicitly disable response storage.
 
 ## Limitations
 

@@ -4,6 +4,18 @@
 **Scope:** local `silvamang_ai` MySQL database, Laravel seed data, Flutter offline education data, CNN class-order files, and raw image folders  
 **Change status:** **PANEL SELECTION IMPLEMENTED AND LOCALLY VERIFIED**  
 
+> **Operational naming update (2026-09-24):** SILVAMANG now uses
+> `Avicennia_rumphiana` / *Avicennia rumphiana* and
+> `Xylocarpus_moluccensis` / *Xylocarpus moluccensis* as its canonical
+> dataset and application names. The older names in this dated audit are
+> retained only to document the original findings; runtime normalization and
+> the database migration treat them as legacy aliases.
+>
+> **Scope update (2026-09-25):** *Acanthus volubilis* was retired from the
+> application and future CNN target because there are too few independently
+> verified training photographs. References below remain historical audit
+> evidence. The current target is 29 mangrove species plus the `unknown` class.
+
 This file preserves the pre-change audit. The final confirmed target is **30 total species**: the original 10 CNN species plus all 20 missing species selected from the supplied list. The implementation also standardizes the existing *Avicennia marina* var. *rumphiana* record to *Avicennia rumphiana* and retains the 10-class CNN unchanged.
 
 The selected additions are *Acanthus ebracteatus*, *Acanthus ilicifolius*, *Acanthus volubilis*, *Avicennia alba*, *Avicennia officinalis*, *Nypa fruticans*, *Lumnitzera racemosa*, *Lumnitzera littorea*, *Pemphis acidula*, *Sonneratia ovata*, *Camptostemon philippinensis*, *Heritiera littoralis*, *Xylocarpus rumphii*, *Osbornia octodonta*, *Aegiceras corniculatum*, *Aegiceras floridum*, *Bruguiera cylindrica*, *Bruguiera sexangula*, *Ceriops zippeliana*, and *Scyphiphora hydrophylacea*.

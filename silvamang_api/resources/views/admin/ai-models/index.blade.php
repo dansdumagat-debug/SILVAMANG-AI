@@ -3,18 +3,22 @@
 @section('title', 'AI Models')
 
 @section('content')
-    <div class="card mb-4">
-        <div class="card-header d-flex align-items-center justify-content-between">
+    <div class="page-heading">
+        <div><h2>AI Models</h2><p>Monitor model versions, readiness, and current status.</p></div>
+        <a href="{{ route('admin.ai-models.create') }}" class="primary-action">Add AI Model</a>
+    </div>
+
+    <article class="panel section-panel">
+        <div class="panel-header">
             <div>
-                <h5 class="mb-0">AI Model Runtime Health</h5>
-                <small class="text-muted">Checks Python AI service availability for each registered model endpoint.</small>
+                <h3>AI Model Runtime Health</h3>
+                <span>Checks Python AI service availability for each registered model endpoint.</span>
             </div>
         </div>
 
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
+        <div class="table-wrap">
+            <table class="compact-table">
+                <thead>
                         <tr>
                             <th>Model name</th>
                             <th>Type</th>
@@ -26,8 +30,8 @@
                             <th>Health</th>
                             <th>Last checked</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                </thead>
+                <tbody>
                         @forelse ($aiModels as $aiModel)
                             @php($health = $modelHealth[$aiModel->id] ?? null)
                             @php($evaluations = collect($modelEvaluations[$aiModel->id] ?? []))
@@ -47,26 +51,24 @@
                                 </td>
                                 <td>
                                     @if ($evaluations->isNotEmpty())
-                                        <div class="d-flex flex-column gap-1">
+                                        <div>
                                             @foreach ($evaluations->take(6) as $evaluation)
                                                 <div>
                                                     <strong>{{ str_replace('_', ' ', ucfirst($evaluation->metric_name)) }}:</strong>
                                                     {{ $evaluation->display_value }}
-                                                    <small class="text-muted">
+                                                    <small class="muted-text">
                                                         {{ $evaluation->date?->format('M d, Y') }}
                                                     </small>
                                                 </div>
                                             @endforeach
                                         </div>
                                     @else
-                                        <span class="text-muted">No evaluation recorded</span>
+                                        <span class="muted-text">No evaluation recorded</span>
                                     @endif
                                 </td>
                                 <td>
                                     @php($isActive = ($health['status'] ?? $aiModel->status) === 'active')
-                                    <span class="badge {{ $isActive ? 'bg-success' : 'bg-secondary' }}">
-                                        {{ $isActive ? 'Active' : 'Inactive' }}
-                                    </span>
+                                    @include('admin.partials.status-badge', ['status' => $isActive ? 'active' : 'inactive'])
                                 </td>
                                 <td>{{ $health['endpoint'] ?? 'Not mapped' }}</td>
                                 <td>{{ $health['message'] ?? 'Not checked' }}</td>
@@ -80,18 +82,14 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center text-muted">No AI models found.</td>
+                                <td colspan="9" class="empty-state">No AI models found.</td>
                             </tr>
                         @endforelse
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
         </div>
-    </div>
-    <div class="page-heading">
-        <div><h2>AI Models</h2><p>Monitor model versions, readiness, and current status.</p></div>
-        <a href="{{ route('admin.ai-models.create') }}" class="primary-action">Add AI Model</a>
-    </div>
+    </article>
+
     <article class="panel">
         <form method="GET" action="{{ route('admin.ai-models.index') }}" class="filter-toolbar">
             <input type="search" name="search" value="{{ request('search') }}" placeholder="Search model name, type, version...">
@@ -123,7 +121,7 @@
                             <td>{{ $model->model_name }}</td>
                             <td>{{ $model->model_type }}</td>
                             <td>{{ $model->version ?? 'N/A' }}</td>
-                            <td>@include('admin.partials.confidence-bar', ['value' => $model->accuracy])</td>
+                            <td>@include('admin.partials.confidence-bar', ['value' => $model->accuracy, 'label' => 'Model accuracy'])</td>
                             <td>@include('admin.partials.status-badge', ['status' => $model->status])</td>
                             <td>
                                 <div class="action-row">

@@ -7,9 +7,16 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
+try:
+    from .candidate_manifest_paths import CandidatePathResolver
+except ImportError:
+    from candidate_manifest_paths import CandidatePathResolver
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = PROJECT_ROOT / "dataset" / "metadata" / "candidate_image_manifest.csv"
+CANDIDATE_ROOT = (PROJECT_ROOT / "dataset" / "candidates").resolve()
+PATH_RESOLVER = CandidatePathResolver(PROJECT_ROOT, CANDIDATE_ROOT)
 DEFAULT_MODEL_PATH = (
     PROJECT_ROOT
     / "silvamang_ai_service"
@@ -73,13 +80,16 @@ def pending_unclassified_rows(species_filter: set[str]) -> list[dict[str, str]]:
                 continue
             if species_filter and str(row.get("scientific_name") or "") not in species_filter:
                 continue
-            relative_path = Path(str(row.get("file_path") or ""))
-            if relative_path.parent.name != "unclassified":
+            if str(row.get("reviewed_plant_part") or "").strip():
                 continue
-            image_path = (PROJECT_ROOT / relative_path).resolve()
-            if not image_path.is_file():
+            image_path = PATH_RESOLVER.resolve(row)
+            if image_path is None:
                 continue
             row["_absolute_path"] = str(image_path)
+            try:
+                row["_resolved_file_path"] = image_path.relative_to(PROJECT_ROOT).as_posix()
+            except ValueError:
+                continue
             selected.append(row)
     return selected
 
@@ -144,7 +154,7 @@ def main() -> int:
                 "scientific_name": str(row.get("scientific_name") or ""),
                 "suggested_part": class_to_part[class_id],
                 "confidence": f"{confidence:.6f}",
-                "file_path": str(row.get("file_path") or ""),
+                "file_path": str(row.get("_resolved_file_path") or ""),
                 "source": str(row.get("source") or ""),
                 "source_record_url": str(row.get("source_record_url") or ""),
             }

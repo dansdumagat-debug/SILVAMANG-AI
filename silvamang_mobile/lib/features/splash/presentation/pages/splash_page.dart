@@ -33,7 +33,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     if (!mounted) {
       return;
     }
-    context.goNamed(isAuthenticated ? RouteNames.home : RouteNames.login);
+    context.goNamed(isAuthenticated ? RouteNames.home : RouteNames.guestScan);
   }
 
   @override
@@ -76,7 +76,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
                 isLoading: authState.isLoading,
                 onPressed: authState.isLoading
                     ? null
-                    : () => context.pushNamed(RouteNames.login),
+                    : () => context.pushNamed(RouteNames.guestScan),
               ),
               const SizedBox(height: AppSpacing.lg),
               Text(

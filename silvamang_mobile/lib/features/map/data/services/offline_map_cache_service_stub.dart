@@ -6,6 +6,13 @@ final offlineMapCacheServiceProvider = Provider<OfflineMapCacheService>((ref) {
   return OfflineMapCacheService();
 });
 
+final offlineMapNativeZoomProvider = FutureProvider.autoDispose<int>((
+  ref,
+) async {
+  final status = await ref.watch(offlineMapCacheServiceProvider).status();
+  return status.maxDownloadedZoom ?? 13;
+});
+
 class OfflineMapCacheStatus {
   const OfflineMapCacheStatus({
     required this.initialized,
@@ -13,6 +20,7 @@ class OfflineMapCacheStatus {
     required this.tileCount,
     required this.sizeKiB,
     required this.message,
+    this.maxDownloadedZoom,
   });
 
   final bool initialized;
@@ -20,6 +28,7 @@ class OfflineMapCacheStatus {
   final int tileCount;
   final double sizeKiB;
   final String message;
+  final int? maxDownloadedZoom;
 
   bool get hasCachedTiles => false;
 }

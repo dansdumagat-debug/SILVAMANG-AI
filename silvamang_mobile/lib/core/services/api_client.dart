@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../config/api_config.dart';
 import 'local_storage_service.dart';
 
 class ApiException implements Exception {
@@ -16,11 +16,44 @@ class ApiException implements Exception {
   String toString() => message;
 }
 
-class ApiClient {
+abstract interface class AiInferenceClient {
+  Future<Response<Map<String, dynamic>>> classifyImage({
+    String? imagePath,
+    List<int>? imageBytes,
+    String fileName = 'scan.jpg',
+    String? imageBase64,
+    double? latitude,
+    double? longitude,
+    String? scanRecordId,
+  });
+
+  Future<Response<Map<String, dynamic>>> detectPlantParts({
+    String? imagePath,
+    List<int>? imageBytes,
+    String fileName = 'scan.jpg',
+    String? imageBase64,
+    double? latitude,
+    double? longitude,
+    String? scanRecordId,
+    bool persistResult = true,
+  });
+
+  Future<Response<Map<String, dynamic>>> segmentPlant({
+    String? imagePath,
+    List<int>? imageBytes,
+    String fileName = 'scan.jpg',
+    String? imageBase64,
+    double? latitude,
+    double? longitude,
+    String? scanRecordId,
+  });
+}
+
+class ApiClient implements AiInferenceClient {
   ApiClient._()
     : _dio = Dio(
         BaseOptions(
-          baseUrl: _apiBaseUrl(),
+          baseUrl: ApiConfig.baseUrl,
           connectTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
           headers: const {
@@ -44,21 +77,6 @@ class ApiClient {
 
   static final ApiClient instance = ApiClient._();
   final Dio _dio;
-
-  static String _apiBaseUrl() {
-    const dartDefineBaseUrl = String.fromEnvironment('API_BASE_URL');
-    final definedUrl = dartDefineBaseUrl.trim();
-    if (definedUrl.isNotEmpty) {
-      return definedUrl;
-    }
-
-    final envUrl = dotenv.env['API_BASE_URL']?.trim();
-    if (envUrl != null && envUrl.isNotEmpty) {
-      return envUrl;
-    }
-
-    return 'https://silvamang-api-service.onrender.com/api';
-  }
 
   Future<Response<T>> get<T>(String path, {Map<String, dynamic>? query}) async {
     try {
@@ -102,6 +120,7 @@ class ApiClient {
     }
   }
 
+  @override
   Future<Response<Map<String, dynamic>>> classifyImage({
     String? imagePath,
     List<int>? imageBytes,
@@ -123,6 +142,7 @@ class ApiClient {
     );
   }
 
+  @override
   Future<Response<Map<String, dynamic>>> detectPlantParts({
     String? imagePath,
     List<int>? imageBytes,
@@ -131,6 +151,7 @@ class ApiClient {
     double? latitude,
     double? longitude,
     String? scanRecordId,
+    bool persistResult = true,
   }) {
     return _postAiImage(
       '/ai/detect',
@@ -141,9 +162,11 @@ class ApiClient {
       latitude: latitude,
       longitude: longitude,
       scanRecordId: scanRecordId,
+      additionalFields: {'persist_result': persistResult ? '1' : '0'},
     );
   }
 
+  @override
   Future<Response<Map<String, dynamic>>> segmentPlant({
     String? imagePath,
     List<int>? imageBytes,

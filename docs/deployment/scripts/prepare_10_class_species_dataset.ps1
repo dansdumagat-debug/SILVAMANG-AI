@@ -6,7 +6,7 @@ $imageExtensions = @(".jpg", ".jpeg", ".png", ".webp")
 
 $canonicalClasses = @(
     "Avicennia_marina",
-    "Avicennia_marina_var_rumphiana",
+    "Avicennia_rumphiana",
     "Bruguiera_gymnorrhiza",
     "Ceriops_tagal",
     "Excoecaria_agallocha",
@@ -20,7 +20,8 @@ $canonicalClasses = @(
 $folderMappings = @(
     @{ Old = "Rhizophora_Stylosa"; New = "Rhizophora_stylosa" },
     @{ Old = "Excocaria_Galoca"; New = "Excoecaria_agallocha" },
-    @{ Old = "Avicennia_ Rhumphiana"; New = "Avicennia_marina_var_rumphiana" },
+    @{ Old = "Avicennia_ Rhumphiana"; New = "Avicennia_rumphiana" },
+    @{ Old = "Avicennia_marina_var_rumphiana"; New = "Avicennia_rumphiana" },
     @{ Old = "Sonneratia Alba"; New = "Sonneratia_alba" }
 )
 

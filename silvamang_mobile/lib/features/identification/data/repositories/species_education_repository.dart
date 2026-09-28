@@ -19,6 +19,12 @@ class SpeciesEducationRepository {
   Map<String, SpeciesEducationModel>? _cache;
   final Map<String, SpeciesEducationModel> _onlineCache = {};
 
+  Future<SpeciesEducationModel> findOfflineByScientificName(String name) async {
+    final key = SpeciesEducationModel.normalizedKey(name);
+    final entries = await _loadEntries();
+    return entries[key] ?? SpeciesEducationModel.fallback(name);
+  }
+
   Future<SpeciesEducationModel> findByScientificName(String name) async {
     final key = SpeciesEducationModel.normalizedKey(name);
     final entries = await _loadEntries();

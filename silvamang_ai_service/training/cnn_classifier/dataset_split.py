@@ -31,7 +31,7 @@ SUPPORTED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 SPLITS = ("train", "val", "test")
 OFFICIAL_SPECIES_LABELS = [
     "Avicennia_marina",
-    "Avicennia_marina_var_rumphiana",
+    "Avicennia_rumphiana",
     "Bruguiera_gymnorrhiza",
     "Ceriops_tagal",
     "Excoecaria_agallocha",

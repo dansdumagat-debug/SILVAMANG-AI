@@ -162,14 +162,6 @@ class _OfflineModelDiagnosticPageState
                   value: _yesNo(result?.singleModelAssetLoaded),
                 ),
                 _DiagnosticRow(
-                  label: 'Paired ONNX asset',
-                  value: _yesNo(result?.pairedModelAssetLoaded),
-                ),
-                _DiagnosticRow(
-                  label: 'Paired data asset',
-                  value: _yesNo(result?.pairedDataAssetLoaded),
-                ),
-                _DiagnosticRow(
                   label: 'Selected model',
                   value: result?.selectedModelAsset.isEmpty == false
                       ? result!.selectedModelAsset

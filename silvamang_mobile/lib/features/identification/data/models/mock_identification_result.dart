@@ -123,9 +123,13 @@ class MockIdentificationResult {
         measurementMethod: response.measurement.measurementMethod,
         measurementConfidence: response.measurement.confidence,
         validationResult: fallback.validationResult,
-        validationMessage: response.warning ?? response.locationHint.message,
+        validationMessage: response.isRejected
+            ? response.rejectionMessage
+            : response.warning ?? response.locationHint.message,
         distanceToKnownDistributionKm: fallback.distanceToKnownDistributionKm,
-        explanation: response.warning ?? response.explanation,
+        explanation: response.isRejected
+            ? '${response.rejectionMessage} ${response.rejectionRecommendation}'
+            : response.warning ?? response.explanation,
       );
     }
 

@@ -20,6 +20,16 @@ use InvalidArgumentException;
 
 class AIController extends Controller
 {
+    private const UNKNOWN_MESSAGE = 'The captured image does not appear to be a supported mangrove species.';
+
+    private const UNCERTAIN_MESSAGE = 'The captured image could not be identified as a supported mangrove species with enough confidence.';
+
+    private const CAPTURE_RECOMMENDATION = 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+
+    private const CLEAR_CAPTURE_RECOMMENDATION = 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.';
+
+    private const NO_STRUCTURE_MESSAGE = 'No mangrove structure detected. Please capture a valid mangrove image.';
+
     public function health(AIService $aiService)
     {
         $health = $aiService->health();
@@ -36,13 +46,17 @@ class AIController extends Controller
     public function classify(Request $request, AIService $aiService)
     {
         $data = $this->validatedInferenceData($request);
-        $response = $aiService->classify($this->payload($data), $this->image($request));
+        $response = $this->normalizeClassificationResponse(
+            $aiService->classify($this->payload($data), $this->image($request))
+        );
         $storage = $this->storeClassificationResult($request, $response);
 
         return response()->json([
-            'message' => ($response['status'] ?? null) === 'error'
-                ? ($response['message'] ?? 'CNN classification failed.')
-                : 'CNN classification completed successfully.',
+            'message' => $this->responseMessage(
+                $response,
+                'CNN classification completed successfully.',
+                'CNN classification failed.'
+            ),
             'data' => $response,
             'storage' => $storage,
         ], $this->statusCode($response));
@@ -51,7 +65,9 @@ class AIController extends Controller
     public function detect(Request $request, AIService $aiService)
     {
         $data = $this->validatedInferenceData($request);
-        $response = $aiService->detect($this->payload($data), $this->image($request));
+        $response = $this->normalizeDetectionResponse(
+            $aiService->detect($this->payload($data), $this->image($request))
+        );
         $storage = $this->storeVisionResult(
             request: $request,
             response: $response,
@@ -60,9 +76,11 @@ class AIController extends Controller
         );
 
         return response()->json([
-            'message' => ($response['status'] ?? null) === 'error'
-                ? ($response['message'] ?? 'YOLOv8 detection failed.')
-                : 'YOLOv8 detection completed successfully.',
+            'message' => $this->responseMessage(
+                $response,
+                'YOLOv8 detection completed successfully.',
+                'YOLOv8 detection failed.'
+            ),
             'data' => $response,
             'storage' => $storage,
         ], $this->statusCode($response));
@@ -122,6 +140,7 @@ class AIController extends Controller
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:10240'],
             'image_base64' => ['nullable', 'string'],
             'scan_record_id' => ['nullable', 'exists:scan_records,id'],
+            'persist_result' => ['nullable', 'boolean'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'measurement_type' => ['nullable', 'string', 'in:tree_height,canopy_width,height,canopy,width'],
@@ -180,10 +199,16 @@ class AIController extends Controller
      */
     private function storeClassificationResult(Request $request, array $response): array
     {
-        if (($response['status'] ?? null) !== 'success') {
+        $status = $this->responseStatus($response);
+
+        if ($status !== 'success') {
             return [
                 'stored' => false,
-                'reason' => 'ai_response_error',
+                'reason' => match ($status) {
+                    'unknown' => 'classification_rejected_unknown',
+                    'uncertain' => 'classification_rejected_low_confidence',
+                    default => 'ai_response_error',
+                },
             ];
         }
 
@@ -375,10 +400,21 @@ class AIController extends Controller
      */
     private function storeVisionResult(Request $request, array $response, string $captureMode, string $noteLabel): array
     {
-        if (($response['status'] ?? null) !== 'success') {
+        $status = $this->responseStatus($response);
+
+        if ($status !== 'success') {
             return [
                 'stored' => false,
-                'reason' => 'ai_response_error',
+                'reason' => $status === 'no_structure'
+                    ? 'no_mangrove_structure_detected'
+                    : 'ai_response_error',
+            ];
+        }
+
+        if ($request->has('persist_result') && ! $request->boolean('persist_result')) {
+            return [
+                'stored' => false,
+                'reason' => 'validation_only',
             ];
         }
 
@@ -464,6 +500,167 @@ class AIController extends Controller
         return SpeciesTaxonomy::lookupKey($value);
     }
 
+    /**
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function normalizeClassificationResponse(array $response): array
+    {
+        $status = $this->responseStatus($response);
+
+        if ($this->isUnknownClass($status)) {
+            return $this->unknownClassificationResponse($response);
+        }
+
+        if ($status === 'uncertain') {
+            return $this->uncertainClassificationResponse($response);
+        }
+
+        if ($status !== 'success') {
+            return $response;
+        }
+
+        $speciesName = $this->displaySpeciesName($response['species_name'] ?? '');
+        $confidence = $this->nullableFloat($response['confidence'] ?? null);
+
+        if ($this->isUnknownClass($speciesName)) {
+            return $this->unknownClassificationResponse($response);
+        }
+
+        if ($speciesName === ''
+            || $confidence === null
+            || $confidence < 0
+            || $confidence > 100
+            || $confidence < $this->minimumConfidencePercentage()) {
+            return $this->uncertainClassificationResponse($response);
+        }
+
+        $predictions = $response['predictions'] ?? [];
+        if (! is_array($predictions)) {
+            $predictions = [];
+        }
+
+        $response['predictions'] = array_values(array_filter(
+            $predictions,
+            fn ($prediction) => is_array($prediction)
+                && ! $this->isUnknownClass($prediction['scientific_name'] ?? '')
+        ));
+
+        return $response;
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function normalizeDetectionResponse(array $response): array
+    {
+        $status = $this->responseStatus($response);
+
+        if ($status === 'no_structure') {
+            return $this->noStructureResponse($response);
+        }
+
+        if ($status !== 'success'
+            || ! array_key_exists('detections', $response)
+            || ! is_array($response['detections'])
+            || $response['detections'] !== []) {
+            return $response;
+        }
+
+        return $this->noStructureResponse($response);
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function unknownClassificationResponse(array $response): array
+    {
+        return array_merge($response, [
+            'status' => 'unknown',
+            'message' => self::UNKNOWN_MESSAGE,
+            'recommendation' => self::CAPTURE_RECOMMENDATION,
+            'species_name' => null,
+            'predictions' => [],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function uncertainClassificationResponse(array $response): array
+    {
+        return array_merge($response, [
+            'status' => 'uncertain',
+            'message' => self::UNCERTAIN_MESSAGE,
+            'recommendation' => self::CLEAR_CAPTURE_RECOMMENDATION,
+            'species_name' => null,
+            'predictions' => [],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     * @return array<string, mixed>
+     */
+    private function noStructureResponse(array $response): array
+    {
+        return array_merge($response, [
+            'status' => 'no_structure',
+            'message' => self::NO_STRUCTURE_MESSAGE,
+            'detections' => [],
+        ]);
+    }
+
+    private function isUnknownClass(mixed $value): bool
+    {
+        return in_array($this->speciesLookupKey($value), [
+            'unknown',
+            'non mangrove',
+            'nonmangrove',
+            'not mangrove',
+        ], true);
+    }
+
+    private function minimumConfidencePercentage(): float
+    {
+        $configuredThreshold = config('services.ai_service.confidence_threshold', 0.70);
+        $threshold = is_numeric($configuredThreshold)
+            ? (float) $configuredThreshold
+            : 0.70;
+
+        if (! is_finite($threshold) || $threshold < 0 || $threshold > 1) {
+            $threshold = 0.70;
+        }
+
+        return $threshold * 100;
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     */
+    private function responseStatus(array $response): string
+    {
+        return strtolower(trim((string) ($response['status'] ?? '')));
+    }
+
+    /**
+     * @param  array<string, mixed>  $response
+     */
+    private function responseMessage(array $response, string $successMessage, string $errorMessage): string
+    {
+        $status = $this->responseStatus($response);
+        $responseMessage = trim((string) ($response['message'] ?? ''));
+
+        if ($status !== 'success' && $responseMessage !== '') {
+            return $responseMessage;
+        }
+
+        return $status === 'error' ? $errorMessage : $successMessage;
+    }
+
     private function nullableFloat(mixed $value): ?float
     {
         if ($value === null || $value === '') {
@@ -502,7 +699,7 @@ class AIController extends Controller
 
     private function statusCode(array $response): int
     {
-        return ($response['status'] ?? null) === 'error' ? 503 : 200;
+        return $this->responseStatus($response) === 'error' ? 503 : 200;
     }
 
     private function recordCode(): string

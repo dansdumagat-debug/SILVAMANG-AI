@@ -381,21 +381,21 @@ class _OfflineAreaMapPreview extends StatelessWidget {
                   initialCenter: center,
                   initialZoom: _zoomForRadius(radiusKm),
                   minZoom: 4,
-                  maxZoom: 22,
+                  maxZoom: 24,
                 ),
                 children: [
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.tileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 22,
+                    maxZoom: 24,
                     maxNativeZoom: 19,
                   ),
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 22,
+                    maxZoom: 24,
                     maxNativeZoom: 19,
                   ),
                   CircleLayer(

@@ -117,12 +117,8 @@ class MidasMeasurementService:
             subject_distance_m=subject_distance_m,
             reference_distance_m=reference_distance_m,
         )
-        midas_model_file_present = self.model_path is not None and self.model_path.exists()
-        method = (
-            "calibrated_reference_object_midas_ready"
-            if midas_model_file_present
-            else "calibrated_reference_object"
-        )
+        # This metric calculation uses reference geometry, not neural depth.
+        method = "calibrated_reference_object"
 
         return {
             "mode": "measurement",
@@ -165,8 +161,25 @@ class MidasMeasurementService:
             raise RuntimeError(f"PyTorch unavailable: {exc}") from exc
 
         try:
-            self._model = torch.jit.load(str(self.model_path), map_location="cpu")
-            self._model.eval()
+            if self.model_path.suffix.lower() == ".pth":
+                checkpoint = torch.load(self.model_path, map_location="cpu", weights_only=True)
+                if checkpoint.get("model_type") != "MiDaS_small":
+                    raise ValueError("Expected a MiDaS_small checkpoint.")
+                # Trust only the two known architecture repositories, never a
+                # repository name supplied inside a checkpoint.
+                backbone = torch.hub.load(
+                    "rwightman/gen-efficientnet-pytorch", "tf_efficientnet_lite3",
+                    pretrained=False, exportable=True, trust_repo=True,
+                )
+                del backbone
+                model = torch.hub.load(
+                    "isl-org/MiDaS", "MiDaS_small", pretrained=False, trust_repo=True,
+                )
+                model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+            else:
+                model = torch.jit.load(str(self.model_path), map_location="cpu")
+            model.eval()
+            self._model = model
             return self._model
         except Exception as exc:
             raise RuntimeError(f"MiDaS model could not be loaded: {exc}") from exc
@@ -180,7 +193,7 @@ class MidasMeasurementService:
             if path.exists():
                 return path
 
-        for folder in ("models/midas", "models/depth", "models/midas_depth"):
+        for folder in ("models/MiDaS", "models/midas", "models/depth", "models/midas_depth"):
             directory = self.service_root / folder
             if not directory.exists():
                 continue
@@ -194,6 +207,7 @@ class MidasMeasurementService:
 
     def expected_model_locations(self) -> list[Path]:
         return [
+            self.service_root / "models" / "MiDaS" / "midas_small_pretrained.pth",
             self.service_root / "models" / "midas" / "midas_torchscript.pt",
             self.service_root / "models" / "depth" / "midas_torchscript.pt",
             self.service_root / "models" / "midas_depth" / "midas_torchscript.pt",

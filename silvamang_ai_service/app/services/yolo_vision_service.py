@@ -124,6 +124,7 @@ class YOLOVisionService:
     def _resolve_model_path(self) -> Path | None:
         env_key = "YOLO_DETECTOR_MODEL_PATH"
         folders = [
+            "models/YOLOv8-Detector",
             "models/yolo_detector",
             "models/yolo_detection",
             "models/yolo",
@@ -132,6 +133,7 @@ class YOLOVisionService:
         if self.task == "segmentation":
             env_key = "YOLO_SEGMENTATION_MODEL_PATH"
             folders = [
+                "models/YOLOv8-Seg",
                 "models/yolo_segmenter",
                 "models/yolo_segmentation",
                 "models/yolo_segment",
@@ -161,6 +163,7 @@ class YOLOVisionService:
     def expected_model_locations(self) -> list[Path]:
         if self.task == "segmentation":
             folders = [
+                "models/YOLOv8-Seg",
                 "models/yolo_segmenter",
                 "models/yolo_segmentation",
                 "models/yolo_segment",
@@ -168,6 +171,7 @@ class YOLOVisionService:
             ]
         else:
             folders = [
+                "models/YOLOv8-Detector",
                 "models/yolo_detector",
                 "models/yolo_detection",
                 "models/yolo",

@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/config/api_config.dart';
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../shared/utils/species_taxonomy.dart';
@@ -29,7 +29,7 @@ class MockAiPredictionRepository {
     required this.offlinePredictionService,
   });
 
-  final ApiClient apiClient;
+  final AiInferenceClient apiClient;
   final ConnectivityService connectivityService;
   final OfflinePredictionService offlinePredictionService;
 
@@ -69,11 +69,10 @@ class MockAiPredictionRepository {
           capturedImages: capturedImages,
           latitude: latitude,
           longitude: longitude,
-          subjectDistanceM: subjectDistanceM,
         );
 
         if (prediction.source == 'python_ai_service' &&
-            prediction.isValidCnnResult) {
+            (prediction.isValidCnnResult || prediction.isRejected)) {
           return prediction;
         }
 
@@ -152,11 +151,42 @@ class MockAiPredictionRepository {
     required List<CapturedPlantPartImage> capturedImages,
     double? latitude,
     double? longitude,
-    double? subjectDistanceM,
   }) async {
     _debugPredictionRequest(capturedImages);
 
     final primaryImage = capturedImages.first;
+    final detection = await _optionalAiCall(
+      () => apiClient.detectPlantParts(
+        imagePath: primaryImage.imagePath,
+        imageBytes: primaryImage.previewBytes,
+        fileName: primaryImage.fileName,
+        latitude: latitude,
+        longitude: longitude,
+        persistResult: false,
+      ),
+    );
+    final detectionStatus = _normalizedPipelineStatus(detection?['status']);
+    if (detectionStatus == 'no_structure') {
+      final prediction = _predictionFromPipeline(
+        classification: {
+          'status': 'no_structure',
+          'message': detection?['message'],
+          'recommendation': detection?['recommendation'],
+          'mode': 'yolov8_validation',
+          'model_name': 'SILVAMANG YOLO Validator',
+        },
+        storage: const <String, dynamic>{},
+        detection: detection,
+        segmentation: null,
+        measurement: null,
+        capturedImages: capturedImages,
+        latitude: latitude,
+        longitude: longitude,
+      );
+      _debugPredictionResponse(prediction);
+      return prediction;
+    }
+
     final classificationResponse = await apiClient.classifyImage(
       imagePath: primaryImage.imagePath,
       imageBytes: primaryImage.previewBytes,
@@ -165,7 +195,10 @@ class MockAiPredictionRepository {
       longitude: longitude,
     );
     final classification = _responseData(classificationResponse.data);
-    if ((classification['status'] ?? '').toString().toLowerCase() == 'error') {
+    final classificationStatus = _normalizedPipelineStatus(
+      classification['status'],
+    );
+    if (classificationStatus == 'error') {
       throw ApiException(
         classification['message']?.toString() ?? 'CNN classification failed.',
       );
@@ -175,44 +208,28 @@ class MockAiPredictionRepository {
     final scanRecordId = _asNullableString(
       storage['scan_record_id'] ?? storage['scanRecordId'],
     );
-    final detection = await _optionalAiCall(
-      () => apiClient.detectPlantParts(
-        imagePath: primaryImage.imagePath,
-        imageBytes: primaryImage.previewBytes,
-        fileName: primaryImage.fileName,
-        latitude: latitude,
-        longitude: longitude,
-        scanRecordId: scanRecordId,
-      ),
-    );
-    final segmentation = await _optionalAiCall(
-      () => apiClient.segmentPlant(
-        imagePath: primaryImage.imagePath,
-        imageBytes: primaryImage.previewBytes,
-        fileName: primaryImage.fileName,
-        latitude: latitude,
-        longitude: longitude,
-        scanRecordId: scanRecordId,
-      ),
-    );
-    final measurement = await _optionalAiCall(
-      () => apiClient.measurePlant(
-        imagePath: primaryImage.imagePath,
-        imageBytes: primaryImage.previewBytes,
-        fileName: primaryImage.fileName,
-        latitude: latitude,
-        longitude: longitude,
-        scanRecordId: scanRecordId,
-        subjectDistanceM: subjectDistanceM,
-      ),
-    );
-
+    final isClassificationRejected = const {
+      'unknown',
+      'uncertain',
+    }.contains(classificationStatus);
+    final segmentation = isClassificationRejected
+        ? null
+        : await _optionalAiCall(
+            () => apiClient.segmentPlant(
+              imagePath: primaryImage.imagePath,
+              imageBytes: primaryImage.previewBytes,
+              fileName: primaryImage.fileName,
+              latitude: latitude,
+              longitude: longitude,
+              scanRecordId: scanRecordId,
+            ),
+          );
     final prediction = _predictionFromPipeline(
       classification: classification,
       storage: storage,
       detection: detection,
       segmentation: segmentation,
-      measurement: measurement,
+      measurement: null,
       capturedImages: capturedImages,
       latitude: latitude,
       longitude: longitude,
@@ -247,6 +264,16 @@ class MockAiPredictionRepository {
     double? latitude,
     double? longitude,
   }) {
+    final detectionStatus = _normalizedPipelineStatus(detection?['status']);
+    final classificationStatus = _normalizedPipelineStatus(
+      classification['status'] ?? 'success',
+    );
+    final status = detectionStatus == 'no_structure'
+        ? 'no_structure'
+        : classificationStatus;
+    final policySource = detectionStatus == 'no_structure'
+        ? detection
+        : classification;
     final speciesName = _displaySpeciesName(classification['species_name']);
     final confidence = _asNullableDouble(classification['confidence']);
     final predictions = _classificationPredictions(
@@ -257,7 +284,10 @@ class MockAiPredictionRepository {
     final measurementData = _measurementData(measurement);
 
     return MockAiPredictionResponse.fromJson({
-      'mode': 'cnn_efficientnet_b0',
+      'status': status,
+      'message': policySource?['message'],
+      'recommendation': policySource?['recommendation'],
+      'mode': classification['mode'] ?? 'cnn_efficientnet_b0',
       'source': 'python_ai_service',
       'warning': null,
       'model': {
@@ -307,7 +337,14 @@ class MockAiPredictionRepository {
     for (final row in _asMapList(classification['predictions'])) {
       final predictionSpecies = _displaySpeciesName(row['scientific_name']);
       final predictionConfidence = _asNullableDouble(row['confidence']);
-      if (predictionSpecies.isEmpty || predictionConfidence == null) {
+      if (predictionSpecies.isEmpty ||
+          const {
+            'unknown',
+            'non mangrove',
+            'nonmangrove',
+            'not mangrove',
+          }.contains(predictionSpecies.trim().toLowerCase()) ||
+          predictionConfidence == null) {
         continue;
       }
 
@@ -365,7 +402,7 @@ class MockAiPredictionRepository {
 
     debugPrint(
       'SILVAMANG AI predict API_BASE_URL: '
-      '${dotenv.env['API_BASE_URL'] ?? 'https://silvamang-api-service.onrender.com/api'}',
+      '${ApiConfig.baseUrl}',
     );
     debugPrint('SILVAMANG AI selected image count: ${capturedImages.length}');
     debugPrint(
@@ -457,6 +494,24 @@ class MockAiPredictionRepository {
     }
 
     return double.tryParse(value.toString());
+  }
+
+  String _normalizedPipelineStatus(Object? value) {
+    final normalized = value
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+
+    return const {
+          'unknown',
+          'non_mangrove',
+          'nonmangrove',
+          'not_mangrove',
+        }.contains(normalized)
+        ? 'unknown'
+        : normalized;
   }
 
   String _displaySpeciesName(Object? value) {

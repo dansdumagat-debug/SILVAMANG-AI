@@ -12,6 +12,14 @@ use Illuminate\Support\Arr;
 
 class MockAiPredictionController extends Controller
 {
+    private const UNKNOWN_MESSAGE = 'The captured image does not appear to be a supported mangrove species.';
+
+    private const UNCERTAIN_MESSAGE = 'The captured image could not be identified as a supported mangrove species with enough confidence.';
+
+    private const CAPTURE_RECOMMENDATION = 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+
+    private const CLEAR_CAPTURE_RECOMMENDATION = 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.';
+
     public function __invoke(MockPredictionRequest $request, PythonAiService $pythonAiService)
     {
         $data = $request->validated();
@@ -50,7 +58,9 @@ class MockAiPredictionController extends Controller
                 images: $uploadedImages
             );
 
-            $prediction = $this->normalizePredictionData($response['data'] ?? $response);
+            $prediction = $this->applyClassificationPolicy(
+                $this->normalizePredictionData($response['data'] ?? $response)
+            );
             $prediction = $this->withDebug(
                 $prediction,
                 $this->debugData(
@@ -62,9 +72,11 @@ class MockAiPredictionController extends Controller
                     pythonErrorIfAny: $pythonAiService->lastError()
                 )
             );
-            $message = str_starts_with((string) ($prediction['mode'] ?? ''), 'cnn_')
-                ? 'AI prediction completed using Python AI service.'
-                : ($response['message'] ?? 'AI prediction completed successfully.');
+            $message = in_array($prediction['status'] ?? null, ['unknown', 'uncertain'], true)
+                ? (string) $prediction['message']
+                : (str_starts_with((string) ($prediction['mode'] ?? ''), 'cnn_')
+                    ? 'AI prediction completed using Python AI service.'
+                    : ($response['message'] ?? 'AI prediction completed successfully.'));
 
             return response()->json([
                 'message' => $message,
@@ -94,6 +106,7 @@ class MockAiPredictionController extends Controller
 
     private function normalizePredictionData(array $prediction): array
     {
+        $prediction['status'] = $prediction['status'] ?? 'success';
         $prediction['mode'] = $prediction['mode'] ?? 'mock';
         $prediction['source'] = $prediction['source'] ?? 'python_ai_service';
         $prediction['model'] = $prediction['model'] ?? [
@@ -127,6 +140,119 @@ class MockAiPredictionController extends Controller
         ];
 
         return $this->withSpeciesMetadata($prediction);
+    }
+
+    /**
+     * Apply the same unknown-class and confidence policy used by the dedicated
+     * classification endpoint while preserving this compatibility endpoint's
+     * existing response envelope.
+     *
+     * @param  array<string, mixed>  $prediction
+     * @return array<string, mixed>
+     */
+    private function applyClassificationPolicy(array $prediction): array
+    {
+        $status = strtolower(trim((string) ($prediction['status'] ?? 'success')));
+
+        if ($this->isUnknownClass($status)) {
+            return $this->rejectedPrediction($prediction, 'unknown', self::UNKNOWN_MESSAGE);
+        }
+
+        if ($status === 'uncertain') {
+            return $this->rejectedPrediction($prediction, 'uncertain', self::UNCERTAIN_MESSAGE);
+        }
+
+        if ($status !== 'success') {
+            return $prediction;
+        }
+
+        $topPrediction = is_array($prediction['top_prediction'] ?? null)
+            ? $prediction['top_prediction']
+            : [];
+        $speciesName = $this->displaySpeciesName($topPrediction['scientific_name'] ?? '');
+        $confidence = $this->nullableFloat($topPrediction['confidence'] ?? null);
+
+        if ($this->isUnknownClass($speciesName)) {
+            return $this->rejectedPrediction($prediction, 'unknown', self::UNKNOWN_MESSAGE);
+        }
+
+        if ($speciesName === ''
+            || $confidence === null
+            || $confidence < 0
+            || $confidence > 100
+            || $confidence < $this->minimumConfidencePercentage()) {
+            return $this->rejectedPrediction($prediction, 'uncertain', self::UNCERTAIN_MESSAGE);
+        }
+
+        $prediction['predictions'] = array_values(array_filter(
+            Arr::wrap($prediction['predictions'] ?? []),
+            fn ($row) => is_array($row)
+                && ! $this->isUnknownClass($row['scientific_name'] ?? '')
+        ));
+
+        return $prediction;
+    }
+
+    /**
+     * @param  array<string, mixed>  $prediction
+     * @return array<string, mixed>
+     */
+    private function rejectedPrediction(
+        array $prediction,
+        string $status,
+        string $message
+    ): array {
+        $topPrediction = is_array($prediction['top_prediction'] ?? null)
+            ? $prediction['top_prediction']
+            : [];
+
+        $prediction['status'] = $status;
+        $prediction['message'] = $message;
+        $prediction['recommendation'] = $status === 'uncertain'
+            ? self::CLEAR_CAPTURE_RECOMMENDATION
+            : self::CAPTURE_RECOMMENDATION;
+        $prediction['top_prediction'] = array_merge($topPrediction, [
+            'species_id' => null,
+            'scientific_name' => '',
+            'common_name' => null,
+            'confidence' => null,
+        ]);
+        $prediction['predictions'] = [];
+
+        return $prediction;
+    }
+
+    private function isUnknownClass(mixed $value): bool
+    {
+        return in_array($this->speciesLookupKey($value), [
+            'unknown',
+            'non mangrove',
+            'nonmangrove',
+            'not mangrove',
+        ], true);
+    }
+
+    private function minimumConfidencePercentage(): float
+    {
+        $configuredThreshold = config('services.ai_service.confidence_threshold', 0.70);
+        $threshold = is_numeric($configuredThreshold)
+            ? (float) $configuredThreshold
+            : 0.70;
+
+        if (! is_finite($threshold) || $threshold < 0 || $threshold > 1) {
+            $threshold = 0.70;
+        }
+
+        return $threshold * 100;
+    }
+
+    private function nullableFloat(mixed $value): ?float
+    {
+        if ($value === null || $value === '' || ! is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
     }
 
     private function fallbackPrediction(array $data, int $imageCount, string $warning): array

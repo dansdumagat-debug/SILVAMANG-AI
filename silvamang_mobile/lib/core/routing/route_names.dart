@@ -2,10 +2,12 @@ class RouteNames {
   const RouteNames._();
 
   static const splash = 'splash';
+  static const guestScan = 'guestScan';
   static const login = 'login';
   static const register = 'register';
   static const home = 'home';
   static const captureGuide = 'captureGuide';
+  static const manualSpeciesMeasurement = 'manualSpeciesMeasurement';
   static const fieldDistance = 'fieldDistance';
   static const identificationResult = 'identificationResult';
   static const offlineModelDiagnostic = 'offlineModelDiagnostic';

@@ -38,10 +38,10 @@
             <div class="panel-header"><h3>CNN Baseline Status</h3><span>File-based metrics</span></div>
             @if (! empty($cnnMetrics))
                 <div class="metric-grid">
-                    <div><span>Accuracy</span><strong>{{ $cnnMetrics['accuracy'] ?? 'N/A' }}%</strong></div>
-                    <div><span>F1-score</span><strong>{{ $cnnMetrics['f1_score'] ?? 'N/A' }}%</strong></div>
-                    <div><span>Precision</span><strong>{{ $cnnMetrics['precision'] ?? 'N/A' }}%</strong></div>
-                    <div><span>Top-3 Accuracy</span><strong>{{ $cnnMetrics['top_3_accuracy'] ?? 'N/A' }}%</strong></div>
+                    <div><span>Accuracy</span><strong>{{ is_numeric($cnnMetrics['accuracy'] ?? null) ? number_format((float) $cnnMetrics['accuracy'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>F1-score</span><strong>{{ is_numeric($cnnMetrics['f1_score'] ?? null) ? number_format((float) $cnnMetrics['f1_score'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>Precision</span><strong>{{ is_numeric($cnnMetrics['precision'] ?? null) ? number_format((float) $cnnMetrics['precision'], 2) . '%' : 'N/A' }}</strong></div>
+                    <div><span>Top-3 Accuracy</span><strong>{{ is_numeric($cnnMetrics['top_3_accuracy'] ?? null) ? number_format((float) $cnnMetrics['top_3_accuracy'], 2) . '%' : 'N/A' }}</strong></div>
                 </div>
             @else
                 <div class="empty-card">CNN evaluation metrics are not available yet.</div>

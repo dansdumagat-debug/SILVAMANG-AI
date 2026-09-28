@@ -19,18 +19,22 @@ void main() {
     );
     expect(
       canonicalSpeciesName('Xylocarpus moluccensis'),
-      'Xylocarpus rumphii',
+      'Xylocarpus moluccensis',
+    );
+    expect(
+      canonicalSpeciesName('Xylocarpus rumphii'),
+      'Xylocarpus moluccensis',
     );
   });
 
   test('species aliases normalize inside assistant questions', () {
     expect(
-      normalizedSpeciesText('How do I identify Xylocarpus moluccensis?'),
-      'how do i identify xylocarpus rumphii',
+      normalizedSpeciesText('How do I identify Xylocarpus rumphii?'),
+      'how do i identify xylocarpus moluccensis',
     );
   });
 
-  testWidgets('offline assistant loads all twenty added species guides', (
+  testWidgets('offline assistant loads all bundled species guides', (
     tester,
   ) async {
     const service = OfflineMangroveKnowledgeService();
@@ -42,12 +46,12 @@ void main() {
     expect(acanthus.response, contains('Leaf:'));
 
     final xylocarpus = await service.answer(
-      question: 'How can I identify Xylocarpus moluccensis?',
+      question: 'How can I identify Xylocarpus rumphii?',
     );
-    expect(xylocarpus.relatedSpecies, contains('Xylocarpus rumphii'));
+    expect(xylocarpus.relatedSpecies, contains('Xylocarpus moluccensis'));
     expect(
       xylocarpus.response,
-      contains('Related species: Xylocarpus rumphii'),
+      contains('Related species: Xylocarpus moluccensis'),
     );
   });
 }

@@ -18,10 +18,21 @@ from urllib.parse import parse_qs, urlencode, urlparse
 
 from PIL import Image
 
+try:
+    from .candidate_manifest_lock import (
+        CandidateManifestBusyError,
+        candidate_manifest_write_lock,
+    )
+    from .candidate_manifest_paths import CandidatePathResolver, candidate_part_hint
+except ImportError:
+    from candidate_manifest_lock import CandidateManifestBusyError, candidate_manifest_write_lock
+    from candidate_manifest_paths import CandidatePathResolver, candidate_part_hint
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = PROJECT_ROOT / "dataset" / "metadata" / "candidate_image_manifest.csv"
 CANDIDATE_ROOT = (PROJECT_ROOT / "dataset" / "candidates").resolve()
+PATH_RESOLVER = CandidatePathResolver(PROJECT_ROOT, CANDIDATE_ROOT)
 ALLOWED_STATUSES = {"all", "pending", "approved", "rejected", "flagged"}
 APPROVED_PARTS = {"leaves", "bark", "roots", "flowers"}
 ALLOWED_SUGGESTED_PARTS = {"all", "unclassified", *APPROVED_PARTS}
@@ -46,54 +57,46 @@ def update_review(
     review_notes: str,
 ) -> bool:
     with MANIFEST_LOCK:
-        fieldnames, rows = read_manifest()
-        updated = False
-        reviewed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        with candidate_manifest_write_lock(MANIFEST_PATH):
+            fieldnames, rows = read_manifest()
+            updated = False
+            reviewed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
-        for row in rows:
-            if row.get("candidate_id") != candidate_id:
-                continue
+            for row in rows:
+                if row.get("candidate_id") != candidate_id:
+                    continue
 
-            row["review_status"] = review_status
-            row["reviewed_plant_part"] = plant_part if review_status == "approved" else ""
-            note = review_notes.strip()
-            row["review_notes"] = note or f"Reviewed locally at {reviewed_at}."
-            updated = True
-            break
+                row["review_status"] = review_status
+                row["reviewed_plant_part"] = plant_part if review_status == "approved" else ""
+                note = review_notes.strip()
+                row["review_notes"] = note or f"Reviewed locally at {reviewed_at}."
+                updated = True
+                break
 
-        if not updated:
-            return False
+            if not updated:
+                return False
 
-        MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
-        with NamedTemporaryFile(
-            "w",
-            encoding="utf-8",
-            newline="",
-            dir=MANIFEST_PATH.parent,
-            prefix="candidate_manifest_",
-            suffix=".tmp",
-            delete=False,
-        ) as temporary:
-            writer = csv.DictWriter(temporary, fieldnames=fieldnames, extrasaction="ignore")
-            writer.writeheader()
-            writer.writerows(rows)
-            temporary_path = Path(temporary.name)
+            MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
+            with NamedTemporaryFile(
+                "w",
+                encoding="utf-8",
+                newline="",
+                dir=MANIFEST_PATH.parent,
+                prefix="candidate_manifest_",
+                suffix=".tmp",
+                delete=False,
+            ) as temporary:
+                writer = csv.DictWriter(temporary, fieldnames=fieldnames, extrasaction="ignore")
+                writer.writeheader()
+                writer.writerows(rows)
+                temporary_path = Path(temporary.name)
 
-        os.replace(temporary_path, MANIFEST_PATH)
-        return True
+            os.replace(temporary_path, MANIFEST_PATH)
+            return True
 
 
 def safe_candidate_path(row: dict[str, str]) -> Path | None:
-    relative = row.get("file_path", "").strip()
-    if not relative:
-        return None
-
-    candidate_path = (PROJECT_ROOT / relative).resolve()
-    try:
-        candidate_path.relative_to(CANDIDATE_ROOT)
-    except ValueError:
-        return None
-    return candidate_path if candidate_path.is_file() else None
+    return PATH_RESOLVER.resolve(row)
 
 
 @lru_cache(maxsize=32)
@@ -123,12 +126,8 @@ def option(value: str, selected: str, label: str | None = None) -> str:
 
 
 def suggested_part_for(row: dict[str, str]) -> str:
-    candidate_parent = Path(row.get("file_path", "")).parent.name
-    if candidate_parent.startswith("suggested_"):
-        part = candidate_parent.removeprefix("suggested_").casefold()
-        if part in APPROVED_PARTS:
-            return part
-    return "unclassified"
+    hint = candidate_part_hint(row, PATH_RESOLVER.resolve_all(row))
+    return hint if hint in APPROVED_PARTS else "unclassified"
 
 
 class CandidateReviewHandler(BaseHTTPRequestHandler):
@@ -171,7 +170,12 @@ class CandidateReviewHandler(BaseHTTPRequestHandler):
             self.send_error(HTTPStatus.BAD_REQUEST, "Invalid review action")
             return
 
-        if not update_review(candidate_id, status, part, notes):
+        try:
+            updated = update_review(candidate_id, status, part, notes)
+        except CandidateManifestBusyError as error:
+            self.send_error(HTTPStatus.CONFLICT, str(error))
+            return
+        if not updated:
             self.send_error(HTTPStatus.NOT_FOUND, "Candidate not found")
             return
 

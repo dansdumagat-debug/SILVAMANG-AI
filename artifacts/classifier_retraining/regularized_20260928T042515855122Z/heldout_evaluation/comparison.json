@@ -1,0 +1,26 @@
+{
+  "test_images": 879,
+  "manifest_sha256": "cd6b0dfb27b0c40b4c75428873b90b71122260b0a7808f42f558e2b04d5c0a99",
+  "checkpoint_sha256": {
+    "previous": "0247cc5dd6a29c595eaca1086bc5378428aad8bc31b9c0fa3f50aa981774d95c",
+    "candidate": "7e3971e202e7fccb6e2bcaa4a1982e3de9d5c156f0073f5a3a37a462a052ae1d"
+  },
+  "deployed": false,
+  "selection": "Candidate selected using validation macro-F1 before this evaluation",
+  "models": {
+    "previous": {
+      "loss": 1.2731504559652527,
+      "accuracy": 0.6814562002275313,
+      "macro_f1": 0.6573823916871979
+    },
+    "candidate": {
+      "loss": 1.1821084461928228,
+      "accuracy": 0.7007963594994312,
+      "macro_f1": 0.670948089757637
+    }
+  },
+  "paired_changes": {
+    "corrected": 45,
+    "regressed": 28
+  }
+}

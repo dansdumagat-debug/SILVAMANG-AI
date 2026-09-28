@@ -23,10 +23,10 @@
         </article>
 
         <div class="dataset-count-grid">
-            <div><span>Pending</span><strong>{{ $pendingCount }}</strong></div>
-            <div><span>Verified</span><strong>{{ $verifiedCount }}</strong></div>
-            <div><span>Exported</span><strong>{{ $exportedCount }}</strong></div>
-            <div><span>Rejected</span><strong>{{ $rejectedCount }}</strong></div>
+            <div class="summary-tone-warning"><span>Pending</span><strong>{{ $pendingCount }}</strong></div>
+            <div class="summary-tone-success"><span>Verified</span><strong>{{ $verifiedCount }}</strong></div>
+            <div class="summary-tone-info"><span>Exported</span><strong>{{ $exportedCount }}</strong></div>
+            <div class="summary-tone-danger"><span>Rejected</span><strong>{{ $rejectedCount }}</strong></div>
         </div>
     </section>
 

@@ -301,6 +301,10 @@
                     return 'Silvi';
                 }
 
+                if (normalizedSource === 'mangrove_scope_guard') {
+                    return 'Mangrove Scope';
+                }
+
                 return source || 'Silvi';
             };
 

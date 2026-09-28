@@ -5,8 +5,8 @@ namespace Database\Seeders\Support;
 final class PanelSpeciesCatalog
 {
     /**
-     * Twenty additions selected to bring the field guide to 30 total species.
-     * These entries are educational only until a replacement CNN is trained.
+     * Nineteen additions selected to bring the field guide to 29 total species.
+     * Model support is synchronized separately from the deployed class order.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -62,31 +62,6 @@ final class PanelSpeciesCatalog
                 'interesting_facts' => ['The leaf resembles holly, which explains the name sea holly.', 'Young or shaded leaves may have fewer spines.', 'Its capsule uses a spring-like mechanism to disperse seeds.'],
                 'references' => ['https://www.philippineplants.org/Families/Acanthaceae.html', 'https://repository.seafdec.org.ph/handle/10862/3053', 'https://www.fao.org/4/ag132e/ag132e00.pdf'],
                 'cnn_candidate_availability' => 'High; many field images exist, but non-spiny leaves can cause confusion with related species.',
-            ],
-            [
-                'scientific_name' => 'Acanthus volubilis',
-                'common_name' => 'Climbing mangrove holly',
-                'family' => 'Acanthaceae',
-                'genus' => 'Acanthus',
-                'description' => 'A scrambling or climbing mangrove shrub with mostly spineless leaves and a more restricted Southeast Asian distribution.',
-                'leaf' => 'Opposite, narrow elliptic leaves with smooth, spineless margins and a pointed tip.',
-                'root' => 'Woody basal roots anchor the climbing stems in brackish swamp soil; specialized aerial roots are absent.',
-                'bark' => 'Slender stems are smooth green to brown and become woody toward the base.',
-                'flower' => 'White flowers are borne in terminal spikes and contrast with the blue-violet flowers typical of Acanthus ilicifolius.',
-                'fruit' => 'An ovoid seed capsule opens at maturity and disperses a small number of flattened seeds.',
-                'habitat' => ['Brackish swamps', 'Tidal streams', 'Mangrove understory and margins'],
-                'distribution' => ['Philippines', 'Malay Peninsula', 'Myanmar', 'Thailand', 'Andaman and Nicobar Islands'],
-                'zonation' => 'Upper-intertidal understory and landward mangrove edge.',
-                'ecological_importance' => ['Adds climbing and understory structure', 'Covers open bank margins', 'Improves representation of locally uncommon mangrove associates'],
-                'conservation_status' => 'Least Concern',
-                'conservation_information' => ['Retain intact mangrove understory', 'Document local populations because occurrences are scattered', 'Confirm climbing habit, flowers, and smooth leaf margins'],
-                'native_status' => 'Native',
-                'max_height_m' => 3,
-                'history' => 'Nathaniel Wallich published the name in 1831. Modern Philippine records confirm scattered native populations in brackish habitats.',
-                'scientific_study' => 'Valuable for comparative Acanthus taxonomy and surveys of overlooked mangrove understory diversity.',
-                'interesting_facts' => ['It is the climbing member of the three Philippine mangrove Acanthus species.', 'Its leaves generally lack the holly-like spines of Acanthus ilicifolius.', 'Its scattered records make georeferenced observations especially useful.'],
-                'references' => ['https://www.philippineplants.org/Families/Acanthaceae.html', 'https://repository.seafdec.org.ph/handle/10862/3053', 'https://www.fao.org/4/ag132e/ag132e00.pdf'],
-                'cnn_candidate_availability' => 'Low to medium; verified public images are limited and must be separated carefully from other Acanthus species.',
             ],
             [
                 'scientific_name' => 'Avicennia alba',
@@ -314,11 +289,11 @@ final class PanelSpeciesCatalog
                 'cnn_candidate_availability' => 'High; leaves, buttresses, and keeled fruits provide strong visual features.',
             ],
             [
-                'scientific_name' => 'Xylocarpus rumphii',
+                'scientific_name' => 'Xylocarpus moluccensis',
                 'common_name' => 'Puzzle-nut tree / piagao',
                 'family' => 'Meliaceae',
                 'genus' => 'Xylocarpus',
-                'description' => 'A coastal Xylocarpus of exposed rocky or sandy shores, historically reported in Philippine guides as Xylocarpus moluccensis.',
+                'description' => 'A coastal Xylocarpus of exposed rocky or sandy shores, represented in this catalog as Xylocarpus moluccensis.',
                 'leaf' => 'Opposite compound leaves have two to four pairs of leathery ovate to heart-shaped leaflets with pointed tips.',
                 'root' => 'Conspicuous buttresses and pneumatophores are generally absent.',
                 'bark' => 'Finely fissured gray bark covers pink to red inner bark.',
@@ -329,12 +304,12 @@ final class PanelSpeciesCatalog
                 'zonation' => 'High coastal fringe near or above the normal high-water line.',
                 'ecological_importance' => ['Stabilizes exposed coastal margins', 'Provides woody habitat', 'Represents the beach-to-mangrove transition'],
                 'conservation_status' => 'Least Concern',
-                'conservation_information' => ['Protect mature coastal trees', 'Record substrate during surveys', 'Keep Xylocarpus moluccensis as a searchable historical alias'],
+                'conservation_information' => ['Protect mature coastal trees', 'Record substrate during surveys', 'Keep Xylocarpus rumphii as a searchable legacy alias'],
                 'native_status' => 'Native',
                 'max_height_m' => 15,
-                'history' => 'David Mabberley published the accepted combination in 1982. The name honors the Malesian naturalist Georg Eberhard Rumphius.',
-                'scientific_study' => 'Current Philippine flora treats older Philippine use of Xylocarpus moluccensis as a misapplied name for this species.',
-                'interesting_facts' => ['Its seeds fit together like puzzle pieces.', 'It usually lacks the large buttresses of Xylocarpus granatum.', 'Older Philippine sources may call it Xylocarpus moluccensis.'],
+                'history' => 'This catalog uses Xylocarpus moluccensis as the canonical name and retains Xylocarpus rumphii as a legacy alias for existing records.',
+                'scientific_study' => 'Field records and training data should use Xylocarpus moluccensis consistently while continuing to recognize the legacy Xylocarpus rumphii label.',
+                'interesting_facts' => ['Its seeds fit together like puzzle pieces.', 'It usually lacks the large buttresses of Xylocarpus granatum.', 'Some existing SILVAMANG records may use the legacy name Xylocarpus rumphii.'],
                 'references' => ['https://www.philippineplants.org/Families/Meliaceae.html', 'https://www.nparks.gov.sg/florafaunaweb/flora/3/2/3210', 'https://www.fao.org/4/ag132e/ag132e00.pdf'],
                 'cnn_candidate_availability' => 'Medium; historical-name confusion requires strict taxonomic review of images.',
             ],
@@ -411,7 +386,7 @@ final class PanelSpeciesCatalog
                 'scientific_study' => 'Useful for monitoring a relatively restricted Malesian mangrove and comparing substrate specialization within Aegiceras.',
                 'interesting_facts' => ['Its mature curved fruits can be bright red.', 'It favors more exposed shores than Aegiceras corniculatum.', 'Its restricted distribution increases its monitoring value.'],
                 'references' => ['https://www.philippineplants.org/Families/Primulaceae.html', 'https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:586620-1', 'https://repository.seafdec.org.ph/handle/10862/3053'],
-                'cnn_candidate_availability' => 'Medium; fruiting images are distinctive but verified Philippine coverage is limited.',
+                'cnn_candidate_availability' => 'Guide only; excluded from the current CNN target because verified training coverage is insufficient.',
             ],
             [
                 'scientific_name' => 'Bruguiera cylindrica',

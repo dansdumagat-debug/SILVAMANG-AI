@@ -2,6 +2,7 @@ import 'location_validation_model.dart';
 import 'measurement_model.dart';
 import 'prediction_model.dart';
 import 'scan_image_model.dart';
+import '../utils/species_taxonomy.dart';
 
 class ScanRecordModel {
   const ScanRecordModel({
@@ -74,7 +75,7 @@ class ScanRecordModel {
       recordCode: _asString(json['record_code'] ?? json['recordCode']),
       userId: _asNullableString(json['user_id'] ?? json['userId']),
       speciesId: _asNullableInt(json['species_id'] ?? json['speciesId']),
-      topScientificName: _asString(
+      topScientificName: canonicalSpeciesName(
         json['top_scientific_name'] ?? json['topScientificName'],
       ),
       topCommonName: _asString(

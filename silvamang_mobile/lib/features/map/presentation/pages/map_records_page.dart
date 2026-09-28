@@ -128,6 +128,18 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
     });
   }
 
+  void _changeZoom(double difference) {
+    try {
+      final camera = _mapController.camera;
+      _mapController.move(
+        camera.center,
+        (camera.zoom + difference).clamp(4.0, 24.0),
+      );
+    } catch (_) {
+      // The map controller may not be attached during the first frame.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -214,15 +226,17 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
                             : 15
                       : 13,
                   minZoom: 4,
-                  maxZoom: 22,
+                  maxZoom: 24,
                 ),
                 children: [
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.tileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 22,
-                    maxNativeZoom: 19,
+                    maxZoom: 24,
+                    maxNativeZoom: state.isOnline
+                        ? 19
+                        : state.cacheStatus?.maxDownloadedZoom ?? 13,
                     tileProvider: ref
                         .read(offlineMapCacheServiceProvider)
                         .tileProvider(isOnline: state.isOnline),
@@ -232,12 +246,32 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
                       urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                       userAgentPackageName:
                           OfflineMapCacheService.userAgentPackageName,
-                      maxZoom: 22,
+                      maxZoom: 24,
                       maxNativeZoom: 19,
                     ),
                   MarkerLayer(markers: markers),
                 ],
               ),
+              if (_selectedRecord == null)
+                Positioned(
+                  right: AppSpacing.md,
+                  bottom: _bottomNavigationReserve + AppSpacing.lg,
+                  child: Column(
+                    children: [
+                      _MapZoomButton(
+                        icon: Icons.add_rounded,
+                        label: 'Zoom in',
+                        onPressed: () => _changeZoom(0.5),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _MapZoomButton(
+                        icon: Icons.remove_rounded,
+                        label: 'Zoom out',
+                        onPressed: () => _changeZoom(-0.5),
+                      ),
+                    ],
+                  ),
+                ),
               Positioned(
                 left: AppSpacing.md,
                 right: AppSpacing.md,
@@ -549,6 +583,30 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
         return Colors.grey.shade700;
     }
   }
+}
+
+class _MapZoomButton extends StatelessWidget {
+  const _MapZoomButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: AppColors.white,
+    borderRadius: BorderRadius.circular(12),
+    elevation: 3,
+    child: IconButton(
+      tooltip: label,
+      icon: Icon(icon, color: AppColors.primaryDarkGreen),
+      onPressed: onPressed,
+    ),
+  );
 }
 
 bool _hasText(String? value) => value?.trim().isNotEmpty == true;

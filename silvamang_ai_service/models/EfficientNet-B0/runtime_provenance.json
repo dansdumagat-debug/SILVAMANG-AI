@@ -1,0 +1,7 @@
+{
+  "source_file": "efficientnet_b0_last.pth",
+  "source_sha256": "0247cc5dd6a29c595eaca1086bc5378428aad8bc31b9c0fa3f50aa981774d95c",
+  "checkpoint_selection": "last",
+  "completed_epoch": 23,
+  "test_metrics": null
+}

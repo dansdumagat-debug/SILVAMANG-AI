@@ -1,7 +1,11 @@
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../data/models/captured_plant_part_image.dart';
+
+typedef CropPlantImage = Future<CroppedFile?> Function(String sourcePath);
 
 final captureControllerProvider =
     StateNotifierProvider<CaptureController, CaptureState>((ref) {
@@ -59,9 +63,12 @@ class CaptureState {
 }
 
 class CaptureController extends StateNotifier<CaptureState> {
-  CaptureController({required this.imagePicker}) : super(const CaptureState());
+  CaptureController({required this.imagePicker, CropPlantImage? cropImage})
+    : _cropImage = cropImage ?? cropPlantImage,
+      super(const CaptureState());
 
   final ImagePicker imagePicker;
+  final CropPlantImage _cropImage;
 
   Future<void> pickFromCamera(String plantPart) {
     return _pickImage(plantPart: plantPart, source: ImageSource.camera);
@@ -103,11 +110,18 @@ class CaptureController extends StateNotifier<CaptureState> {
         return;
       }
 
-      final bytes = await pickedFile.readAsBytes();
+      final croppedFile = await _cropImage(pickedFile.path);
+      if (croppedFile == null) {
+        state = state.copyWith(isPicking: false);
+        return;
+      }
+
+      final bytes = await croppedFile.readAsBytes();
+      final croppedPath = croppedFile.path;
       final capturedImage = CapturedPlantPartImage(
         plantPart: plantPart,
-        imagePath: pickedFile.path,
-        fileName: pickedFile.name,
+        imagePath: croppedPath,
+        fileName: croppedPath.split(RegExp(r'[/\\]')).last,
         previewBytes: bytes,
         capturedAt: DateTime.now(),
         source: source == ImageSource.camera ? 'camera' : 'gallery',
@@ -125,8 +139,26 @@ class CaptureController extends StateNotifier<CaptureState> {
     } catch (_) {
       state = state.copyWith(
         isPicking: false,
-        errorMessage: 'Unable to select image. Please try again.',
+        errorMessage: 'Unable to select or crop image. Please try again.',
       );
     }
   }
+}
+
+Future<CroppedFile?> cropPlantImage(String sourcePath) {
+  return ImageCropper().cropImage(
+    sourcePath: sourcePath,
+    compressQuality: 90,
+    uiSettings: [
+      AndroidUiSettings(
+        toolbarTitle: 'Crop mangrove photo',
+        toolbarColor: AppColors.primaryDarkGreen,
+        toolbarWidgetColor: AppColors.white,
+        activeControlsWidgetColor: AppColors.primaryGreen,
+        initAspectRatio: CropAspectRatioPreset.original,
+        lockAspectRatio: false,
+      ),
+      IOSUiSettings(title: 'Crop mangrove photo'),
+    ],
+  );
 }

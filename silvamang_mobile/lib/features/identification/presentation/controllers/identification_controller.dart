@@ -16,6 +16,8 @@ import '../../../measurements/presentation/controllers/camera_measurement_contro
 import '../../../offline_sync/data/models/offline_sync_item.dart';
 import '../../../offline_sync/data/repositories/offline_sync_repository.dart';
 import '../../../records/data/repositories/scan_record_repository.dart';
+import '../../../transects/data/models/transect_observation_model.dart';
+import '../../../transects/presentation/controllers/transects_controller.dart';
 import '../../data/models/mock_ai_prediction_response.dart';
 import '../../data/models/mock_identification_result.dart';
 import '../../data/repositories/mock_ai_prediction_repository.dart';
@@ -31,6 +33,12 @@ final identificationControllerProvider =
         connectivityService: const ConnectivityService(),
         currentUserId: authState.user?.id,
         currentUserEmail: authState.user?.email,
+        attachTransectObservation: (transectId, observation) => ref
+            .read(transectsControllerProvider.notifier)
+            .attachObservation(
+              transectLocalId: transectId,
+              observation: observation,
+            ),
       );
     });
 
@@ -73,13 +81,14 @@ class IdentificationState {
     bool? offlineModeEnabled,
     bool clearMessages = false,
     bool clearPrediction = false,
+    bool clearSavedRecord = false,
   }) {
     return IdentificationState(
       predictionResponse: clearPrediction
           ? null
           : predictionResponse ?? this.predictionResponse,
       result: result ?? this.result,
-      savedRecord: savedRecord ?? this.savedRecord,
+      savedRecord: clearSavedRecord ? null : savedRecord ?? this.savedRecord,
       isPredicting: isPredicting ?? this.isPredicting,
       isSaving: isSaving ?? this.isSaving,
       errorMessage: clearMessages ? null : errorMessage ?? this.errorMessage,
@@ -102,6 +111,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     required this.offlineSyncRepository,
     required this.localMapScanRepository,
     required this.connectivityService,
+    required this.attachTransectObservation,
     this.currentUserId,
     this.currentUserEmail,
   }) : super(const IdentificationState());
@@ -111,6 +121,8 @@ class IdentificationController extends StateNotifier<IdentificationState> {
   final OfflineSyncRepository offlineSyncRepository;
   final LocalMapScanRepository localMapScanRepository;
   final ConnectivityService connectivityService;
+  final Future<void> Function(String, TransectObservationModel)
+  attachTransectObservation;
   final String? currentUserId;
   final String? currentUserEmail;
 
@@ -153,7 +165,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           barangay: barangay,
         ),
         isPredicting: false,
-        warningMessage: response.warning,
+        warningMessage: response.isRejected
+            ? '${response.rejectionMessage} ${response.rejectionRecommendation}'
+            : response.warning,
       );
     } on ApiException catch (error) {
       state = state.copyWith(
@@ -169,6 +183,80 @@ class IdentificationController extends StateNotifier<IdentificationState> {
             'Prediction failed. Please check the image and try again.',
       );
     }
+  }
+
+  Future<void> saveManualObservation({
+    required String scientificName,
+    required String commonName,
+    required List<CapturedPlantPartImage> capturedImages,
+    required double heightM,
+    required double canopyWidthM,
+    String? transectLocalId,
+    String measurementMethod = 'manual_input',
+    double? latitude,
+    double? longitude,
+    String? locationName,
+    String? address,
+    String? barangay,
+    String? manualBarangay,
+    double? locationAccuracy,
+    DateTime? locationCapturedAt,
+    String? barangayStatus,
+    String? locationSource,
+  }) async {
+    final name = scientificName.trim();
+    if (name.isEmpty ||
+        !heightM.isFinite ||
+        heightM <= 0 ||
+        !canopyWidthM.isFinite ||
+        canopyWidthM <= 0 ||
+        latitude == null ||
+        longitude == null) {
+      state = state.copyWith(
+        errorMessage:
+            'Species, height, canopy width, and location are required.',
+      );
+      return;
+    }
+    state = state.copyWith(
+      clearPrediction: true,
+      clearMessages: true,
+      result: MockIdentificationResult(
+        scientificName: name,
+        commonName: commonName.trim(),
+        confidence: double.nan,
+        captureMode: 'manual_species',
+        latitude: latitude,
+        longitude: longitude,
+        locationName: locationName ?? '',
+        address: address ?? '',
+        barangay: barangay,
+        predictions: const [],
+        heightM: heightM,
+        canopyWidthM: canopyWidthM,
+        measurementMethod: measurementMethod,
+        measurementConfidence: double.nan,
+        validationResult: 'not_checked',
+        validationMessage: 'Species entered by the user.',
+        distanceToKnownDistributionKm: double.nan,
+        explanation: 'Species entered by the user without AI identification.',
+      ),
+    );
+    await saveCurrentResult(
+      capturedImages: capturedImages,
+      latitude: latitude,
+      longitude: longitude,
+      locationName: locationName,
+      address: address,
+      barangay: barangay,
+      manualBarangay: manualBarangay,
+      locationAccuracy: locationAccuracy,
+      locationCapturedAt: locationCapturedAt,
+      barangayStatus: barangayStatus,
+      locationSource: locationSource,
+      manualSpecies: true,
+      transectLocalId: transectLocalId,
+    );
   }
 
   Future<void> saveCurrentResult({
@@ -187,8 +275,10 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     CameraMeasurementSelection? cameraMeasurementSelection,
     CameraMeasurementResult? cameraMeasurementResult,
     bool isUsingFallback = false,
+    bool manualSpecies = false,
+    String? transectLocalId,
   }) async {
-    if (capturedImages.isEmpty || !state.hasValidAiResult) {
+    if (!manualSpecies && (capturedImages.isEmpty || !state.hasValidAiResult)) {
       state = state.copyWith(
         isSaving: false,
         errorMessage:
@@ -202,6 +292,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       isSaving: true,
       uploadedImagesCount: 0,
       clearMessages: true,
+      clearSavedRecord: true,
     );
     try {
       final selectedMeasurements = _selectedMeasurements(
@@ -246,6 +337,12 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           syncStatus: MapScanRecord.pending,
           localId: offlineReference,
         );
+        await _linkTransectObservation(
+          transectLocalId: transectLocalId,
+          result: resultWithLocation,
+          offlineReference: offlineReference,
+          capturedImages: capturedImages,
+        );
         return;
       }
 
@@ -276,6 +373,12 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           fieldDistanceMeasurement: fieldDistanceMeasurement,
           syncStatus: MapScanRecord.synced,
           serverId: serverScanRecordId,
+        );
+        await _linkTransectObservation(
+          transectLocalId: transectLocalId,
+          result: resultWithLocation,
+          savedRecord: record,
+          capturedImages: capturedImages,
         );
         state = state.copyWith(
           savedRecord: record,
@@ -310,6 +413,12 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         syncStatus: MapScanRecord.synced,
         serverId: record.id.isEmpty ? null : record.id,
       );
+      await _linkTransectObservation(
+        transectLocalId: transectLocalId,
+        result: resultWithLocation,
+        savedRecord: record,
+        capturedImages: capturedImages,
+      );
       final uploadedCount = record.images.isNotEmpty
           ? record.images.length
           : capturedImages.length;
@@ -318,7 +427,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         savedRecord: record,
         isSaving: false,
         uploadedImagesCount: uploadedCount,
-        successMessage: hasScanLocation
+        successMessage: manualSpecies
+            ? 'Manual species, measurements, and location saved successfully.'
+            : hasScanLocation
             ? 'Scan record, GPS location, and selected images saved successfully.'
             : 'Scan record and selected images saved. GPS location was unavailable.',
         warningMessage: hasScanLocation
@@ -364,6 +475,46 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         fieldDistanceMeasurement: fieldDistanceMeasurement,
         syncStatus: MapScanRecord.pending,
         localId: offlineReference,
+      );
+      await _linkTransectObservation(
+        transectLocalId: transectLocalId,
+        result: failedResultWithLocation,
+        offlineReference: offlineReference,
+        capturedImages: capturedImages,
+      );
+    }
+  }
+
+  Future<void> _linkTransectObservation({
+    required String? transectLocalId,
+    required MockIdentificationResult result,
+    required List<CapturedPlantPartImage> capturedImages,
+    ScanRecordModel? savedRecord,
+    String? offlineReference,
+  }) async {
+    if (transectLocalId == null || transectLocalId.isEmpty) return;
+    final observation = savedRecord != null
+        ? TransectObservationModel.fromScanRecord(savedRecord)
+        : TransectObservationModel(
+            reference: offlineReference!,
+            offlineReference: offlineReference,
+            recordCode: offlineReference,
+            scientificName: result.scientificName,
+            commonName: result.commonName,
+            heightM: _finiteOrNull(result.heightM),
+            canopyWidthM: _finiteOrNull(result.canopyWidthM),
+            latitude: result.latitude,
+            longitude: result.longitude,
+            locationName: result.locationName,
+            notes: result.explanation,
+            imagePath: _firstValidImagePath(capturedImages),
+            capturedAt: DateTime.now(),
+          );
+    try {
+      await attachTransectObservation(transectLocalId, observation);
+    } catch (error) {
+      state = state.copyWith(
+        warningMessage: 'Scan saved, but transect link failed: $error',
       );
     }
   }
@@ -496,7 +647,8 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       final createdAt = locationCapturedAt ?? now;
       await localMapScanRepository.saveLocalRecord(
         MapScanRecord(
-          localId: localId ??
+          localId:
+              localId ??
               (serverId == null
                   ? 'local_${now.microsecondsSinceEpoch}'
                   : 'server_$serverId'),
@@ -599,7 +751,10 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     final scanCapturedAt = locationCapturedAt ?? now;
     final offlineLocationNote = [
       'Offline queued scan.',
-      'Image upload requires internet connection and will be finalized during sync.',
+      if (result.captureMode == 'manual_species')
+        'Species entered by the user; AI identification was skipped.',
+      if (capturedImages.isNotEmpty)
+        'Image upload requires internet connection and will be finalized during sync.',
       if (result.barangay != null && result.barangay!.trim().isNotEmpty)
         'Barangay: ${result.barangay}.',
       if (manualBarangay != null && manualBarangay.trim().isNotEmpty)
@@ -630,7 +785,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
             'dbh_cm': _finiteOrNull(result.dbhCm),
             'measurement_method': result.measurementMethod,
             'confidence': _finiteOrNull(result.measurementConfidence),
-            'notes': 'Offline queued measurement attached to CNN scan result.',
+            'notes': result.captureMode == 'manual_species'
+                ? 'Manual species measurement.'
+                : 'Offline queued measurement attached to CNN scan result.',
             'measured_at': now.toIso8601String(),
           }
         : <String, dynamic>{};
@@ -692,8 +849,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           ? 'captured'
           : 'unavailable',
       'created_at': now.toIso8601String(),
-      'note':
-          'Image upload requires internet connection and will be finalized during sync.',
+      'note': capturedImages.isEmpty
+          ? 'Scan will synchronize when internet is available.'
+          : 'Image upload requires internet connection and will be finalized during sync.',
       'scan_record': {
         'top_scientific_name': result.scientificName,
         'top_common_name': result.commonName,
@@ -761,8 +919,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       isSaving: false,
       uploadedImagesCount: 0,
       successMessage: successMessage,
-      warningMessage:
-          'Image upload requires internet connection and will be finalized during sync.',
+      warningMessage: capturedImages.isEmpty
+          ? null
+          : 'Image upload requires internet connection and will be finalized during sync.',
     );
     return offlineReference;
   }

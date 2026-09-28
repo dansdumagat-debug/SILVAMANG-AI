@@ -1,0 +1,30 @@
+species,train_images,train_source_groups,test_images,precision,recall,f1,previous_f1,f1_change,missed_images,most_confused_with,review_priority,small_test_sample
+Ceriops_zippeliana,48,42,10,0.5,0.2,0.2857142857142857,0.3076923076923077,-0.02197802197802201,8,Ceriops_tagal: 4; Rhizophora_mucronata: 2; Xylocarpus_granatum: 1,high,True
+Avicennia_alba,86,62,15,0.4117647058823529,0.4666666666666667,0.4375,0.4666666666666667,-0.029166666666666674,8,Avicennia_marina: 2; Avicennia_rumphiana: 2; Avicennia_officinalis: 1,high,True
+Xylocarpus_moluccensis,66,62,17,0.5384615384615384,0.4117647058823529,0.4666666666666667,0.42105263157894735,0.04561403508771933,10,Xylocarpus_granatum: 2; Sonneratia_alba: 2; Heritiera_littoralis: 2,high,True
+Rhizophora_mucronata,162,162,35,0.5151515151515151,0.4857142857142857,0.5,0.4657534246575342,0.03424657534246578,18,Bruguiera_gymnorrhiza: 4; Excoecaria_agallocha: 3; Rhizophora_stylosa: 2,high,False
+Avicennia_officinalis,132,114,36,0.8,0.4444444444444444,0.5714285714285714,0.5901639344262295,-0.0187353629976581,20,Avicennia_marina: 5; Heritiera_littoralis: 4; Excoecaria_agallocha: 2,high,False
+Bruguiera_cylindrica,131,87,20,0.5,0.7,0.5833333333333334,0.5652173913043478,0.018115942028985588,6,Bruguiera_gymnorrhiza: 3; Avicennia_alba: 1; Avicennia_marina: 1,high,False
+Camptostemon_philippinensis,22,22,4,0.5,0.75,0.6,0.75,-0.15000000000000002,1,Sonneratia_alba: 1,normal,True
+Xylocarpus_granatum,123,123,26,0.5666666666666667,0.6538461538461539,0.6071428571428571,0.5882352941176471,0.018907563025210017,9,Excoecaria_agallocha: 4; Avicennia_alba: 1; Avicennia_rumphiana: 1,normal,False
+Bruguiera_sexangula,106,84,22,0.5769230769230769,0.6818181818181818,0.625,0.5555555555555556,0.06944444444444442,7,Bruguiera_gymnorrhiza: 4; Avicennia_rumphiana: 1; Rhizophora_mucronata: 1,normal,False
+Acanthus_ebracteatus,88,74,18,0.5909090909090909,0.7222222222222222,0.65,0.6,0.050000000000000044,5,Acanthus_ilicifolius: 4; Avicennia_officinalis: 1,normal,True
+Lumnitzera_littorea,122,90,30,0.8421052631578947,0.5333333333333333,0.6530612244897959,0.68,-0.026938775510204183,14,Excoecaria_agallocha: 3; Osbornia_octodonta: 2; Rhizophora_stylosa: 2,high,False
+Bruguiera_gymnorrhiza,325,325,69,0.7049180327868853,0.6231884057971014,0.6615384615384615,0.6333333333333333,0.028205128205128216,26,Bruguiera_cylindrica: 7; Bruguiera_sexangula: 5; Rhizophora_mucronata: 4,normal,False
+Acanthus_ilicifolius,124,110,31,0.7,0.6774193548387096,0.6885245901639344,0.6666666666666666,0.021857923497267784,10,Acanthus_ebracteatus: 8; Avicennia_alba: 1; Heritiera_littoralis: 1,normal,False
+Aegiceras_corniculatum,72,50,14,0.75,0.6428571428571429,0.6923076923076923,0.6060606060606061,0.08624708624708621,5,Bruguiera_sexangula: 2; Avicennia_marina: 1; Osbornia_octodonta: 1,normal,True
+Avicennia_marina,347,347,74,0.6933333333333334,0.7027027027027027,0.697986577181208,0.6708860759493671,0.027100501231840934,22,Sonneratia_alba: 4; Avicennia_rumphiana: 3; Nypa_fruticans: 3,normal,False
+Sonneratia_ovata,70,56,12,0.875,0.5833333333333334,0.7,0.6666666666666666,0.033333333333333326,5,Excoecaria_agallocha: 2; Avicennia_rumphiana: 1; Sonneratia_alba: 1,high,True
+Avicennia_rumphiana,122,122,26,0.6176470588235294,0.8076923076923077,0.7,0.75,-0.050000000000000044,5,Avicennia_alba: 1; Avicennia_marina: 1; Avicennia_officinalis: 1,normal,False
+Lumnitzera_racemosa,119,101,25,0.7391304347826086,0.68,0.7083333333333334,0.6521739130434783,0.0561594202898551,8,Bruguiera_gymnorrhiza: 1; Ceriops_tagal: 1; Avicennia_officinalis: 1,normal,False
+Heritiera_littoralis,134,115,27,0.6216216216216216,0.8518518518518519,0.71875,0.6415094339622641,0.07724056603773588,4,Avicennia_marina: 1; Xylocarpus_granatum: 1; Xylocarpus_moluccensis: 1,normal,False
+Osbornia_octodonta,128,87,24,0.7391304347826086,0.7083333333333334,0.723404255319149,0.7755102040816326,-0.052105948762483645,7,Avicennia_marina: 2; Scyphiphora_hydrophylacea: 2; Lumnitzera_littorea: 1,normal,False
+Excoecaria_agallocha,245,245,53,0.6470588235294118,0.8301886792452831,0.7272727272727273,0.7678571428571429,-0.04058441558441561,9,Avicennia_marina: 3; Acanthus_ilicifolius: 1; Lumnitzera_racemosa: 1,normal,False
+Rhizophora_stylosa,260,260,56,0.8571428571428571,0.6428571428571429,0.7346938775510204,0.7207207207207207,0.01397315683029976,20,Rhizophora_mucronata: 4; Rhizophora_apiculata: 3; Bruguiera_cylindrica: 2,normal,False
+Ceriops_tagal,183,183,39,0.7209302325581395,0.7948717948717948,0.7560975609756098,0.6904761904761905,0.0656213704994193,8,Scyphiphora_hydrophylacea: 2; Bruguiera_gymnorrhiza: 1; Camptostemon_philippinensis: 1,normal,False
+Scyphiphora_hydrophylacea,105,82,17,0.6818181818181818,0.8823529411764706,0.7692307692307693,0.7058823529411765,0.06334841628959276,2,Lumnitzera_littorea: 1; Excoecaria_agallocha: 1,normal,True
+Nypa_fruticans,120,107,23,0.7407407407407407,0.8695652173913043,0.8,0.7659574468085106,0.03404255319148941,3,unknown: 2; Bruguiera_sexangula: 1,normal,False
+Pemphis_acidula,127,105,27,0.875,0.7777777777777778,0.8235294117647058,0.84,-0.016470588235294126,6,Lumnitzera_racemosa: 2; Acanthus_ilicifolius: 1; Ceriops_tagal: 1,normal,False
+Sonneratia_alba,257,257,55,0.7966101694915254,0.8545454545454545,0.8245614035087719,0.8288288288288288,-0.004267425320056861,8,Avicennia_marina: 2; Bruguiera_gymnorrhiza: 1; Lumnitzera_littorea: 1,normal,False
+unknown,112,100,27,0.88,0.8148148148148148,0.8461538461538461,0.8275862068965517,0.018567639257294433,5,Osbornia_octodonta: 2; Avicennia_rumphiana: 1; Excoecaria_agallocha: 1,normal,False
+Rhizophora_apiculata,221,221,47,0.8958333333333334,0.9148936170212766,0.9052631578947369,0.8636363636363636,0.041626794258373234,4,Rhizophora_mucronata: 2; Avicennia_rumphiana: 1; Rhizophora_stylosa: 1,normal,False

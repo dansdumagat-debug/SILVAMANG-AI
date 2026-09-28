@@ -186,7 +186,7 @@ class ReportController extends Controller
 
     private function datasetSummary(): array
     {
-        $rawPath = base_path('../dataset/raw');
+        $rawPath = rtrim(config('dataset.export_root'), '/\\').DIRECTORY_SEPARATOR.'raw';
 
         if (! File::isDirectory($rawPath)) {
             return [

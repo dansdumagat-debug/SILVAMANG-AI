@@ -41,6 +41,10 @@
                 <p>{{ $transect->mode === 'gps_tracking' ? 'GPS-tracked survey line' : 'Manually selected survey line' }}</p>
             </div>
             <div class="transect-map-legend" aria-label="Map legend">
+                <span>
+                    <i class="legend-line {{ $transect->mode === 'gps_tracking' ? 'gps' : 'manual' }}"></i>
+                    {{ $transect->mode === 'gps_tracking' ? 'GPS path' : 'Manual path' }}
+                </span>
                 <span><i class="legend-dot start"></i>Start</span>
                 <span><i class="legend-dot end"></i>End</span>
                 <span><i class="legend-dot observation"></i>Observation</span>
@@ -160,6 +164,16 @@
         const coordinates = transect.points.map((point) => [point.latitude, point.longitude]);
         const center = coordinates.length > 0 ? coordinates[0] : [10.3347, 125.0750];
         const map = L.map('transect-detail-map', { preferCanvas: true, maxZoom: 24, zoomSnap: 0.5, zoomDelta: 0.5 }).setView(center, coordinates.length > 0 ? 16 : 9);
+        const mapTheme = getComputedStyle(document.documentElement);
+        const mapColor = (property, fallback) => mapTheme.getPropertyValue(property).trim() || fallback;
+        const mapColors = {
+            gps: mapColor('--map-gps', '#276749'),
+            manual: mapColor('--map-manual', '#2B6CB0'),
+            start: mapColor('--map-start', '#276749'),
+            end: mapColor('--map-end', '#B54747'),
+            observation: mapColor('--map-observation', '#A96612'),
+            outline: mapColor('--map-outline', '#FFFFFF'),
+        };
 
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 24,
@@ -185,20 +199,27 @@
             iconSize: [30, 30],
             iconAnchor: [15, 15],
         });
+        const observationIcon = () => L.divIcon({
+            className: 'transect-observation-icon',
+            html: '<span aria-hidden="true">O</span>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12],
+        });
 
         if (coordinates.length >= 2) {
-            const lineColor = transect.mode === 'gps_tracking' ? '#2F7D46' : '#2472B8';
+            const isGps = transect.mode === 'gps_tracking';
+            const lineColor = isGps ? mapColors.gps : mapColors.manual;
             const segments = transect.segments.length ? transect.segments : [[transect.points[0], transect.points[transect.points.length - 1]]];
             segments.forEach((segment, index) => {
                 const start = [segment[0].latitude, segment[0].longitude];
                 const end = [segment[1].latitude, segment[1].longitude];
-                L.polyline([start, end], { color: '#FFFFFF', weight: 12, opacity: 0.98 }).addTo(map);
-                L.polyline([start, end], { color: lineColor, weight: 8, opacity: 1 }).addTo(map);
+                L.polyline([start, end], { color: mapColors.outline, weight: 12, opacity: 0.98, dashArray: isGps ? null : '14 9' }).addTo(map);
+                L.polyline([start, end], { color: lineColor, weight: 8, opacity: 1, dashArray: isGps ? null : '14 9' }).addTo(map);
                 L.marker([(start[0] + end[0]) / 2, (start[1] + end[1]) / 2], {
                     icon: endpointIcon(escapeHtml(transect.map_label.slice(1)), lineColor),
                 }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} line`);
-                L.marker(start, { icon: endpointIcon('S', '#2F7D46') }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} segment ${index + 1} start`);
-                L.marker(end, { icon: endpointIcon('E', '#C53A3A') }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} segment ${index + 1} end`);
+                L.marker(start, { icon: endpointIcon('S', mapColors.start) }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} segment ${index + 1} start`);
+                L.marker(end, { icon: endpointIcon('E', mapColors.end) }).addTo(map).bindPopup(`${escapeHtml(transect.map_label)} segment ${index + 1} end`);
             });
         }
 
@@ -208,12 +229,10 @@
         transect.observations.forEach((observation) => {
             const coordinate = [observation.latitude, observation.longitude];
             bounds.push(coordinate);
-            L.circleMarker(coordinate, {
-                radius: 8,
-                color: '#FFFFFF',
-                weight: 2,
-                fillColor: '#F3B61F',
-                fillOpacity: 1,
+            L.marker(coordinate, {
+                icon: observationIcon(),
+                title: `Observation ${observation.record_code}`,
+                alt: `Observation ${observation.record_code}`,
             }).addTo(map).bindPopup(`
                 <strong>${escapeHtml(observation.record_code)}</strong><br>
                 <em>${escapeHtml(observation.species)}</em>

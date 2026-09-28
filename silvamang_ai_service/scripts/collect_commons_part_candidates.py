@@ -34,10 +34,12 @@ COMMONS_USER_AGENT = (
     "(academic research; https://github.com/dansdumagat-debug/SILVAMANG-AI)"
 )
 SUPPORTED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp"}
+COMMONS_THUMBNAIL_WIDTH = 800
 REQUEST_DELAY_SECONDS = 1.1
 MAX_REQUEST_ATTEMPTS = 6
-IMAGE_DOWNLOAD_DELAY_SECONDS = 2.5
+IMAGE_DOWNLOAD_DELAY_SECONDS = 4.0
 MAX_IMAGE_DOWNLOAD_ATTEMPTS = 6
+MAX_INLINE_RETRY_AFTER_SECONDS = 60.0
 PART_SEARCH_TERMS = {
     "leaves": ("leaves", "leaf", "foliage", "leaf detail"),
     "flowers": ("flowers", "flower", "inflorescence", "blossom"),
@@ -75,6 +77,37 @@ PART_MATCH_PATTERNS = {
 _last_request_at = 0.0
 
 
+class CommonsCooldownError(OSError):
+    """The server requested a cooldown too long for an interactive run."""
+
+    def __init__(self, operation: str, retry_after_seconds: float) -> None:
+        self.retry_after_seconds = retry_after_seconds
+        super().__init__(
+            f"{operation} requested a Retry-After cooldown of "
+            f"{retry_after_seconds:.0f}s. This run stopped without retrying early; "
+            "resume the same command after the cooldown."
+        )
+
+
+def retry_delay_or_raise(
+    error: Exception,
+    fallback_seconds: float,
+    *,
+    operation: str,
+) -> float:
+    """Honor short Retry-After values and stop on a long server cooldown."""
+
+    retry_after = 0.0
+    if isinstance(error, HTTPError):
+        try:
+            retry_after = max(0.0, float(error.headers.get("Retry-After") or 0))
+        except (AttributeError, TypeError, ValueError):
+            retry_after = 0.0
+    if retry_after > MAX_INLINE_RETRY_AFTER_SECONDS:
+        raise CommonsCooldownError(operation, retry_after) from error
+    return max(retry_after, min(MAX_INLINE_RETRY_AFTER_SECONDS, fallback_seconds))
+
+
 def wait_for_request_slot() -> None:
     global _last_request_at
 
@@ -101,13 +134,11 @@ def request_json(params: dict[str, Any]) -> dict[str, Any]:
             if attempt >= MAX_REQUEST_ATTEMPTS - 1:
                 break
 
-            retry_after = 0.0
-            if isinstance(error, HTTPError):
-                try:
-                    retry_after = float(error.headers.get("Retry-After") or 0)
-                except (TypeError, ValueError):
-                    retry_after = 0.0
-            delay = max(retry_after, min(60.0, 2.0**attempt))
+            delay = retry_delay_or_raise(
+                error,
+                2.0**attempt,
+                operation="Wikimedia Commons API",
+            )
             print(
                 f"  Commons request delayed for {delay:.0f}s after {error}; retrying...",
                 file=sys.stderr,
@@ -120,15 +151,19 @@ def request_json(params: dict[str, Any]) -> dict[str, Any]:
 _last_download_at = 0.0
 
 
-def download_commons_image(image_url: str) -> tuple[bytes, str]:
+def wait_for_download_slot() -> None:
     global _last_download_at
 
+    elapsed = time.monotonic() - _last_download_at
+    if elapsed < IMAGE_DOWNLOAD_DELAY_SECONDS:
+        time.sleep(IMAGE_DOWNLOAD_DELAY_SECONDS - elapsed)
+    _last_download_at = time.monotonic()
+
+
+def download_commons_image(image_url: str) -> tuple[bytes, str]:
     last_error: Exception | None = None
     for attempt in range(MAX_IMAGE_DOWNLOAD_ATTEMPTS):
-        elapsed = time.monotonic() - _last_download_at
-        if elapsed < IMAGE_DOWNLOAD_DELAY_SECONDS:
-            time.sleep(IMAGE_DOWNLOAD_DELAY_SECONDS - elapsed)
-        _last_download_at = time.monotonic()
+        wait_for_download_slot()
 
         try:
             return download_image(image_url)
@@ -141,13 +176,11 @@ def download_commons_image(image_url: str) -> tuple[bytes, str]:
             if attempt >= MAX_IMAGE_DOWNLOAD_ATTEMPTS - 1:
                 break
 
-            retry_after = 0.0
-            if isinstance(error, HTTPError):
-                try:
-                    retry_after = float(error.headers.get("Retry-After") or 0)
-                except (TypeError, ValueError):
-                    retry_after = 0.0
-            delay = max(retry_after, min(90.0, 3.0 * (2.0**attempt)))
+            delay = retry_delay_or_raise(
+                error,
+                3.0 * (2.0**attempt),
+                operation="Wikimedia Commons image server",
+            )
             print(
                 f"  Image request delayed for {delay:.0f}s after {error}; retrying...",
                 file=sys.stderr,
@@ -224,7 +257,7 @@ def commons_pages(species: str, part: str, max_results: int) -> Iterable[dict[st
                 "gsrlimit": limit,
                 "prop": "imageinfo",
                 "iiprop": "url|extmetadata|mime|size",
-                "iiurlwidth": 800,
+                "iiurlwidth": COMMONS_THUMBNAIL_WIDTH,
             }
             if offset is not None:
                 params["gsroffset"] = offset
@@ -328,6 +361,8 @@ def collect_part(
 
             try:
                 payload, extension = download_commons_image(image_url)
+            except CommonsCooldownError:
+                raise
             except (HTTPError, URLError, TimeoutError, ValueError, OSError) as error:
                 failures += 1
                 print(f"  skip {image_url}: {error}", file=sys.stderr, flush=True)

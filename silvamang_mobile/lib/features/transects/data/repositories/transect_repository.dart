@@ -101,6 +101,10 @@ class TransectRepository {
     required bool authenticated,
   }) async {
     await localRepository.save(transect);
+    if (transect.isHandoffTransect &&
+        transect.status != TransectRecordModel.statusCompleted) {
+      return TransectSaveResult(record: transect, synced: false);
+    }
     if (!authenticated || !await connectivityService.hasNetworkConnection()) {
       return TransectSaveResult(record: transect, synced: false);
     }
@@ -224,6 +228,13 @@ class TransectRepository {
       createdAt: local.createdAt,
       updatedAt: synced.updatedAt,
       syncStatus: synced.syncStatus,
+      targetDistanceM: local.targetDistanceM ?? synced.targetDistanceM,
+      contributions: local.contributions.isEmpty
+          ? synced.contributions
+          : local.contributions,
+      handoffSequence: local.handoffSequence > synced.handoffSequence
+          ? local.handoffSequence
+          : synced.handoffSequence,
     );
     await localRepository.save(localIdentity);
     return localIdentity;
@@ -249,7 +260,18 @@ class TransectRepository {
         observations: local == null
             ? remote.observations
             : _mergeObservations(local.observations, remote.observations),
-        syncStatus: hasPendingLinks
+        targetDistanceM: local?.targetDistanceM,
+        contributions: local?.contributions.isNotEmpty == true
+            ? local!.contributions
+            : remote.contributions,
+        handoffSequence:
+            local != null && local.handoffSequence > remote.handoffSequence
+            ? local.handoffSequence
+            : remote.handoffSequence,
+        syncStatus:
+            hasPendingLinks ||
+                (local != null &&
+                    local.syncStatus != TransectRecordModel.syncSynced)
             ? TransectRecordModel.syncPending
             : TransectRecordModel.syncSynced,
         clearSyncError: true,
@@ -297,6 +319,10 @@ class TransectRepository {
   }
 
   bool _needsSync(TransectRecordModel record) {
+    if (record.isHandoffTransect &&
+        record.status != TransectRecordModel.statusCompleted) {
+      return false;
+    }
     return record.syncStatus != TransectRecordModel.syncSynced ||
         record.hasPendingObservationLinks;
   }

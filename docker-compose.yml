@@ -1,0 +1,138 @@
+services:
+  app:
+    build:
+      context: ./silvamang_api
+    restart: unless-stopped
+    environment:
+      APP_NAME: SILVAMANG AI
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: https://silvamangai.online
+      APP_KEY: ${APP_KEY:?Set a permanent Laravel APP_KEY}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-*}
+      CORS_ALLOWED_ORIGINS: https://silvamangai.online,https://www.silvamangai.online
+      DB_CONNECTION: mysql
+      DB_HOST: database
+      DB_PORT: "3306"
+      DB_DATABASE: ${DB_DATABASE:-silvamang_ai}
+      DB_USERNAME: ${DB_USERNAME:-silvamang}
+      DB_PASSWORD: ${DB_PASSWORD:?Set a unique database password}
+      LOG_CHANNEL: stderr
+      LOG_LEVEL: warning
+      CACHE_DRIVER: file
+      SESSION_DRIVER: file
+      SESSION_SECURE_COOKIE: "true"
+      SESSION_DOMAIN: .silvamangai.online
+      QUEUE_CONNECTION: sync
+      BROADCAST_DRIVER: log
+      FILESYSTEM_DISK: public
+      PUBLIC_STORAGE_ROOT: /var/www/html/storage/app/public
+      DATASET_EXPORT_ROOT: /var/www/html/storage/app/dataset
+      MODEL_REPORTS_ROOT: /var/www/html/storage/app/model-reports
+      AI_SERVICE_URL: http://ai:9000
+      AI_SERVICE_MODE: live
+      AI_SERVICE_TIMEOUT: ${AI_SERVICE_TIMEOUT:-120}
+      AI_CONFIDENCE_THRESHOLD: ${AI_CONFIDENCE_THRESHOLD:-0.70}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_ORGANIZATION: ${OPENAI_ORGANIZATION:-}
+      OPENAI_PROJECT: ${OPENAI_PROJECT:-}
+      AI_CHATBOT_TIMEOUT: ${AI_CHATBOT_TIMEOUT:-30}
+      AI_CHATBOT_MAX_OUTPUT_TOKENS: ${AI_CHATBOT_MAX_OUTPUT_TOKENS:-600}
+      AI_CHATBOT_INCLUDE_PRECISE_LOCATION: "false"
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_API_URL: ${AI_API_URL:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      GEMINI_API_URL: ${GEMINI_API_URL:-https://generativelanguage.googleapis.com/v1beta}
+      OLLAMA_API_URL: ${OLLAMA_API_URL:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      INATURALIST_API_URL: https://api.inaturalist.org/v1
+      INATURALIST_TIMEOUT: "15"
+      INATURALIST_PER_PAGE: "8"
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-noreply@silvamangai.online}
+      MAIL_FROM_NAME: SILVAMANG AI
+    expose:
+      - "8080"
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - backend
+      - dokploy-network
+    depends_on:
+      database:
+        condition: service_healthy
+      ai:
+        condition: service_healthy
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  database:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-silvamang_ai}
+      MYSQL_USER: ${DB_USERNAME:-silvamang}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set a unique database password}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set a different database root password}
+    volumes:
+      - database_data:/var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u\"$$MYSQL_USER\" \"$$MYSQL_DATABASE\" -e 'SELECT 1' >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    logging: *logging
+
+  ai:
+    build:
+      context: ./silvamang_ai_service
+    restart: unless-stopped
+    init: true
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      MODEL_MODE: real
+      CNN_MODEL_PATH: /app/models/EfficientNet-B0/efficientnet_b0_runtime.pth
+      CNN_CLASS_ORDER_PATH: /app/models/EfficientNet-B0/class_order.json
+      YOLO_DETECTOR_MODEL_PATH: /app/models/YOLOv8-Detector/yolo8 detection.pt
+      YOLO_SEGMENTATION_MODEL_PATH: /app/models/YOLOv8-Seg/yolo8 seg.pt
+      MIDAS_MODEL_PATH: /app/models/MiDaS/midas_small_pretrained.pth
+    expose:
+      - "9000"
+    volumes:
+      - type: bind
+        source: ${AI_MODELS_DIR:?Set an absolute host path containing the trusted model bundle}
+        target: /app/models
+        read_only: true
+        bind:
+          create_host_path: false
+      - ai_cache:/home/ai/.cache
+    networks:
+      - backend
+    logging: *logging
+
+volumes:
+  app_storage:
+  database_data:
+  ai_cache:
+
+networks:
+  backend:
+  dokploy-network:
+    external: true

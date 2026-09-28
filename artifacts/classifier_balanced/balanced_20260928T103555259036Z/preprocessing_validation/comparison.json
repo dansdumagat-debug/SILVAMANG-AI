@@ -1,0 +1,20 @@
+{
+  "split": "val",
+  "images": 882,
+  "checkpoint_sha256": "92e8b3e0b528ea8264fbbc313d1d2f9db9d2a4b937bdf1dcbf8c2feecd1cee87",
+  "deployed": false,
+  "methods": {
+    "center_crop": {
+      "accuracy": 0.7086167800453514,
+      "macro_f1": 0.6850227334143476
+    },
+    "full_resize": {
+      "accuracy": 0.6632653061224489,
+      "macro_f1": 0.6291021235719896
+    },
+    "letterbox": {
+      "accuracy": 0.6541950113378685,
+      "macro_f1": 0.6273851582634047
+    }
+  }
+}

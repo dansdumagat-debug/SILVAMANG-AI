@@ -1,3 +1,5 @@
+import '../utils/species_taxonomy.dart';
+
 class PredictionModel {
   const PredictionModel({
     required this.rank,
@@ -18,7 +20,7 @@ class PredictionModel {
   factory PredictionModel.fromJson(Map<String, dynamic> json) {
     return PredictionModel(
       rank: _asInt(json['rank']),
-      scientificName: _asString(
+      scientificName: canonicalSpeciesName(
         json['scientific_name'] ?? json['scientificName'],
       ),
       commonName: _asString(json['common_name'] ?? json['commonName']),

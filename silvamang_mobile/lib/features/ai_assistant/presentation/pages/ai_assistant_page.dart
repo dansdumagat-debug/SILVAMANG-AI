@@ -456,6 +456,9 @@ String _assistantModeLabel(List<AssistantMessageModel> messages) {
     if (source == 'ai_api') {
       return 'AI Assisted Response';
     }
+    if (source == 'mangrove_scope_guard') {
+      return 'Mangrove Scope';
+    }
     if (source != null && source.isNotEmpty && source != 'local_greeting') {
       return 'Online AI Assistant';
     }
@@ -471,6 +474,9 @@ String _cleanLabel(String value) {
   }
   if (source == 'ai_api') {
     return 'AI Assisted Response';
+  }
+  if (source == 'mangrove_scope_guard') {
+    return 'Mangrove Scope';
   }
   if (source == 'offline' ||
       source == 'offline_unavailable' ||

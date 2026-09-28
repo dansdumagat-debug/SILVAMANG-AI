@@ -71,6 +71,11 @@ models/midas/midas_torchscript.pt
 
 Only the CNN model is currently present in the repository. YOLOv8 detector, YOLOv8 segmentation, and MiDaS require real trained model files before their endpoints can return real AI output.
 
+Unknown and non-mangrove dataset preparation is documented in
+`docs/ai/unknown_class_dataset.md`. The staged workflow contains 28 mangrove
+classes plus `unknown`; deploy it only with a retrained compatible 29-output
+checkpoint and matching class mapping.
+
 Important:
 Do not run uvicorn as a blocking command inside Codex.
 
@@ -138,12 +143,30 @@ the correct species and assigned to `leaves`, `bark`, `roots`, or `flowers` befo
 Review candidates locally in a browser without editing the CSV by hand:
 
 ```powershell
+python scripts/reconcile_candidate_manifest_paths.py
+python scripts/reconcile_candidate_manifest_paths.py --apply
 python scripts/review_gbif_candidates.py
 ```
 
+The reconciliation command is a dry run unless `--apply` is supplied. It repairs only paths whose
+species and SHA-256 match exactly; ambiguous and missing files remain for manual resolution. A
+cross-process lock prevents the reconciliation command and review server from overwriting each
+other's manifest updates.
+
 Then open `http://127.0.0.1:8765`. Use the suggested-part filter to review leaves, flowers, roots,
-or bark separately. Approving a candidate records its reviewed plant part in the candidate
-manifest. It does not move the image into `dataset/raw` or make it training-ready by itself.
+or bark separately. Conflicting folder hints remain unclassified. Approving a candidate records
+its reviewed plant part in the candidate manifest. It does not move the image into `dataset/raw`
+or make it training-ready by itself.
+
+Run the read-only quality gate at any time:
+
+```powershell
+python scripts/audit_candidate_dataset.py
+```
+
+The audit exits unsuccessfully while labels, provenance, approval, duplicate conflicts, or class
+coverage still block a reliable training build. Once it passes, use the isolated 29-class staging
+workflow documented in `training/cnn_classifier/README_staged_29_dataset.md`.
 
 Search Wikimedia Commons for additional open-license candidates suggested by plant-part metadata:
 

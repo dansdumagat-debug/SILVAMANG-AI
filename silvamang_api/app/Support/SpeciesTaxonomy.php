@@ -6,6 +6,11 @@ use Illuminate\Support\Str;
 
 final class SpeciesTaxonomy
 {
+    /** @var array<string, true> */
+    private const GUIDE_ONLY_NAMES = [
+        'aegiceras floridum' => true,
+    ];
+
     /**
      * Philippine catalog aliases and known legacy labels.
      *
@@ -14,7 +19,6 @@ final class SpeciesTaxonomy
     private const CANONICAL_NAMES = [
         'acanthus ebracteatus' => 'Acanthus ebracteatus',
         'acanthus ilicifolius' => 'Acanthus ilicifolius',
-        'acanthus volubilis' => 'Acanthus volubilis',
         'aegiceras corniculatum' => 'Aegiceras corniculatum',
         'aegiceras floridum' => 'Aegiceras floridum',
         'avicennia alba' => 'Avicennia alba',
@@ -46,10 +50,9 @@ final class SpeciesTaxonomy
         'scyphiphora hydrophylacea' => 'Scyphiphora hydrophylacea',
         'sonneratia alba' => 'Sonneratia alba',
         'sonneratia ovata' => 'Sonneratia ovata',
-        // Older Philippine references applied this name to Xylocarpus rumphii.
         'xylocarpus granatum' => 'Xylocarpus granatum',
-        'xylocarpus moluccensis' => 'Xylocarpus rumphii',
-        'xylocarpus rumphii' => 'Xylocarpus rumphii',
+        'xylocarpus moluccensis' => 'Xylocarpus moluccensis',
+        'xylocarpus rumphii' => 'Xylocarpus moluccensis',
     ];
 
     public static function canonicalName(mixed $value): string
@@ -62,6 +65,16 @@ final class SpeciesTaxonomy
     public static function lookupKey(mixed $value): string
     {
         return self::rawLookupKey(self::canonicalName($value));
+    }
+
+    public static function isKnownName(mixed $value): bool
+    {
+        return array_key_exists(self::rawLookupKey($value), self::CANONICAL_NAMES);
+    }
+
+    public static function isGuideOnlyName(mixed $value): bool
+    {
+        return array_key_exists(self::lookupKey($value), self::GUIDE_ONLY_NAMES);
     }
 
     private static function displayName(mixed $value): string

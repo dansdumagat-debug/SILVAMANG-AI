@@ -5,16 +5,29 @@ import 'package:latlong2/latlong.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../map/data/services/offline_map_cache_service.dart';
+import '../../../map/presentation/controllers/offline_map_download_controller.dart';
 import '../../data/models/transect_observation_model.dart';
 import '../../data/models/transect_point_model.dart';
 
 enum TransectMapLayer { satellite, street }
 
 class TransectFieldMap extends ConsumerWidget {
+  static String labelFor(String name, [String? code]) {
+    final named = RegExp(
+      r'\b(?:transect|t)\s*[-#]?\s*(\d+)\b',
+      caseSensitive: false,
+    ).firstMatch(name);
+    final coded = RegExp(r'-(\d+)$').firstMatch(code ?? '');
+    final number = named?.group(1) ?? coded?.group(1);
+    return number == null ? 'T1' : 'T${int.parse(number)}';
+  }
+
   const TransectFieldMap({
     super.key,
     required this.mapController,
     required this.points,
+    this.segments,
+    this.transectLabel = 'T1',
     required this.observations,
     required this.isOnline,
     required this.layer,
@@ -26,6 +39,8 @@ class TransectFieldMap extends ConsumerWidget {
 
   final MapController mapController;
   final List<TransectPointModel> points;
+  final List<List<TransectPointModel>>? segments;
+  final String transectLabel;
   final List<TransectObservationModel> observations;
   final LatLng? currentLocation;
   final bool isOnline;
@@ -36,13 +51,34 @@ class TransectFieldMap extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final offlineNativeZoom = isOnline
+        ? 19
+        : (ref.watch(
+                offlineMapDownloadControllerProvider.select(
+                  (state) => state.cacheStatus?.maxDownloadedZoom,
+                ),
+              ) ??
+              ref
+                  .watch(offlineMapNativeZoomProvider)
+                  .when(
+                    data: (zoom) => zoom,
+                    loading: () => 13,
+                    error: (_, _) => 13,
+                  ));
     final initialCenter =
         currentLocation ??
         (points.isNotEmpty
             ? LatLng(points.first.latitude, points.first.longitude)
             : const LatLng(12.8797, 121.774));
-    final path = points
-        .map((point) => LatLng(point.latitude, point.longitude))
+    final displaySegments = segments?.isNotEmpty == true ? segments! : [points];
+    final straightLines = displaySegments
+        .where((segment) => segment.length >= 2)
+        .map(
+          (segment) => [
+            LatLng(segment.first.latitude, segment.first.longitude),
+            LatLng(segment.last.latitude, segment.last.longitude),
+          ],
+        )
         .toList();
     final markers = <Marker>[
       if (currentLocation != null)
@@ -56,29 +92,43 @@ class TransectFieldMap extends ConsumerWidget {
             label: 'Current location',
           ),
         ),
-      ..._intermediateMarkers(path),
-      if (path.isNotEmpty)
+      for (final line in straightLines) ...[
         Marker(
-          point: path.first,
+          point: LatLng(
+            (line.first.latitude + line.last.latitude) / 2,
+            (line.first.longitude + line.last.longitude) / 2,
+          ),
+          width: 52,
+          height: 42,
+          child: _MapMarker(
+            color: lineColor,
+            labelText: transectLabel.startsWith('T')
+                ? transectLabel.substring(1)
+                : transectLabel,
+            label: '$transectLabel line',
+          ),
+        ),
+        Marker(
+          point: line.first,
           width: 42,
           height: 42,
-          child: const _MapMarker(
+          child: _MapMarker(
             color: AppColors.primaryGreen,
             labelText: 'S',
-            label: 'Transect start',
+            label: '$transectLabel start',
           ),
         ),
-      if (path.length >= 2)
         Marker(
-          point: path.last,
+          point: line.last,
           width: 42,
           height: 42,
-          child: const _MapMarker(
+          child: _MapMarker(
             color: AppColors.dangerRed,
             labelText: 'E',
-            label: 'Transect end',
+            label: '$transectLabel end',
           ),
         ),
+      ],
       ...observations
           .where((observation) => observation.hasCoordinates)
           .map(
@@ -112,7 +162,7 @@ class TransectFieldMap extends ConsumerWidget {
               initialCenter: initialCenter,
               initialZoom: points.isEmpty && currentLocation == null ? 6 : 16,
               minZoom: 4,
-              maxZoom: 22,
+              maxZoom: 24,
               onTap: onMapTap == null ? null : (_, point) => onMapTap!(point),
             ),
             children: [
@@ -121,8 +171,8 @@ class TransectFieldMap extends ConsumerWidget {
                   urlTemplate: OfflineMapCacheService.tileUrlTemplate,
                   userAgentPackageName:
                       OfflineMapCacheService.userAgentPackageName,
-                  maxZoom: 22,
-                  maxNativeZoom: 19,
+                  maxZoom: 24,
+                  maxNativeZoom: offlineNativeZoom ?? 13,
                   tileProvider: ref
                       .read(offlineMapCacheServiceProvider)
                       .tileProvider(isOnline: isOnline),
@@ -133,25 +183,51 @@ class TransectFieldMap extends ConsumerWidget {
                       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName:
                       OfflineMapCacheService.userAgentPackageName,
-                  maxZoom: 19,
+                  maxZoom: 24,
+                  maxNativeZoom: 19,
                 ),
               if (layer == TransectMapLayer.satellite && isOnline)
                 TileLayer(
                   urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                   userAgentPackageName:
                       OfflineMapCacheService.userAgentPackageName,
-                  maxZoom: 22,
+                  maxZoom: 24,
                   maxNativeZoom: 19,
                 ),
-              if (path.length >= 2)
+              if (straightLines.isNotEmpty)
                 PolylineLayer(
                   polylines: [
-                    Polyline(points: path, color: Colors.white, strokeWidth: 8),
-                    Polyline(points: path, color: lineColor, strokeWidth: 5),
+                    for (final line in straightLines) ...[
+                      Polyline(
+                        points: line,
+                        color: Colors.white,
+                        strokeWidth: 12,
+                      ),
+                      Polyline(points: line, color: lineColor, strokeWidth: 8),
+                    ],
                   ],
                 ),
               MarkerLayer(markers: markers),
             ],
+          ),
+          Positioned(
+            right: 12,
+            bottom: 12,
+            child: Column(
+              children: [
+                _ZoomButton(
+                  icon: Icons.add_rounded,
+                  label: 'Zoom in',
+                  onPressed: () => _changeZoom(0.5),
+                ),
+                const SizedBox(height: 8),
+                _ZoomButton(
+                  icon: Icons.remove_rounded,
+                  label: 'Zoom out',
+                  onPressed: () => _changeZoom(-0.5),
+                ),
+              ],
+            ),
           ),
           if (!isOnline && layer == TransectMapLayer.street)
             const Positioned.fill(
@@ -167,27 +243,41 @@ class TransectFieldMap extends ConsumerWidget {
     );
   }
 
-  List<Marker> _intermediateMarkers(List<LatLng> path) {
-    if (path.length <= 2) {
-      return const [];
+  void _changeZoom(double difference) {
+    try {
+      final camera = mapController.camera;
+      mapController.move(
+        camera.center,
+        (camera.zoom + difference).clamp(4.0, 24.0),
+      );
+    } catch (_) {
+      // Ignore taps before the map has attached its controller.
     }
-    final step = path.length > 200 ? (path.length / 200).ceil() : 1;
-    return [
-      for (var index = 1; index < path.length - 1; index += step)
-        Marker(
-          point: path[index],
-          width: 10,
-          height: 10,
-          child: Container(
-            decoration: BoxDecoration(
-              color: lineColor,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-          ),
-        ),
-    ];
   }
+}
+
+class _ZoomButton extends StatelessWidget {
+  const _ZoomButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    elevation: 3,
+    child: IconButton(
+      tooltip: label,
+      icon: Icon(icon, color: AppColors.primaryDarkGreen),
+      onPressed: onPressed,
+    ),
+  );
 }
 
 class _MapMarker extends StatelessWidget {
@@ -208,7 +298,7 @@ class _MapMarker extends StatelessWidget {
     return Tooltip(
       message: label,
       child: Container(
-        width: 34,
+        width: labelText != null && labelText!.length > 1 ? 42 : 34,
         height: 34,
         decoration: BoxDecoration(
           color: color,

@@ -33,6 +33,7 @@ class OfflineModelDiagnosticResult {
     required this.sessionCreationAttempted,
     required this.sessionCreationSucceeded,
     required this.dummyInferenceSucceeded,
+    this.outputCount = 0,
     this.failureReason,
     this.technicalDetail,
     this.inputNames = const [],
@@ -50,6 +51,7 @@ class OfflineModelDiagnosticResult {
   final bool sessionCreationAttempted;
   final bool sessionCreationSucceeded;
   final bool dummyInferenceSucceeded;
+  final int outputCount;
   final String? failureReason;
   final String? technicalDetail;
   final List<String> inputNames;
@@ -59,6 +61,7 @@ class OfflineModelDiagnosticResult {
       platformSupported &&
       classOrderLoaded &&
       classCount > 0 &&
+      outputCount == classCount &&
       singleModelAssetLoaded &&
       sessionCreationSucceeded &&
       dummyInferenceSucceeded;
@@ -67,11 +70,13 @@ class OfflineModelDiagnosticResult {
 class OfflinePredictionService {
   OfflinePredictionService();
 
+  static const modelVersion = 'colab-20260926-last-epoch23';
+
+  static const outputClassCountMismatchReason =
+      'model_output_class_count_mismatch';
+
   static const _singleModelAssetPath =
       'assets/models/efficientnet_b0_silvamang_single.onnx';
-  static const _modelAssetPath = 'assets/models/efficientnet_b0_silvamang.onnx';
-  static const _modelDataAssetPath =
-      'assets/models/efficientnet_b0_silvamang.onnx.data';
   static const _classOrderAssetPath = 'assets/models/class_order.json';
   static const int _inputSize = 224;
   static const int _resizeSize = 256;
@@ -114,24 +119,19 @@ class OfflinePredictionService {
     }
 
     final singleAsset = await _assetInfo(_singleModelAssetPath);
-    final pairedAsset = await _assetInfo(_modelAssetPath);
-    final pairedDataAsset = await _assetInfo(_modelDataAssetPath);
-    final selectedModel = _selectModelAsset(
-      singleAsset: singleAsset,
-      pairedAsset: pairedAsset,
-      pairedDataAsset: pairedDataAsset,
-    );
+    final selectedModel = singleAsset.exists
+        ? _SelectedModelAsset(
+            assetPath: singleAsset.assetPath,
+            sizeBytes: singleAsset.sizeBytes,
+          )
+        : null;
 
     if (selectedModel == null) {
       return _diagnosticResult(
         classOrderLoaded: true,
         classCount: classOrder.length,
         singleModelAssetLoaded: singleAsset.exists,
-        pairedModelAssetLoaded: pairedAsset.exists,
-        pairedDataAssetLoaded: pairedDataAsset.exists,
-        failureReason: singleAsset.exists
-            ? 'model_data_asset_missing'
-            : 'model_asset_missing',
+        failureReason: 'model_asset_missing',
       );
     }
 
@@ -151,28 +151,63 @@ class OfflinePredictionService {
       final outputs = await _runSession(session, inputName, inputTensor);
       final logits = await _flattenOutput(_selectOutput(outputs, outputName));
 
+      if (logits.isEmpty) {
+        return _diagnosticResult(
+          classOrderLoaded: true,
+          classCount: classOrder.length,
+          singleModelAssetLoaded: singleAsset.exists,
+          selectedModelAsset: selectedModel.assetPath,
+          selectedModelFileSize: selectedModel.sizeBytes,
+          sessionCreationAttempted: true,
+          sessionCreationSucceeded: true,
+          dummyInferenceSucceeded: false,
+          inputNames: inputNames,
+          outputNames: outputNames,
+          failureReason: 'output_parse_failed',
+        );
+      }
+
+      try {
+        validateOutputClassCount(
+          outputCount: logits.length,
+          classCount: classOrder.length,
+        );
+      } on OfflinePredictionException catch (error) {
+        return _diagnosticResult(
+          classOrderLoaded: true,
+          classCount: classOrder.length,
+          singleModelAssetLoaded: singleAsset.exists,
+          selectedModelAsset: selectedModel.assetPath,
+          selectedModelFileSize: selectedModel.sizeBytes,
+          sessionCreationAttempted: true,
+          sessionCreationSucceeded: true,
+          dummyInferenceSucceeded: false,
+          outputCount: logits.length,
+          inputNames: inputNames,
+          outputNames: outputNames,
+          failureReason: error.reason,
+          technicalDetail: error.detail,
+        );
+      }
+
       return _diagnosticResult(
         classOrderLoaded: true,
         classCount: classOrder.length,
         singleModelAssetLoaded: singleAsset.exists,
-        pairedModelAssetLoaded: pairedAsset.exists,
-        pairedDataAssetLoaded: pairedDataAsset.exists,
         selectedModelAsset: selectedModel.assetPath,
         selectedModelFileSize: selectedModel.sizeBytes,
         sessionCreationAttempted: true,
         sessionCreationSucceeded: true,
-        dummyInferenceSucceeded: logits.isNotEmpty,
+        dummyInferenceSucceeded: true,
+        outputCount: logits.length,
         inputNames: inputNames,
         outputNames: outputNames,
-        failureReason: logits.isEmpty ? 'output_parse_failed' : null,
       );
     } catch (error) {
       return _diagnosticResult(
         classOrderLoaded: true,
         classCount: classOrder.length,
         singleModelAssetLoaded: singleAsset.exists,
-        pairedModelAssetLoaded: pairedAsset.exists,
-        pairedDataAssetLoaded: pairedDataAsset.exists,
         selectedModelAsset: selectedModel.assetPath,
         selectedModelFileSize: selectedModel.sizeBytes,
         sessionCreationAttempted: true,
@@ -247,6 +282,11 @@ class OfflinePredictionService {
       );
     }
 
+    validateOutputClassCount(
+      outputCount: logits.length,
+      classCount: classOrder.length,
+    );
+
     final probabilities = _softmax(logits);
     final topPredictions = _topK(probabilities, classOrder, 3);
     if (topPredictions.isEmpty) {
@@ -273,7 +313,7 @@ class OfflinePredictionService {
       'warning': null,
       'model': {
         'name': 'SILVAMANG EfficientNet-B0 Offline',
-        'version': 'onnx-offline-0.2.0',
+        'version': modelVersion,
         'type': 'classification',
       },
       'top_prediction': topPredictions.first,
@@ -298,6 +338,23 @@ class OfflinePredictionService {
 
   bool get _isSupportedPlatform =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  @visibleForTesting
+  static void validateOutputClassCount({
+    required int outputCount,
+    required int classCount,
+  }) {
+    if (outputCount == classCount) {
+      return;
+    }
+
+    throw OfflinePredictionException(
+      outputClassCountMismatchReason,
+      'ONNX model output count ($outputCount) does not match '
+      'class_order.json entry count ($classCount). Deploy matching model '
+      'and class-order assets together.',
+    );
+  }
 
   Future<List<String>> _loadClassOrder() async {
     if (_classOrder != null) {
@@ -324,45 +381,13 @@ class OfflinePredictionService {
 
   Future<_SelectedModelAsset> _prepareModelAsset() async {
     final singleAsset = await _assetInfo(_singleModelAssetPath);
-    final pairedAsset = await _assetInfo(_modelAssetPath);
-    final pairedDataAsset = await _assetInfo(_modelDataAssetPath);
-    final selectedModel = _selectModelAsset(
-      singleAsset: singleAsset,
-      pairedAsset: pairedAsset,
-      pairedDataAsset: pairedDataAsset,
+    if (!singleAsset.exists) {
+      throw OfflinePredictionException('model_asset_missing');
+    }
+    return _SelectedModelAsset(
+      assetPath: singleAsset.assetPath,
+      sizeBytes: singleAsset.sizeBytes,
     );
-
-    if (selectedModel == null) {
-      throw OfflinePredictionException(
-        singleAsset.exists ? 'model_data_asset_missing' : 'model_asset_missing',
-      );
-    }
-
-    return selectedModel;
-  }
-
-  _SelectedModelAsset? _selectModelAsset({
-    required _AssetInfo singleAsset,
-    required _AssetInfo pairedAsset,
-    required _AssetInfo pairedDataAsset,
-  }) {
-    if (singleAsset.exists) {
-      return _SelectedModelAsset(
-        assetPath: singleAsset.assetPath,
-        sizeBytes: singleAsset.sizeBytes,
-        usesSingleFileMode: true,
-      );
-    }
-
-    if (pairedAsset.exists && pairedDataAsset.exists) {
-      return _SelectedModelAsset(
-        assetPath: pairedAsset.assetPath,
-        sizeBytes: pairedAsset.sizeBytes,
-        usesSingleFileMode: false,
-      );
-    }
-
-    return null;
   }
 
   Future<_AssetInfo> _assetInfo(String assetPath) async {
@@ -393,10 +418,7 @@ class OfflinePredictionService {
       debugPrint(
         'SILVAMANG AI offline selected model size: ${model.sizeBytes}',
       );
-      debugPrint(
-        'SILVAMANG AI offline model mode: '
-        '${model.usesSingleFileMode ? 'single-file' : 'external-data'}',
-      );
+      debugPrint('SILVAMANG AI offline model mode: single-file');
     }
 
     try {
@@ -455,12 +477,22 @@ class OfflinePredictionService {
 
   image_lib.Image _resizeImageShortSide(image_lib.Image source) {
     if (source.width <= source.height) {
-      final height = (source.height * _resizeSize / source.width).round();
-      return image_lib.copyResize(source, width: _resizeSize, height: height);
+      final height = (source.height * _resizeSize / source.width).floor();
+      return image_lib.copyResize(
+        source,
+        width: _resizeSize,
+        height: height,
+        interpolation: image_lib.Interpolation.linear,
+      );
     }
 
-    final width = (source.width * _resizeSize / source.height).round();
-    return image_lib.copyResize(source, width: width, height: _resizeSize);
+    final width = (source.width * _resizeSize / source.height).floor();
+    return image_lib.copyResize(
+      source,
+      width: width,
+      height: _resizeSize,
+      interpolation: image_lib.Interpolation.linear,
+    );
   }
 
   Future<Map<String, OrtValue>> _runSession(
@@ -544,7 +576,7 @@ class OfflinePredictionService {
             ranked[rank].confidence.toStringAsFixed(2),
           ),
           'model_name': 'SILVAMANG EfficientNet-B0 Offline',
-          'model_version': 'onnx-offline-0.2.0',
+          'model_version': modelVersion,
         },
     ];
   }
@@ -571,6 +603,7 @@ class OfflinePredictionService {
       'input_tensor_failed',
       'inference_failed',
       'output_parse_failed',
+      outputClassCountMismatchReason,
     ]) {
       if (text.contains(reason)) {
         return reason;
@@ -601,6 +634,7 @@ class OfflinePredictionService {
     bool sessionCreationAttempted = false,
     bool sessionCreationSucceeded = false,
     bool dummyInferenceSucceeded = false,
+    int outputCount = 0,
     String? failureReason,
     String? technicalDetail,
     List<String> inputNames = const [],
@@ -618,6 +652,7 @@ class OfflinePredictionService {
       sessionCreationAttempted: sessionCreationAttempted,
       sessionCreationSucceeded: sessionCreationSucceeded,
       dummyInferenceSucceeded: dummyInferenceSucceeded,
+      outputCount: outputCount,
       failureReason: failureReason,
       technicalDetail: technicalDetail,
       inputNames: inputNames,
@@ -637,6 +672,7 @@ class OfflinePredictionService {
         'sessionAttempted=${result.sessionCreationAttempted}, '
         'session=${result.sessionCreationSucceeded}, '
         'dummyInference=${result.dummyInferenceSucceeded}, '
+        'outputCount=${result.outputCount}, '
         'inputNames=${result.inputNames}, '
         'outputNames=${result.outputNames}, '
         'reason=${result.failureReason ?? 'none'}, '
@@ -669,13 +705,8 @@ class _AssetInfo {
 }
 
 class _SelectedModelAsset {
-  const _SelectedModelAsset({
-    required this.assetPath,
-    required this.sizeBytes,
-    required this.usesSingleFileMode,
-  });
+  const _SelectedModelAsset({required this.assetPath, required this.sizeBytes});
 
   final String assetPath;
   final int sizeBytes;
-  final bool usesSingleFileMode;
 }

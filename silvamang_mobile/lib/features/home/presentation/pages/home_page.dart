@@ -13,7 +13,9 @@ import '../../../../core/widgets/silvamang_card.dart';
 import '../../../../core/widgets/silvamang_logo.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../../../offline_sync/presentation/controllers/offline_sync_controller.dart';
+import '../../../notifications/presentation/controllers/notification_controller.dart';
 import '../../../records/presentation/controllers/records_controller.dart';
+import '../../../species_database/data/repositories/species_repository.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -37,14 +39,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
-    final offlineState = ref.watch(offlineSyncControllerProvider);
     final recordsState = ref.watch(recordsControllerProvider);
     final records = recordsState.records;
-    final speciesCount = records
-        .map((record) => record.topScientificName.trim().toLowerCase())
-        .where((species) => species.isNotEmpty)
-        .toSet()
-        .length;
+    final registeredSpecies = ref.watch(registeredSpeciesCountProvider);
     final confidences = records
         .map((record) => record.confidence)
         .where((confidence) => confidence.isFinite && confidence > 0)
@@ -68,16 +65,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         : averageConfidence == null
         ? 'N/A'
         : '${averageConfidence.toStringAsFixed(1)}%';
-    final speciesValue = statsLoading
-        ? '...'
-        : statsUnavailable
-        ? '--'
-        : speciesCount.toString();
-    final notificationCount =
-        offlineState.pendingCount +
-        offlineState.failedCount +
-        offlineState.recentlyDeletedCount +
-        (authState.isOfflineSession ? 1 : 0);
+    final speciesValue = registeredSpecies.when(
+      data: (count) => count.toString(),
+      loading: () => '...',
+      error: (_, _) => '--',
+    );
+    final notificationCount = ref.watch(unreadNotificationCountProvider);
 
     if (authState.isOfflineSession && !_offlineRefreshAttempted) {
       _offlineRefreshAttempted = true;
@@ -144,6 +137,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             right: 0,
                             top: -2,
                             child: Container(
+                              key: const Key('home_notification_badge'),
                               constraints: const BoxConstraints(
                                 minWidth: 20,
                                 minHeight: 20,
@@ -268,7 +262,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             children: [
               _QuickActionCard(
                 title: 'Measure',
-                subtitle: 'Height & Canopy Estimation',
+                subtitle: 'Measure height & width',
                 icon: Icons.straighten_rounded,
                 background: AppColors.softGreen,
                 onTap: () => context.pushNamed(RouteNames.measurement),

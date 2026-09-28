@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "status": "future_only",
+  "requires_retraining": true,
+  "dataset_root": "dataset/processed/cnn_classification",
+  "splits": [
+    "train",
+    "val",
+    "test"
+  ],
+  "unknown_directories": [
+    "dataset/processed/cnn_classification/train/unknown",
+    "dataset/processed/cnn_classification/val/unknown",
+    "dataset/processed/cnn_classification/test/unknown"
+  ],
+  "class_order": [
+    "Avicennia_marina",
+    "Avicennia_rumphiana",
+    "Bruguiera_gymnorrhiza",
+    "Ceriops_tagal",
+    "Excoecaria_agallocha",
+    "Rhizophora_apiculata",
+    "Rhizophora_mucronata",
+    "Rhizophora_stylosa",
+    "Sonneratia_alba",
+    "Xylocarpus_granatum",
+    "unknown"
+  ],
+  "unknown_class": {
+    "name": "unknown",
+    "index": 10
+  },
+  "active_runtime_mapping": "silvamang_ai_service/models/cnn_classifier/class_order.json",
+  "activation_requirements": [
+    "Populate unknown in train, val, and test with reviewed images.",
+    "Train and evaluate a new 11-output classifier checkpoint.",
+    "Confirm the checkpoint class order exactly matches this class_order.",
+    "Deploy the new checkpoint and its generated runtime class_order.json together."
+  ]
+}

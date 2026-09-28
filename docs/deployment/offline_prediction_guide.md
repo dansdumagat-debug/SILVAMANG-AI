@@ -30,61 +30,20 @@ For local testing, run the Flutter app on the physical Android phone. Do not
 run the offline ONNX flow on Chrome/web because ONNX Runtime uses native mobile
 runtime support in this project.
 
-Offline ONNX now uses `flutter_onnxruntime` and prefers the single-file model:
+Offline ONNX uses `flutter_onnxruntime` with one release model:
 
 ```text
 assets/models/efficientnet_b0_silvamang_single.onnx
 ```
 
-The single-file model is loaded alone. Do not add or require
-`efficientnet_b0_silvamang_single.onnx.data`.
+The model is loaded alone. The older `.onnx` plus `.onnx.data` pair is not a
+runtime fallback and is not bundled in `pubspec.yaml`; this prevents a new
+`class_order.json` from being used with a stale model.
 
-If the single-file asset is unavailable, the app falls back to the older paired
-ONNX export:
-
-```text
-assets/models/efficientnet_b0_silvamang.onnx
-assets/models/efficientnet_b0_silvamang.onnx.data
-```
-
-Both fallback files must be bundled as Flutter assets. At runtime, the app
-copies both files to device storage with the exact filenames:
-
-```text
-efficientnet_b0_silvamang.onnx
-efficientnet_b0_silvamang.onnx.data
-```
-
-The files must sit side by side before ONNX Runtime creates the session because
-the `.onnx` model references the external `.onnx.data` file.
-
-If the external `.onnx.data` file is missing or cannot be copied beside the
-model file on device storage, offline prediction will fail with a clear model
-loading error. In that case, export a single-file ONNX model and use:
-
-```text
-assets/models/efficientnet_b0_silvamang_single.onnx
-```
-
-If the app reports `Session creation failed`, ONNX Runtime could not load the
-copied model file. Common causes are an unsupported ONNX opset/model format, a
-missing external `.onnx.data` file, a zero-byte copied file, or the data file not
-being copied side-by-side with the `.onnx` file on device storage.
-
-For mobile, a single-file ONNX model is preferred when available:
-
-```text
-assets/models/efficientnet_b0_silvamang_single.onnx
-```
-
-If that asset exists and is declared in `silvamang_mobile/pubspec.yaml`, the
-Flutter offline prediction service will prefer it. Otherwise it uses the
-`.onnx` plus `.onnx.data` pair.
-
-The Flutter project declares the `assets/models/` folder so the existing paired
-model files and a future `efficientnet_b0_silvamang_single.onnx` export are all
-bundled. Offline ONNX works only on native Android in this project, not
-Chrome/Web.
+If the app reports `Session creation failed`, common causes are an unsupported
+ONNX opset/model format, a missing or zero-byte single-file asset, or an ONNX
+input shape other than `[1, 3, 224, 224]`. Offline ONNX works only on native
+Android in this project, not Chrome/Web.
 
 Open this screen in the app to verify the offline model setup:
 
@@ -131,45 +90,66 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\docs\deployment\script
 
 The trained model file `efficientnet_b0_best.pth` is a PyTorch checkpoint. Flutter cannot run PyTorch checkpoints directly. The model must be exported to ONNX, then loaded by ONNX Runtime in Flutter.
 
-## Export ONNX Model
+## Export a Staged ONNX Model
 
-Run:
+Train and evaluate a versioned experiment first. Then export its completed training run:
 
 ```powershell
 cd C:\laragon\www\SilvaMang-AI
-python .\silvamang_ai_service\export\export_efficientnet_to_onnx.py
+python .\silvamang_ai_service\training\cnn_classifier\export_staged_efficientnet_to_onnx.py `
+  --source-run-dir .\silvamang_ai_service\artifacts\efficientnet_transfer\run-<timestamp>
 ```
 
-This creates:
+This creates a matching model and label bundle inside the experiment only:
 
 ```text
-silvamang_mobile/assets/models/efficientnet_b0_silvamang.onnx
-silvamang_mobile/assets/models/efficientnet_b0_silvamang.onnx.data
-silvamang_mobile/assets/models/class_order.json
+<source-run-dir>/exports/efficientnet_b0_silvamang_single.onnx
+<source-run-dir>/exports/class_order.json
+<source-run-dir>/exports/export_manifest.json
 ```
 
-## Export Single-File ONNX Model
+It does not modify Flutter assets.
 
-Run:
+## Explicitly Promote an Evaluated Bundle
+
+After reviewing held-out evaluation, export and promote in one explicit command:
 
 ```powershell
 cd C:\laragon\www\SilvaMang-AI
-python .\silvamang_ai_service\export\export_efficientnet_to_onnx_single_file.py
+python .\silvamang_ai_service\training\cnn_classifier\export_staged_efficientnet_to_onnx.py `
+  --source-run-dir .\silvamang_ai_service\artifacts\efficientnet_transfer\run-<timestamp> `
+  --output-dir .\silvamang_ai_service\artifacts\efficientnet_transfer\promotion-<version> `
+  --evaluation-run-dir .\silvamang_ai_service\artifacts\efficientnet_transfer\run-<timestamp>\evaluations\evaluation-<timestamp> `
+  --min-accuracy 0.85 `
+  --min-macro-f1 0.80 `
+  --min-per-class-precision 0.60 `
+  --min-per-class-recall 0.60 `
+  --min-per-class-f1 0.60 `
+  --min-per-class-support 20 `
+  --promote-to-flutter
 ```
 
-This creates:
+The thresholds are explicit release inputs; choose the approved values. Promotion verifies
+the evaluation report hashes, source checkpoint and label hashes, unchanged staged dataset
+fingerprint, 224 input size, exact class order, and every per-class gate including `unknown`.
+The staged 30-image-per-class minimum is a build floor. With a 10% test split, the example
+support gate of 20 requires roughly 200 independent images in every class.
+
+The promotion flag replaces these two Flutter assets as one matching pair:
 
 ```text
 silvamang_mobile/assets/models/efficientnet_b0_silvamang_single.onnx
 silvamang_mobile/assets/models/class_order.json
 ```
 
-After creating the single-file model, add it to `silvamang_mobile/pubspec.yaml`
-under Flutter assets:
-
-```yaml
-- assets/models/efficientnet_b0_silvamang_single.onnx
-```
+Promote the server checkpoint from the same source and evaluation runs. Stop the Python service
+while replacing the active pair, restart it, then verify `GET /ai/health` reports CNN available,
+image size 224, and the expected class order and hashes. Run Laravel's
+`species:sync-cnn-support <class_order.json>` as a dry run and then with `--apply`. On this
+Windows setup, invoke Artisan with
+`& 'C:\laragon\bin\php\php-8.1.10-Win32-vs16-x64\php.exe' artisan ...` because bare `php` is
+not on PowerShell's PATH. Rebuild and release Flutter only after those checks so the server,
+database catalog, and app share one class order.
 
 ## Flutter Commands
 

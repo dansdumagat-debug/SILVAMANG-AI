@@ -4,15 +4,22 @@ import argparse
 import csv
 import hashlib
 import json
+import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any, Iterable
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
+
+try:  # pragma: no cover - import shape differs between CLI and tests
+    from .candidate_manifest_lock import candidate_manifest_write_lock
+except ImportError:  # pragma: no cover
+    from candidate_manifest_lock import candidate_manifest_write_lock
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -40,7 +47,6 @@ FIELD_IMAGE_BASIS = {
 NEW_SPECIES = (
     "Acanthus ebracteatus",
     "Acanthus ilicifolius",
-    "Acanthus volubilis",
     "Avicennia alba",
     "Avicennia officinalis",
     "Nypa fruticans",
@@ -50,10 +56,9 @@ NEW_SPECIES = (
     "Sonneratia ovata",
     "Camptostemon philippinensis",
     "Heritiera littoralis",
-    "Xylocarpus rumphii",
+    "Xylocarpus moluccensis",
     "Osbornia octodonta",
     "Aegiceras corniculatum",
-    "Aegiceras floridum",
     "Bruguiera cylindrica",
     "Bruguiera sexangula",
     "Ceriops zippeliana",
@@ -67,6 +72,7 @@ MANIFEST_FIELDS = (
     "reviewed_plant_part",
     "source",
     "source_record_id",
+    "source_group_id",
     "source_record_url",
     "source_image_url",
     "creator",
@@ -200,13 +206,53 @@ def existing_manifest() -> tuple[
 
 
 def append_manifest(row: dict[str, Any]) -> None:
-    MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
-    write_header = not MANIFEST_PATH.exists() or MANIFEST_PATH.stat().st_size == 0
-    with MANIFEST_PATH.open("a", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=MANIFEST_FIELDS, extrasaction="ignore")
-        if write_header:
-            writer.writeheader()
-        writer.writerow(row)
+    # Every collector and atomic manifest promoter coordinates through this
+    # shared lock path. Header detection stays inside the critical section so
+    # concurrent first writes cannot emit duplicate headers or lose a row around
+    # an atomic manifest replacement.
+    with candidate_manifest_write_lock(MANIFEST_PATH):
+        MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
+        if MANIFEST_PATH.exists() and MANIFEST_PATH.stat().st_size:
+            with MANIFEST_PATH.open("r", encoding="utf-8-sig", newline="") as handle:
+                reader = csv.DictReader(handle)
+                existing_fields = tuple(reader.fieldnames or ())
+                existing_rows = list(reader)
+            if existing_fields != MANIFEST_FIELDS:
+                # Schema additions must replace the header and every row together;
+                # appending a wider row below an old header would shift provenance
+                # columns and silently corrupt the CSV.
+                with NamedTemporaryFile(
+                    "w",
+                    encoding="utf-8",
+                    newline="",
+                    dir=MANIFEST_PATH.parent,
+                    prefix=f".{MANIFEST_PATH.name}.",
+                    suffix=".tmp",
+                    delete=False,
+                ) as temporary:
+                    temporary_path = Path(temporary.name)
+                    writer = csv.DictWriter(
+                        temporary, fieldnames=MANIFEST_FIELDS, extrasaction="ignore"
+                    )
+                    writer.writeheader()
+                    writer.writerows(existing_rows)
+                    writer.writerow(row)
+                    temporary.flush()
+                    os.fsync(temporary.fileno())
+                try:
+                    os.replace(temporary_path, MANIFEST_PATH)
+                except BaseException:
+                    temporary_path.unlink(missing_ok=True)
+                    raise
+                return
+        write_header = not MANIFEST_PATH.exists() or MANIFEST_PATH.stat().st_size == 0
+        with MANIFEST_PATH.open("a", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(
+                handle, fieldnames=MANIFEST_FIELDS, extrasaction="ignore"
+            )
+            if write_header:
+                writer.writeheader()
+            writer.writerow(row)
 
 
 def extension_for(content_type: str, image_url: str, payload: bytes) -> str | None:

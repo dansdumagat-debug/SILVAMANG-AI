@@ -1,3 +1,5 @@
+import '../../../../shared/utils/species_taxonomy.dart';
+
 class MapScanRecord {
   const MapScanRecord({
     required this.localId,
@@ -161,7 +163,9 @@ class MapScanRecord {
         json['can_view_record'] ?? json['canViewRecord'],
         fallback: true,
       ),
-      speciesName: _asString(json['species_name'] ?? json['speciesName']),
+      speciesName: canonicalSpeciesName(
+        json['species_name'] ?? json['speciesName'],
+      ),
       commonName: _asNullableString(json['common_name'] ?? json['commonName']),
       confidence: _asDouble(json['confidence']),
       imagePath: _asNullableString(

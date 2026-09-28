@@ -19,17 +19,21 @@ import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
+import '../../../capture/presentation/controllers/capture_controller.dart';
 import '../../../map/data/repositories/local_map_scan_repository.dart';
 import '../../../records/presentation/controllers/records_controller.dart';
 import '../../data/models/transect_observation_model.dart';
 import '../../data/models/transect_point_model.dart';
 import '../../data/models/transect_record_model.dart';
+import '../../data/models/transect_contribution_model.dart';
 import '../../data/services/transect_geometry_service.dart';
 import '../controllers/transects_controller.dart';
+import 'transect_handoff_page.dart';
 import '../widgets/transect_field_map.dart';
 
 class CreateTransectPage extends ConsumerStatefulWidget {
-  const CreateTransectPage({super.key});
+  const CreateTransectPage({super.key, this.continueRecord});
+  final TransectRecordModel? continueRecord;
 
   @override
   ConsumerState<CreateTransectPage> createState() => _CreateTransectPageState();
@@ -42,6 +46,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
   final _nameController = TextEditingController();
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _targetController = TextEditingController();
   final _mapController = MapController();
   final _locationService = const LocationService();
   final _connectivityService = const ConnectivityService();
@@ -65,16 +70,32 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
   @override
   void initState() {
     super.initState();
+    final record = widget.continueRecord;
+    if (record != null) {
+      _nameController.text = record.transectName;
+      _locationController.text = record.locationName ?? '';
+      _descriptionController.text = record.description ?? '';
+      _targetController.text = record.targetDistanceM?.toString() ?? '';
+      _mode = record.mode;
+      _recordedAt = record.recordedAt;
+    }
+    _targetController.addListener(_refreshTargetActions);
     unawaited(_initialize());
   }
 
   @override
   void dispose() {
     _locationSubscription?.cancel();
+    _targetController.removeListener(_refreshTargetActions);
     _nameController.dispose();
     _locationController.dispose();
     _descriptionController.dispose();
+    _targetController.dispose();
     super.dispose();
+  }
+
+  void _refreshTargetActions() {
+    if (mounted) setState(() {});
   }
 
   Future<void> _initialize() async {
@@ -215,7 +236,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
             'Weak GPS fix ignored (${location.accuracy.toStringAsFixed(0)} m).';
       }
     });
-    if (shouldAppend) _moveMap(candidate, zoom: 18);
+    if (shouldAppend) _moveMap(candidate, zoom: 18, preserveZoom: true);
   }
 
   void _handleLocationError(Object error) {
@@ -452,7 +473,10 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
     );
   }
 
-  Future<void> _saveTransect() async {
+  Future<void> _saveTransect({
+    required bool pass,
+    bool scanAfterSave = false,
+  }) async {
     if (_isTracking) {
       setState(() => _fieldMessage = 'End GPS tracking before saving.');
       return;
@@ -467,9 +491,55 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
 
     final auth = ref.read(authControllerProvider);
     final summary = _geometryService.summarize(_points);
+    if (summary.distanceM <= 0) {
+      setState(
+        () =>
+            _fieldMessage = 'Record a path with a distance greater than zero.',
+      );
+      return;
+    }
     final now = DateTime.now();
+    final target =
+        widget.continueRecord?.targetDistanceM ??
+        double.tryParse(_targetController.text.trim());
+    if (target == null || target <= 0 || !target.isFinite) {
+      setState(
+        () => _fieldMessage = 'Enter a target distance greater than zero.',
+      );
+      return;
+    }
+    final previous = widget.continueRecord;
+    final contribution = TransectContributionModel(
+      id: const Uuid().v4(),
+      userId: auth.user?.id,
+      userName: auth.user?.name ?? 'Mobile User',
+      distanceM: summary.distanceM,
+      points: List.unmodifiable(_points),
+      observations: List.unmodifiable(_selectedObservations.values),
+      recordedAt: now,
+    );
+    final total = (previous?.totalDistanceM ?? 0) + summary.distanceM;
+    if (!scanAfterSave && pass && total >= target) {
+      setState(
+        () => _fieldMessage =
+            'Target reached. Tap Finished to save the completed transect.',
+      );
+      return;
+    }
+    if (!scanAfterSave && !pass && total < target) {
+      setState(
+        () => _fieldMessage =
+            'Record the remaining distance or tap PASS for the next user.',
+      );
+      return;
+    }
+    final allPoints = [...?previous?.points, ..._points];
+    final allObservations = [
+      ...?previous?.observations,
+      ..._selectedObservations.values,
+    ];
     final record = TransectRecordModel(
-      localId: 'transect_${const Uuid().v4()}',
+      localId: previous?.localId ?? 'transect_${const Uuid().v4()}',
       ownerUserId: auth.user?.id,
       ownerUserEmail: auth.user?.email,
       researcherName: auth.user?.name,
@@ -477,21 +547,47 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
       locationName: _emptyAsNull(_locationController.text),
       description: _emptyAsNull(_descriptionController.text),
       mode: _mode,
-      status: TransectRecordModel.statusCompleted,
-      points: List.unmodifiable(_points),
-      observations: List.unmodifiable(_selectedObservations.values),
-      totalDistanceM: summary.distanceM,
+      status: total >= target
+          ? TransectRecordModel.statusCompleted
+          : TransectRecordModel.statusDraft,
+      points: List.unmodifiable(allPoints),
+      observations: List.unmodifiable(allObservations),
+      totalDistanceM: total,
       bearingDegrees: summary.bearingDegrees,
       gpsAccuracyM: summary.averageAccuracyM,
       recordedAt: _recordedAt,
-      createdAt: now,
+      createdAt: previous?.createdAt ?? now,
       updatedAt: now,
       syncStatus: TransectRecordModel.syncPending,
+      targetDistanceM: target,
+      contributions: [...?previous?.contributions, contribution],
+      handoffSequence: (previous?.handoffSequence ?? 0) + 1,
     );
     final saved = await ref
         .read(transectsControllerProvider.notifier)
         .save(record);
     if (!mounted || saved == null) return;
+    if (scanAfterSave) {
+      ref.read(captureControllerProvider.notifier).clearImages();
+      context.pushReplacementNamed(
+        RouteNames.captureGuide,
+        queryParameters: {'transectId': saved.localId},
+      );
+      return;
+    }
+    if (pass) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => TransectPassPage(record: saved),
+        ),
+      );
+      if (!mounted) return;
+    }
+    if (widget.continueRecord != null) {
+      Navigator.pop(context);
+      return;
+    }
     context.pushReplacementNamed(
       RouteNames.transectDetail,
       pathParameters: {'id': saved.localId},
@@ -508,10 +604,17 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
     );
   }
 
-  void _moveMap(TransectPointModel point, {required double zoom}) {
+  void _moveMap(
+    TransectPointModel point, {
+    required double zoom,
+    bool preserveZoom = false,
+  }) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-        _mapController.move(LatLng(point.latitude, point.longitude), zoom);
+        _mapController.move(
+          LatLng(point.latitude, point.longitude),
+          preserveZoom ? _mapController.camera.zoom : zoom,
+        );
       } catch (_) {
         // The map may still be mounting during the first GPS fix.
       }
@@ -524,11 +627,12 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
       try {
         _mapController.fitCamera(
           CameraFit.coordinates(
-            coordinates: _points
-                .map((point) => LatLng(point.latitude, point.longitude))
-                .toList(),
+            coordinates: [
+              LatLng(_points.first.latitude, _points.first.longitude),
+              LatLng(_points.last.latitude, _points.last.longitude),
+            ],
             padding: const EdgeInsets.all(52),
-            maxZoom: 19,
+            maxZoom: 21,
           ),
         );
       } catch (_) {
@@ -604,6 +708,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                           const SizedBox(height: AppSpacing.md),
                           TextFormField(
                             controller: _nameController,
+                            readOnly: widget.continueRecord != null,
                             textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
                               labelText: 'Transect name or ID',
@@ -616,7 +721,37 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                           ),
                           const SizedBox(height: AppSpacing.md),
                           TextFormField(
+                            controller: _targetController,
+                            readOnly: widget.continueRecord != null,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Target distance (m)',
+                              prefixIcon: Icon(Icons.straighten_rounded),
+                            ),
+                            validator: (value) {
+                              final target = double.tryParse(
+                                value?.trim() ?? '',
+                              );
+                              return target == null ||
+                                      target <= 0 ||
+                                      !target.isFinite
+                                  ? 'Enter a valid target distance.'
+                                  : null;
+                            },
+                          ),
+                          if (widget.continueRecord != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                '${widget.continueRecord!.remainingDistanceM.toStringAsFixed(1)} m remaining before this section',
+                              ),
+                            ),
+                          const SizedBox(height: AppSpacing.md),
+                          TextFormField(
                             controller: _locationController,
+                            readOnly: widget.continueRecord != null,
                             textInputAction: TextInputAction.next,
                             decoration: const InputDecoration(
                               labelText: 'Location name',
@@ -698,6 +833,10 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                             child: TransectFieldMap(
                               mapController: _mapController,
                               points: _points,
+                              transectLabel: TransectFieldMap.labelFor(
+                                _nameController.text,
+                                widget.continueRecord?.transectCode,
+                              ),
                               observations: _selectedObservations.values
                                   .toList(),
                               currentLocation: currentPoint,
@@ -756,6 +895,27 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                                 ),
                               ],
                             ),
+                          if (!_isTracking &&
+                              _points.length >= 2 &&
+                              summary.distanceM > 0) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            SilvamangButton(
+                              text: 'Scan Mangrove in This Transect',
+                              icon: Icons.camera_alt_rounded,
+                              isLoading: transectState.isSaving,
+                              onPressed: transectState.isSaving
+                                  ? null
+                                  : () => _saveTransect(
+                                      pass: false,
+                                      scanAfterSave: true,
+                                    ),
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Saves this transect section first. New scans are added automatically.',
+                              style: AppTextStyles.bodySmall,
+                            ),
+                          ],
                           if (_fieldMessage != null) ...[
                             const SizedBox(height: AppSpacing.sm),
                             _FieldMessage(message: _fieldMessage!),
@@ -842,14 +1002,75 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                     const SizedBox(height: AppSpacing.md),
                     const _ScientificNote(),
                     const SizedBox(height: AppSpacing.md),
-                    SilvamangButton(
-                      text: 'Save Transect',
-                      icon: Icons.save_rounded,
-                      isLoading: transectState.isSaving,
-                      onPressed: _isTracking || _points.length < 2
-                          ? null
-                          : _saveTransect,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 52,
+                            child: SilvamangButton(
+                              text: 'PASS',
+                              icon: Icons.qr_code_rounded,
+                              type: SilvamangButtonType.outline,
+                              isLoading: transectState.isSaving,
+                              onPressed:
+                                  _isTracking ||
+                                      _points.length < 2 ||
+                                      (widget.continueRecord?.totalDistanceM ??
+                                                  0) +
+                                              summary.distanceM >=
+                                          (widget
+                                                  .continueRecord
+                                                  ?.targetDistanceM ??
+                                              double.tryParse(
+                                                _targetController.text.trim(),
+                                              ) ??
+                                              double.infinity)
+                                  ? null
+                                  : () => _saveTransect(pass: true),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: SizedBox(
+                            height: 52,
+                            child: SilvamangButton(
+                              text: 'Finished',
+                              icon: Icons.check_circle_rounded,
+                              isLoading: transectState.isSaving,
+                              onPressed:
+                                  _isTracking ||
+                                      _points.length < 2 ||
+                                      (widget.continueRecord?.totalDistanceM ??
+                                                  0) +
+                                              summary.distanceM <
+                                          (widget
+                                                  .continueRecord
+                                                  ?.targetDistanceM ??
+                                              double.tryParse(
+                                                _targetController.text.trim(),
+                                              ) ??
+                                              double.infinity)
+                                  ? null
+                                  : () => _saveTransect(pass: false),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (_isTracking ||
+                        _points.length < 2 ||
+                        summary.distanceM <= 0) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        _isTracking
+                            ? 'End GPS tracking before passing or finishing.'
+                            : _points.length < 2
+                            ? 'Record a start point and endpoint to enable PASS. QR handoff works offline.'
+                            : 'Move along the path to record a distance before passing.',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ],
                     if (transectState.errorMessage != null) ...[
                       const SizedBox(height: AppSpacing.sm),
                       Text(
@@ -1013,7 +1234,7 @@ class _MetricGrid extends StatelessWidget {
       childAspectRatio: 2.15,
       children: [
         _MetricTile(
-          label: 'Distance',
+          label: 'Start to end',
           value: '${distanceM.toStringAsFixed(1)} m',
         ),
         _MetricTile(label: 'Direction', value: direction),

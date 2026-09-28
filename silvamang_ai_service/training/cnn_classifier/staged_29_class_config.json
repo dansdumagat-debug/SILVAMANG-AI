@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "status": "staging_only",
+  "requires_retraining": true,
+  "class_order": [
+    "Acanthus_ebracteatus",
+    "Acanthus_ilicifolius",
+    "Aegiceras_corniculatum",
+    "Avicennia_alba",
+    "Avicennia_marina",
+    "Avicennia_officinalis",
+    "Avicennia_rumphiana",
+    "Bruguiera_cylindrica",
+    "Bruguiera_gymnorrhiza",
+    "Bruguiera_sexangula",
+    "Camptostemon_philippinensis",
+    "Ceriops_tagal",
+    "Ceriops_zippeliana",
+    "Excoecaria_agallocha",
+    "Heritiera_littoralis",
+    "Lumnitzera_littorea",
+    "Lumnitzera_racemosa",
+    "Nypa_fruticans",
+    "Osbornia_octodonta",
+    "Pemphis_acidula",
+    "Rhizophora_apiculata",
+    "Rhizophora_mucronata",
+    "Rhizophora_stylosa",
+    "Scyphiphora_hydrophylacea",
+    "Sonneratia_alba",
+    "Sonneratia_ovata",
+    "Xylocarpus_granatum",
+    "Xylocarpus_moluccensis",
+    "unknown"
+  ],
+  "unknown_class": {
+    "name": "unknown",
+    "index": 28
+  },
+  "input_manifests": [
+    "dataset/metadata/candidate_image_manifest.csv",
+    "dataset/metadata/image_manifest.csv"
+  ],
+  "allowed_input_roots": [
+    "dataset/candidates",
+    "dataset/raw"
+  ],
+  "input_policy": {
+    "required_approval_status": "approved",
+    "require_declared_sha256": true,
+    "require_source_record": true,
+    "require_rights_or_license": true
+  },
+  "split": {
+    "ratios": {
+      "train": 0.7,
+      "val": 0.2,
+      "test": 0.1
+    },
+    "seed": 42,
+    "group_by": [
+      "sha256",
+      "source_record"
+    ]
+  },
+  "readiness": {
+    "minimum_unique_images_per_class": 30,
+    "minimum_source_groups_per_class": 3,
+    "require_every_class_in_every_split": true
+  },
+  "staging_root": "dataset/staging/cnn_classification_29",
+  "active_artifacts_untouched": [
+    "dataset/processed/cnn_classification",
+    "dataset/labels/species_labels.txt",
+    "silvamang_ai_service/models/cnn_classifier/class_order.json",
+    "silvamang_ai_service/models/cnn_classifier/efficientnet_b0_best.pth"
+  ]
+}

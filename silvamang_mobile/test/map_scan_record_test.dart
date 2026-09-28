@@ -29,6 +29,18 @@ void main() {
     expect(record.hasCoordinates, isTrue);
   });
 
+  test('canonicalizes legacy species names in cached map records', () {
+    final record = MapScanRecord.fromJson({
+      'local_id': 'legacy-xylocarpus',
+      'species_name': 'Xylocarpus_rumphii',
+      'sync_status': 'local_only',
+      'created_at': '2026-09-24T09:00:00+08:00',
+      'updated_at': '2026-09-24T09:00:00+08:00',
+    });
+
+    expect(record.speciesName, 'Xylocarpus moluccensis');
+  });
+
   test('matches only the local record owner', () {
     final record = MapScanRecord(
       localId: 'local-user-a',

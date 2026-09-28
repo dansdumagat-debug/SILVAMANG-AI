@@ -62,7 +62,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: SilvamangBackButton(
-                    fallbackRouteName: RouteNames.splash,
+                    fallbackRouteName: RouteNames.guestScan,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -170,12 +170,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ],
                         ),
                         Text(
-                          'Demo users: admin@silvamang.test, researcher@silvamang.test, user@silvamang.test',
-                          style: AppTextStyles.bodySmall,
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          'Password: password',
+                          'Sign in with an account registered on the connected SILVAMANG AI server.',
                           style: AppTextStyles.bodySmall,
                           textAlign: TextAlign.center,
                         ),

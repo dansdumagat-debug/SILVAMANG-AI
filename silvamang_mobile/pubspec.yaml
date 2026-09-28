@@ -39,6 +39,7 @@ dependencies:
   dio:
   camera:
   image_picker:
+  image_cropper: ^12.2.1
   permission_handler:
   geolocator:
   hive_flutter:
@@ -57,6 +58,8 @@ dependencies:
   flutter_map:
   latlong2:
   flutter_map_tile_caching:
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.4.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -87,10 +90,10 @@ flutter:
     - .env
     - .env.example
     - assets/images/silvamang_logo.png
+    - assets/images/guest_mangrove_hero.png
     - assets/models/class_order.json
+    - assets/models/model_metadata.json
     - assets/models/efficientnet_b0_silvamang_single.onnx
-    - assets/models/efficientnet_b0_silvamang.onnx
-    - assets/models/efficientnet_b0_silvamang.onnx.data
     - assets/geo/barangay_boundaries.geojson
     - assets/data/mangrove_education.json
     - assets/data/panel_mangrove_education.json
