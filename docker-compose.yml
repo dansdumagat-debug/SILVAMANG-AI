@@ -127,6 +127,20 @@ services:
       - backend
     logging: *logging
 
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: database
+    expose:
+      - "8080"
+    networks:
+      - backend
+      - dokploy-network
+    depends_on:
+      database:
+        condition: service_healthy
+
 volumes:
   app_storage:
   database_data:

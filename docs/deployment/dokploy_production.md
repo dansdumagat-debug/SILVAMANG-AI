@@ -90,6 +90,14 @@ MiDaS/midas_small_pretrained.pth
 
 The directory must already exist and be readable/traversable by container UID 10001. Compare SHA-256 checksums against your source bundle. Store model backups separately; these files do not need to be in Git. MiDaS fetches its architecture repositories through torch.hub on first load, requiring outbound HTTPS; `ai_cache` preserves the downloaded code. Warm and validate models before admitting users. Only use trusted checkpoints.
 
+If deployment reports `bind source path does not exist: /opt/silvamang/models`, the image build succeeded but the server model directory has not been provisioned. This repository currently includes the required bundle. On the VPS, run the following from the Dokploy repository checkout (after the setup script is available there):
+
+```sh
+sudo sh docs/deployment/scripts/prepare_server_models.sh /opt/silvamang/models
+```
+
+The script checks all five source files before copying, skips identical existing files, refuses different existing files and prints SHA-256 checksums. It does not modify database data, credentials or Docker volumes. Keep `AI_MODELS_DIR=/opt/silvamang/models` and redeploy the same Dokploy application afterward. Creating an empty directory alone will satisfy the mount but will not provide working AI models.
+
 3. On a Docker-capable validation host, with a **private** populated root `.env`:
 
 ```sh
