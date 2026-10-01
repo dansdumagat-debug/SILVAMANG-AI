@@ -8,9 +8,11 @@ class SilvamangBackButton extends StatelessWidget {
   const SilvamangBackButton({
     super.key,
     this.fallbackRouteName = RouteNames.home,
+    this.onPressed,
   });
 
   final String fallbackRouteName;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +20,9 @@ class SilvamangBackButton extends StatelessWidget {
       padding: const EdgeInsets.only(left: 8),
       child: IconButton(
         tooltip: 'Back',
-        onPressed: () => goBack(context, fallbackRouteName: fallbackRouteName),
+        onPressed:
+            onPressed ??
+            () => goBack(context, fallbackRouteName: fallbackRouteName),
         icon: const Icon(Icons.arrow_back_ios_new_rounded),
         style: IconButton.styleFrom(
           backgroundColor: AppColors.white,

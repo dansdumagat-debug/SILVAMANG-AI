@@ -1,0 +1,40 @@
+{
+  "species": [
+    "Ceriops zippeliana",
+    "Camptostemon philippinensis",
+    "Avicennia officinalis",
+    "Rhizophora mucronata",
+    "Avicennia alba",
+    "Xylocarpus moluccensis"
+  ],
+  "additional_target_per_species": 20,
+  "licenses": [
+    "cc-by",
+    "cc-by-sa",
+    "cc0"
+  ],
+  "quality_grade": "research",
+  "existing_counts": {
+    "Acanthus ebracteatus": 45,
+    "Acanthus ilicifolius": 100,
+    "Acanthus volubilis": 19,
+    "Avicennia alba": 83,
+    "Avicennia officinalis": 100,
+    "Nypa fruticans": 100,
+    "Lumnitzera racemosa": 100,
+    "Lumnitzera littorea": 90,
+    "Pemphis acidula": 100,
+    "Sonneratia ovata": 36,
+    "Camptostemon philippinensis": 25,
+    "Heritiera littoralis": 101,
+    "Xylocarpus moluccensis": 31,
+    "Osbornia octodonta": 100,
+    "Aegiceras corniculatum": 100,
+    "Aegiceras floridum": 25,
+    "Bruguiera cylindrica": 101,
+    "Bruguiera sexangula": 64,
+    "Ceriops zippeliana": 44,
+    "Scyphiphora hydrophylacea": 58,
+    "unknown": 164
+  }
+}

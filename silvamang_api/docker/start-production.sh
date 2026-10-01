@@ -7,7 +7,9 @@ if [ "${APP_ENV:-}" != production ] || [ "${APP_DEBUG:-false}" != false ]; then
     exit 1
 fi
 mkdir -p storage/app/public storage/app/dataset storage/app/model-reports \
-    storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+    storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    storage/framework/cli/config storage/framework/cli/data
+chmod 700 storage/framework/cli
 for directory in storage bootstrap/cache; do
     test -w "$directory" || { echo "$directory must be writable by uid 33" >&2; exit 1; }
 done

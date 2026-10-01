@@ -1,0 +1,16 @@
+{
+  "state": "prepared",
+  "candidates": 60,
+  "added_to_training": 48,
+  "excluded": 12,
+  "source_root": "C:\\laragon\\www\\SilvaMang-AI",
+  "baseline_images": 5737,
+  "combined_images": 5785,
+  "added_observations": 15,
+  "validation_unchanged": true,
+  "test_unchanged": true,
+  "model_trained": false,
+  "deployed": false,
+  "expert_verified": false,
+  "limitation": "Source research-grade labels only. Perceptual hash screening is heuristic, not proof of independence or label correctness."
+}

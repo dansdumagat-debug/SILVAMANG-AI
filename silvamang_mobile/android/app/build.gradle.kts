@@ -1,7 +1,36 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val releasePropertiesFile = rootProject.file("key.properties")
+val releaseProperties = Properties().apply {
+    if (releasePropertiesFile.isFile) {
+        releasePropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+val validateReleaseSigning = tasks.register("validateReleaseSigningCredentials") {
+    doLast {
+        check(releasePropertiesFile.isFile) {
+            "Release signing requires android/key.properties. See android/key.properties.example."
+        }
+        listOf("storeFile", "storePassword", "keyAlias", "keyPassword").forEach { key ->
+            check(!releaseProperties.getProperty(key).isNullOrBlank()) {
+                "Missing release signing setting: $key"
+            }
+        }
+        check(rootProject.file(releaseProperties.getProperty("storeFile")).isFile) {
+            "The configured release keystore does not exist."
+        }
+    }
+}
+
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(validateReleaseSigning)
 }
 
 android {
@@ -25,11 +54,18 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = releaseProperties.getProperty("storeFile")?.takeIf { it.isNotBlank() }?.let { rootProject.file(it) }
+            storePassword = releaseProperties.getProperty("storePassword")
+            keyAlias = releaseProperties.getProperty("keyAlias")
+            keyPassword = releaseProperties.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

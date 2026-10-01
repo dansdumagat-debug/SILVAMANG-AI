@@ -1,0 +1,20 @@
+{
+  "downloaded": 60,
+  "counts": {
+    "Avicennia officinalis": 20,
+    "Rhizophora mucronata": 20,
+    "Xylocarpus moluccensis": 20
+  },
+  "errors": {},
+  "trained": false,
+  "note": "Source-provided species labels; verify species and plant parts. Check duplicates against all existing splits before use. Keep observation groups together.",
+  "observation_counts": {
+    "Avicennia officinalis": 7,
+    "Rhizophora mucronata": 4,
+    "Xylocarpus moluccensis": 6
+  },
+  "exact_pixel_matches": 0,
+  "matching_existing_groups": 0,
+  "commons_rare_species_search": "No new qualifying photos for Ceriops zippeliana or Camptostemon philippinensis in the limited search.",
+  "overlap_limit": "Exact pixels and direct group IDs checked. Cross-provider observation aliases, crops and resized copies still require review."
+}

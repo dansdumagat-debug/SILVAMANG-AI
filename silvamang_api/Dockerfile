@@ -24,7 +24,9 @@ RUN composer dump-autoload --no-dev --classmap-authoritative --no-scripts \
     && composer check-platform-reqs --no-dev
 
 FROM php-base AS production
-ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr
+ENV APP_ENV=production APP_DEBUG=false LOG_CHANNEL=stderr \
+    XDG_CONFIG_HOME=/var/www/html/storage/framework/cli/config \
+    XDG_DATA_HOME=/var/www/html/storage/framework/cli/data
 COPY --from=dependencies /var/www/html /var/www/html
 COPY --from=assets /build/public/build ./public/build
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf

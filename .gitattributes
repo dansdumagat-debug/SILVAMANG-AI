@@ -5,3 +5,4 @@ Dockerfile text eol=lf
 *.pth binary
 *.pt binary
 *.onnx.data binary
+artifacts/classifier_resnet18/*/last.pth filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,23 @@
+{
+  "baseline": {
+    "accuracy": 0.7124711316397229,
+    "macro_f1": 0.6726329661829866,
+    "accepted_count": 444,
+    "accepted_accuracy": 0.9166666666666666,
+    "unknown_false_accepts": 1,
+    "unknown_count": 25
+  },
+  "candidate": {
+    "accuracy": 0.7043879907621247,
+    "macro_f1": 0.6682809767086082,
+    "accepted_count": 398,
+    "accepted_accuracy": 0.9271356783919598,
+    "unknown_false_accepts": 1,
+    "unknown_count": 25
+  },
+  "improved": false,
+  "recipe": "Equal weight-space blend of original head and train-only balanced C=0.01 head",
+  "deployed": false,
+  "test_evaluated": false,
+  "limitation": "Validation-selected; independent final evaluation required."
+}

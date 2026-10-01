@@ -1,6 +1,8 @@
 {
-  "state": "running",
-  "completed_epoch": 4,
-  "stale_epochs": 0,
-  "best_validation_macro_f1": 0.5590211806064151
+  "state": "complete",
+  "completed_epoch": 25,
+  "reason": "epoch_limit",
+  "best_validation_macro_f1": 0.6726329661829866,
+  "deployed": false,
+  "test_evaluated": false
 }

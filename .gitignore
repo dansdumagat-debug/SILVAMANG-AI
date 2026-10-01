@@ -48,3 +48,6 @@ silvamang_ai_service/export/
 silvamang_ai_service/reports/
 silvamang_ai_service/artifacts/
 silvamang_ai_service/tests/.test-artifacts/
+
+# Local process identifiers
+*.pid

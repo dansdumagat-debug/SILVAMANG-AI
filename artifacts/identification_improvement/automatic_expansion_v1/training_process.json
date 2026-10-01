@@ -1,0 +1,7 @@
+{
+    "stdout":  "training.stdout.log",
+    "status":  "launched_not_completed",
+    "stderr":  "training.stderr.log",
+    "started_at":  "2026-09-29T21:38:37.1326145+08:00",
+    "process_id":  23176
+}

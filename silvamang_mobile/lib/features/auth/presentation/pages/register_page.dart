@@ -207,7 +207,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                               ref
                                   .read(authControllerProvider.notifier)
                                   .clearError();
-                              context.pushNamed(RouteNames.login);
+                              context.goNamed(RouteNames.login);
                             },
                             child: const Text('Login'),
                           ),

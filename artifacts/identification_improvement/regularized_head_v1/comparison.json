@@ -1,0 +1,42 @@
+{
+  "baseline": {
+    "accuracy": 0.7124711316397229,
+    "macro_f1": 0.6726329661829866,
+    "accepted_count": 444,
+    "accepted_accuracy": 0.9166666666666666,
+    "unknown_false_accepts": 1,
+    "unknown_count": 25
+  },
+  "candidates": {
+    "head_C_0.01": {
+      "accuracy": 0.6939953810623557,
+      "macro_f1": 0.6576053579649527,
+      "accepted_count": 311,
+      "accepted_accuracy": 0.9356913183279743,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25
+    },
+    "head_C_0.1": {
+      "accuracy": 0.6997690531177829,
+      "macro_f1": 0.662145420782107,
+      "accepted_count": 539,
+      "accepted_accuracy": 0.8719851576994434,
+      "unknown_false_accepts": 2,
+      "unknown_count": 25
+    },
+    "head_C_1.0": {
+      "accuracy": 0.6997690531177829,
+      "macro_f1": 0.6646873603452848,
+      "accepted_count": 621,
+      "accepted_accuracy": 0.8276972624798712,
+      "unknown_false_accepts": 3,
+      "unknown_count": 25
+    }
+  },
+  "selected_candidate": "baseline",
+  "deployed": false,
+  "test_evaluated": false,
+  "manifest_sha256": "4b75477a459117221714869246d755a8f5ae37f2692a86189cde7e4f5450f145",
+  "limitation": "Validation-selected experiment; independent field evaluation required.",
+  "elapsed_seconds": 411.125
+}

@@ -1,0 +1,8 @@
+{
+  "state": "complete",
+  "completed_epoch": 25,
+  "reason": "epoch_limit",
+  "best_validation_macro_f1": 0.6081576171697911,
+  "deployed": false,
+  "test_evaluated": false
+}

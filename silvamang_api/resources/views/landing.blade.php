@@ -9,7 +9,7 @@
 <body class="landing-page">
     <header class="landing-nav">
         <a href="{{ url('/') }}" class="landing-brand"><span class="public-logo"><span></span></span><strong>SILVAMANG AI</strong></a>
-        <nav><a href="#home" class="active">Home</a><a href="#features">Features</a><a href="#solutions">Solutions</a><a href="#contact">Contact</a></nav>
+        <nav><a href="#home" class="active">Home</a><a href="#features">Features</a><a href="#solutions">Solutions</a><a href="#contact">Contact</a><a href="{{ route('app.download') }}">Download App</a></nav>
         <div class="landing-actions"><a href="{{ route('login') }}" class="outline-public-button">Sign In</a><a href="{{ route('login') }}" class="solid-public-button">Get Started</a></div>
     </header>
 
@@ -19,7 +19,7 @@
             <div class="hero-copy">
                 <h1>AI-Powered Mangrove Monitoring & Species Identification</h1>
                 <p>SILVAMANG AI combines advanced image recognition, real-time field data, and intelligent analytics to protect mangrove ecosystems and support data-driven conservation.</p>
-                <div class="hero-buttons"><a href="{{ route('login') }}" class="solid-public-button large">Get Started</a><a href="#features" class="outline-public-button large">View Demo</a></div>
+                <div class="hero-buttons"><a href="{{ route('app.download') }}" class="solid-public-button large">Download App</a><a href="#features" class="outline-public-button large">View Demo</a></div>
                 <div class="hero-checks"><span>AI-Powered Accuracy</span><span>Field-Ready Tools</span><span>Secure & Reliable</span></div>
             </div>
             <div class="product-preview" aria-label="SILVAMANG AI dashboard and mobile previews">
@@ -69,7 +69,7 @@
 
         <section id="contact" class="landing-cta">
             <div><h2>Ready to Protect Our Mangroves?</h2><p>Join teams using AI and field data to conserve blue-green ecosystems.</p></div>
-            <div><a href="{{ route('login') }}" class="solid-public-button large">Get Started Now</a><a href="{{ route('login') }}" class="outline-public-button light large">Request a Demo</a></div>
+            <div><a href="{{ route('app.download') }}" class="solid-public-button large">Download App</a><a href="{{ route('login') }}" class="outline-public-button light large">Request a Demo</a></div>
         </section>
     </main>
 

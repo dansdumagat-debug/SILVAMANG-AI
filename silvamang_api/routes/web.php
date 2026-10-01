@@ -42,6 +42,9 @@ Route::get('/', function () {
 
 Route::redirect('/home', '/admin/dashboard')->middleware('auth');
 
+Route::get('/download', [\App\Http\Controllers\AppDownloadController::class, 'index'])->name('app.download');
+Route::get('/download/android', [\App\Http\Controllers\AppDownloadController::class, 'android'])->name('app.download.android');
+
 Route::get('/login', function () {
     return view('auth.login');
 })->middleware('guest')->name('login');

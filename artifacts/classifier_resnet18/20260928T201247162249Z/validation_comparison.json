@@ -1,0 +1,23 @@
+{
+  "reference": {
+    "run": "artifacts\\classifier_corrected\\20260928T124128799011Z",
+    "best": {
+      "epoch": 20,
+      "phase": "finetune",
+      "train_accuracy": 0.9564128256513026,
+      "train_loss": 0.694384794794247,
+      "accuracy": 0.7124711316397229,
+      "macro_f1": 0.6726329661829866,
+      "loss": 1.1720894993590427
+    }
+  },
+  "candidate": {
+    "accuracy": 0.651270207852194,
+    "macro_f1": 0.6081576171697911,
+    "loss": 1.362530036831563
+  },
+  "candidate_epoch": 24,
+  "accuracy_change_percentage_points": -6.120092378752884,
+  "macro_f1_change": -0.06447534901319552,
+  "evaluation": "Validation only; no independent final test or deployment"
+}

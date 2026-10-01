@@ -1,0 +1,12 @@
+{
+  "run": "artifacts\\classifier_corrected\\20260928T124128799011Z",
+  "best": {
+    "epoch": 20,
+    "phase": "finetune",
+    "train_accuracy": 0.9564128256513026,
+    "train_loss": 0.694384794794247,
+    "accuracy": 0.7124711316397229,
+    "macro_f1": 0.6726329661829866,
+    "loss": 1.1720894993590427
+  }
+}

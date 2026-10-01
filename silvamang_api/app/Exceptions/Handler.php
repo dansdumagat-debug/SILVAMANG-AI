@@ -31,8 +31,10 @@ class Handler extends ExceptionHandler
         $this->renderable(function (QueryException $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Database connection failed. Please make sure MySQL is running and the Laravel .env database settings are correct.',
-                ], 503);
+                    // QueryException also covers missing tables and constraints;
+                    // the underlying cause is recorded by Laravel's exception logger.
+                    'message' => 'The server could not complete your request. Please try again later or contact support.',
+                ], 500);
             }
 
             return null;

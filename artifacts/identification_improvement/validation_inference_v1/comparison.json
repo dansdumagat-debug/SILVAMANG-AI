@@ -1,0 +1,37 @@
+{
+  "split": "val",
+  "images": 866,
+  "deployed": false,
+  "test_evaluated": false,
+  "checkpoint_sha256": "d2ead19e55051bc96b336f718ecfaa8889ca16f933f22791e34eb87890f79c9c",
+  "manifest_sha256": "4b75477a459117221714869246d755a8f5ae37f2692a86189cde7e4f5450f145",
+  "recipes": {
+    "center": {
+      "accuracy": 0.7124711316397229,
+      "macro_f1": 0.6726329661829866,
+      "accepted_count": 444,
+      "accepted_accuracy": 0.9166666666666666,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25
+    },
+    "center_flip_average": {
+      "accuracy": 0.7055427251732102,
+      "macro_f1": 0.6617898725719012,
+      "accepted_count": 447,
+      "accepted_accuracy": 0.9172259507829977,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25
+    },
+    "center_full_average": {
+      "accuracy": 0.7113163972286374,
+      "macro_f1": 0.6765157627581442,
+      "accepted_count": 410,
+      "accepted_accuracy": 0.9292682926829269,
+      "unknown_false_accepts": 0,
+      "unknown_count": 25
+    }
+  },
+  "limitation": "Selection on validation is not independent test evidence; no production replacement.",
+  "selected_candidate": "center",
+  "elapsed_seconds": 159.32800000000861
+}

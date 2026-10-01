@@ -1,0 +1,7 @@
+# Copy to key.properties and fill locally. Never commit the filled file.
+# Use forward slashes on Windows, e.g. C:/private/silvamang-release.jks.
+# Relative paths resolve from silvamang_mobile/android.
+storeFile=
+storePassword=
+keyAlias=
+keyPassword=
