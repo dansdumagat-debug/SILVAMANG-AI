@@ -7,7 +7,7 @@
         <div><h2>{{ $species->scientific_name }}</h2><p>Species detail record.</p></div>
         <div class="action-row">
             <a href="{{ route('admin.species.edit', $species) }}" class="primary-action">Edit Species</a>
-            <a href="{{ route('admin.species.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.species.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

@@ -9,7 +9,7 @@
             @if ($assistantLog->scanRecord)
                 <a href="{{ route('admin.scan-records.show', $assistantLog->scanRecord) }}" class="primary-action">View Scan Record</a>
             @endif
-            <a href="{{ route('admin.assistant-logs.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.assistant-logs.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

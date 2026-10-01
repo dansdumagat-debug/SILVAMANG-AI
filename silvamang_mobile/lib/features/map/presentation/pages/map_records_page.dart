@@ -213,116 +213,148 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
             ),
           ];
 
-          return Stack(
-            children: [
-              FlutterMap(
-                key: ValueKey(_selectedScope),
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: initialCenter,
-                  initialZoom: visibleRecords.isEmpty
-                      ? state.currentLocation == null
-                            ? 6
-                            : 15
-                      : 13,
-                  minZoom: 4,
-                  maxZoom: 24,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: OfflineMapCacheService.tileUrlTemplate,
-                    userAgentPackageName:
-                        OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 24,
-                    maxNativeZoom: state.isOnline
-                        ? 19
-                        : state.cacheStatus?.maxDownloadedZoom ?? 13,
-                    tileProvider: ref
-                        .read(offlineMapCacheServiceProvider)
-                        .tileProvider(isOnline: state.isOnline),
-                  ),
-                  if (state.isOnline)
-                    TileLayer(
-                      urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
-                      userAgentPackageName:
-                          OfflineMapCacheService.userAgentPackageName,
-                      maxZoom: 24,
-                      maxNativeZoom: 19,
-                    ),
-                  MarkerLayer(markers: markers),
-                ],
-              ),
-              if (_selectedRecord == null)
-                Positioned(
-                  right: AppSpacing.md,
-                  bottom: _bottomNavigationReserve + AppSpacing.lg,
-                  child: Column(
-                    children: [
-                      _MapZoomButton(
-                        icon: Icons.add_rounded,
-                        label: 'Zoom in',
-                        onPressed: () => _changeZoom(0.5),
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: LayoutBuilder(
+              builder: (context, constraints) => ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Stack(
+                  children: [
+                    FlutterMap(
+                      key: ValueKey(_selectedScope),
+                      mapController: _mapController,
+                      options: MapOptions(
+                        initialCenter: initialCenter,
+                        initialZoom: visibleRecords.isEmpty
+                            ? state.currentLocation == null
+                                  ? 6
+                                  : 15
+                            : 13,
+                        minZoom: 4,
+                        maxZoom: 24,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
-                      _MapZoomButton(
-                        icon: Icons.remove_rounded,
-                        label: 'Zoom out',
-                        onPressed: () => _changeZoom(-0.5),
-                      ),
-                    ],
-                  ),
-                ),
-              Positioned(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                top: AppSpacing.md,
-                child: _MapTopBar(
-                  recordCount: visibleRecords.length,
-                  totalRecordCount: scopedRecords.length,
-                  myScanCount: state.myScanCount,
-                  myPinCount: state.myPinCount,
-                  allScanCount: state.allScanCount,
-                  allPinCount: state.allPinCount,
-                  selectedScope: _selectedScope,
-                  onScopeChanged: _selectScope,
-                  speciesChoices: speciesChoices,
-                  selectedSpecies: _selectedSpecies,
-                  onSpeciesChanged: (species) =>
-                      _selectSpecies(species, state.records),
-                  locationMessage: _joinMessages([
-                    state.locationMessage ?? state.offlineMapMessage,
-                    if (_selectedScope == _MapRecordScope.all &&
-                        !state.isOnline)
-                      'Connect to the server to view all users\' scans.',
-                  ]),
-                ),
-              ),
-              if (_selectedRecord != null)
-                Positioned(
-                  left: AppSpacing.md,
-                  right: AppSpacing.md,
-                  bottom: _bottomNavigationReserve + AppSpacing.lg,
-                  child: _RecordDetailsCard(
-                    record: _selectedRecord!,
-                    onClose: () => setState(() => _selectedRecord = null),
-                    onOpenMaps: () => _openInMaps(
-                      context,
-                      _selectedRecord!.latitude!,
-                      _selectedRecord!.longitude!,
-                    ),
-                    onViewRecord:
-                        _selectedRecord!.serverId == null ||
-                            !_selectedRecord!.canViewRecord
-                        ? null
-                        : () => context.pushNamed(
-                            RouteNames.recordDetail,
-                            pathParameters: {
-                              'id': _selectedRecord!.serverId.toString(),
-                            },
+                      children: [
+                        TileLayer(
+                          urlTemplate: OfflineMapCacheService.tileUrlTemplate,
+                          userAgentPackageName:
+                              OfflineMapCacheService.userAgentPackageName,
+                          maxZoom: 24,
+                          maxNativeZoom: state.isOnline
+                              ? 19
+                              : state.cacheStatus?.maxDownloadedZoom ?? 13,
+                          tileProvider: ref
+                              .read(offlineMapCacheServiceProvider)
+                              .tileProvider(isOnline: state.isOnline),
+                        ),
+                        if (state.isOnline)
+                          TileLayer(
+                            urlTemplate:
+                                OfflineMapCacheService.labelTileUrlTemplate,
+                            userAgentPackageName:
+                                OfflineMapCacheService.userAgentPackageName,
+                            maxZoom: 24,
+                            maxNativeZoom: 19,
                           ),
-                  ),
+                        MarkerLayer(markers: markers),
+                      ],
+                    ),
+                    if (_selectedRecord == null)
+                      Positioned(
+                        right: AppSpacing.md,
+                        bottom: _bottomNavigationReserve + AppSpacing.lg,
+                        child: Column(
+                          children: [
+                            _MapZoomButton(
+                              icon: Icons.add_rounded,
+                              label: 'Zoom in',
+                              onPressed: () => _changeZoom(0.5),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            _MapZoomButton(
+                              icon: Icons.remove_rounded,
+                              label: 'Zoom out',
+                              onPressed: () => _changeZoom(-0.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Positioned(
+                      left: AppSpacing.md,
+                      right: AppSpacing.md,
+                      top: AppSpacing.md,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight:
+                              (constraints.maxHeight - _bottomNavigationReserve)
+                                  .clamp(0.0, double.infinity) *
+                              0.40,
+                        ),
+                        child: SingleChildScrollView(
+                          child: _MapTopBar(
+                            recordCount: visibleRecords.length,
+                            totalRecordCount: scopedRecords.length,
+                            myScanCount: state.myScanCount,
+                            myPinCount: state.myPinCount,
+                            allScanCount: state.allScanCount,
+                            allPinCount: state.allPinCount,
+                            selectedScope: _selectedScope,
+                            onScopeChanged: _selectScope,
+                            speciesChoices: speciesChoices,
+                            selectedSpecies: _selectedSpecies,
+                            onSpeciesChanged: (species) =>
+                                _selectSpecies(species, state.records),
+                            locationMessage: _joinMessages([
+                              state.locationMessage ?? state.offlineMapMessage,
+                              if (_selectedScope == _MapRecordScope.all &&
+                                  !state.isOnline)
+                                'Connect to the server to view all users\' scans.',
+                            ]),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_selectedRecord != null)
+                      Positioned(
+                        left: AppSpacing.md,
+                        right: AppSpacing.md,
+                        bottom: _bottomNavigationReserve + AppSpacing.lg,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight:
+                                (constraints.maxHeight -
+                                        _bottomNavigationReserve)
+                                    .clamp(0.0, double.infinity) *
+                                0.45,
+                          ),
+                          child: SingleChildScrollView(
+                            child: _RecordDetailsCard(
+                              record: _selectedRecord!,
+                              onClose: () =>
+                                  setState(() => _selectedRecord = null),
+                              onOpenMaps: () => _openInMaps(
+                                context,
+                                _selectedRecord!.latitude!,
+                                _selectedRecord!.longitude!,
+                              ),
+                              onViewRecord:
+                                  _selectedRecord!.serverId == null ||
+                                      !_selectedRecord!.canViewRecord
+                                  ? null
+                                  : () => context.pushNamed(
+                                      RouteNames.recordDetail,
+                                      pathParameters: {
+                                        'id': _selectedRecord!.serverId
+                                            .toString(),
+                                      },
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-            ],
+              ),
+            ),
           );
         },
       ),

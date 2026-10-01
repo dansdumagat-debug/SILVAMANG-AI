@@ -22,7 +22,7 @@ class SilvamangBackButton extends StatelessWidget {
         icon: const Icon(Icons.arrow_back_ios_new_rounded),
         style: IconButton.styleFrom(
           backgroundColor: AppColors.white,
-          foregroundColor: AppColors.primaryDarkGreen,
+          foregroundColor: AppColors.mutedText,
           shadowColor: AppColors.primaryDarkGreen.withValues(alpha: 0.12),
           elevation: 1,
         ),

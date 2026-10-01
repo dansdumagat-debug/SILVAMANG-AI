@@ -4506,3 +4506,80 @@ tbody tr:last-child td { border-bottom: 0; }
         margin-inline: -2px;
     }
 }
+
+/* Semantic actions shared by management pages. */
+.secondary-action, .icon-button:not(.danger) {
+    color: #245d85;
+    background: #edf4fa;
+    border-color: #c5d8e6;
+}
+.neutral-action, .reset-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 13px;
+    border: 1px solid #ccd3d0;
+    border-radius: 10px;
+    background: #f2f4f3;
+    color: #46534d;
+    font-weight: 800;
+    text-decoration: none;
+}
+.primary-action, .secondary-action, .neutral-action, .small-button, .reset-link, .icon-button {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+.icon-button.danger { color: #a52424; background: #fff0f0; }
+.icon-button.action-warning, .icon-button.review-action-button { color: #865400; background: #fff4da; }
+.icon-button.action-success { color: #256b38; background: #edf7ef; }
+.record-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+.record-pagination [aria-disabled="true"] { color: #66716c; background: #f2f4f3; cursor: default; }
+.empty-state { text-align: center; padding: 32px 20px; }
+.empty-state-icon { display: block; font-size: 32px; margin-bottom: 12px; }
+.empty-state p { max-width: 440px; margin: 12px auto 20px; color: var(--muted); }
+.table-wrap td { overflow-wrap: anywhere; }
+a:focus-visible, button:focus-visible { outline: 3px solid #245d85; outline-offset: 3px; }
+.observation-map-panel { padding: 16px; }
+.observation-map-layout { min-width: 0; }
+.observation-map-shell { min-width: 0; }
+.admin-map-floating-top { max-height: 45%; overflow-y: auto; overscroll-behavior: contain; }
+@media (max-width: 640px) {
+    .admin-content { padding: 16px; }
+    .observation-map-panel { padding: 16px; }
+    .observation-map-shell-app, .observation-map-shell-app .observation-map-canvas {
+        min-height: 480px;
+        height: 75vh;
+    }
+    .admin-map-floating-top { top: 12px; left: 12px; right: 12px; }
+}
+
+.conversation-table { table-layout: fixed; min-width: 900px; }
+.conversation-table th:nth-child(3), .conversation-table th:nth-child(4) { width: 24%; }
+.observation-details-close { width: 44px; height: 44px; color: #46534d; }
+.observation-details-panel h3 { padding-right: 44px; }
+.observation-details-floating { max-height: 43%; }
+@media (max-width: 640px) {
+    .observation-details-floating { left: 64px; }
+    .observation-map-empty { left: 64px; max-width: calc(100% - 80px); }
+}
+
+/* Keep zoom and empty-state controls clear of multi-line tile attribution. */
+.observation-map-shell .leaflet-container .leaflet-control-zoom a { width: 44px; height: 44px; line-height: 44px; }
+.observation-map-shell .leaflet-bottom .leaflet-control-zoom { margin-bottom: 60px; }
+.observation-map-empty { z-index: 470; bottom: 60px; }
+.observation-details-floating { bottom: 60px; }
+.observation-status-legend { flex-wrap: wrap; }
+@media (max-width: 640px) {
+    .observation-details-floating { max-height: 35%; }
+    .observation-status-legend { flex-wrap: wrap; overflow: visible; }
+}

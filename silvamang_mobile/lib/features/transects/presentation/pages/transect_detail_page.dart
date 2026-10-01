@@ -105,11 +105,16 @@ class _TransectDetailPageState extends ConsumerState<TransectDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.actionNeutral,
+            ),
             child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.dangerRed),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.actionDanger,
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -305,7 +310,9 @@ class _TransectDetailPageState extends ConsumerState<TransectDetailPage> {
                       record.transectCode,
                     ),
                     segments: record.contributions
-                        .where((contribution) => contribution.points.length >= 2)
+                        .where(
+                          (contribution) => contribution.points.length >= 2,
+                        )
                         .map((contribution) => contribution.points)
                         .toList(),
                     observations: record.observations,

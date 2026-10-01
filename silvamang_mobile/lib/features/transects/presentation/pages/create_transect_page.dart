@@ -316,10 +316,16 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.actionNeutral,
+              ),
               child: const Text('Cancel'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.actionWarning,
+              ),
               child: const Text('Change Mode'),
             ),
           ],

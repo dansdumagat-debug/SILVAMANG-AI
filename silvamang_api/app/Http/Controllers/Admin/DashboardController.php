@@ -71,7 +71,7 @@ class DashboardController extends Controller
             'averageAiAccuracy' => round((float) AiModel::whereNotNull('accuracy')->avg('accuracy'), 2),
             'measurementCount' => Measurement::count(),
             'validationMatchCount' => ScanRecord::where('validation_status', 'match')->count(),
-            'latestScanRecords' => ScanRecord::with('species')->latest()->take(5)->get(),
+            'latestScanRecords' => ScanRecord::with('species')->latest()->orderByDesc('id')->take(5)->get(),
             'latestAlerts' => Alert::latest()->take(5)->get(),
             'openAlertCount' => Alert::where('status', 'open')->count(),
             'topIdentifiedSpecies' => $topIdentifiedSpecies,

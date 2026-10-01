@@ -15,5 +15,11 @@ class AppColors {
   static const successGreen = Color(0xFF6FBF5B);
   static const softBlue = Color(0xFFEAF4FA);
   static const dangerRed = Color(0xFFD64545);
+  // Dark action colors retain readable contrast with white button labels.
+  static const actionBlue = Color(0xFF245D85);
+  static const actionSuccess = Color(0xFF256B38);
+  static const actionWarning = Color(0xFF865400);
+  static const actionNeutral = Color(0xFF52605A);
+  static const actionDanger = Color(0xFFB3261E);
   static const borderSoft = Color(0xFFE2E8E4);
 }

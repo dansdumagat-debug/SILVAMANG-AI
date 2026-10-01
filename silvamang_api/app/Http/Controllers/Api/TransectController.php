@@ -27,6 +27,7 @@ class TransectController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['page' => 'sometimes|integer|min:1', 'per_page' => 'sometimes|integer|min:1|max:100']);
         $user = $request->user();
         $canViewAll = ApiAccess::canViewAllRecords($user);
         $scope = $canViewAll && $request->query('scope', 'all') === 'all' ? 'all' : 'mine';
@@ -45,9 +46,13 @@ class TransectController extends Controller
             })
             ->when($request->filled('status'), fn (Builder $builder) => $builder->where('status', $request->query('status')))
             ->when($request->filled('mode'), fn (Builder $builder) => $builder->where('mode', $request->query('mode')))
-            ->orderByRaw('COALESCE(recorded_at, created_at) desc');
+            ->orderByRaw('COALESCE(recorded_at, created_at) desc')->orderByDesc('id');
 
-        $transects = $query->get();
+        // Legacy sync clients still receive the complete collection.
+        $paginator = $request->hasAny(['page', 'per_page'])
+            ? $query->paginate($request->integer('per_page', 10))->withQueryString()
+            : null;
+        $transects = $paginator ? $paginator->getCollection() : $query->get();
 
         return response()->json([
             'message' => 'Transect records retrieved successfully.',
@@ -61,6 +66,12 @@ class TransectController extends Controller
                     ->count(),
             ],
             'data' => TransectResource::collection($transects),
+            ...($paginator ? ['meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ]] : []),
         ]);
     }
 

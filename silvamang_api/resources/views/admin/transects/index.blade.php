@@ -29,7 +29,7 @@
     </div>
 
     <section class="stats-grid transect-stats">
-        @include('admin.partials.stat-card', ['label' => 'Transects', 'value' => $transects->count(), 'hint' => 'Matching survey records', 'icon' => 'TR'])
+        @include('admin.partials.stat-card', ['label' => 'Transects', 'value' => $transects->total(), 'hint' => 'Matching survey records', 'icon' => 'TR'])
         @include('admin.partials.stat-card', ['label' => 'Completed', 'value' => $completedCount, 'hint' => 'Finished field paths', 'icon' => 'OK'])
         @include('admin.partials.stat-card', ['label' => 'Total Distance', 'value' => number_format($totalDistanceM, 1) . ' m', 'hint' => 'Combined mapped length', 'icon' => 'M'])
         @include('admin.partials.stat-card', ['label' => 'Observations', 'value' => $totalObservations, 'hint' => 'Linked scan records', 'icon' => 'OBS'])
@@ -39,7 +39,7 @@
         <div class="panel-header transect-panel-header">
             <div>
                 <h3>Transect Map</h3>
-                <p>Lines connect each segment's recorded start and end. GPS lines are solid; manual lines are dashed.</p>
+                <p>Showing transects on this page. Lines connect each segment's recorded start and end. GPS lines are solid; manual lines are dashed.</p>
             </div>
             <div class="transect-map-legend" aria-label="Map legend">
                 <span><i class="legend-line gps"></i>GPS</span>
@@ -137,6 +137,7 @@
                 </table>
             </div>
         @endif
+        @include('admin.partials.pagination', ['paginator' => $transects])
     </article>
 
     <p class="transect-disclaimer">

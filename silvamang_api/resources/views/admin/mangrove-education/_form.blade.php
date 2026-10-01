@@ -76,5 +76,5 @@
 
 <div class="form-actions">
     <button type="submit" class="primary-action">{{ $submitLabel }}</button>
-    <a href="{{ route('admin.mangrove-education.index') }}" class="secondary-action">Cancel</a>
+    <a href="{{ route('admin.mangrove-education.index') }}" class="neutral-action">Cancel</a>
 </div>

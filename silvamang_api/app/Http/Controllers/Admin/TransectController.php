@@ -9,6 +9,7 @@ use App\Services\VegetationWorkbookExportService;
 use App\Support\ApiAccess;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -28,15 +29,19 @@ class TransectController extends Controller
             ])
             ->withCount(['points', 'observations'])
             ->orderByRaw('COALESCE(recorded_at, created_at) desc');
-        $transects = $query->get();
+        $query->orderByDesc('id');
+        $totalsQuery = $this->filteredQuery($request);
+        $transects = $query->paginate(10)->withQueryString();
 
         return view('admin.transects.index', [
             'canViewAll' => $canViewAll,
             'transects' => $transects,
-            'mapTransects' => $transects->map(fn (Transect $transect) => $this->mapPayload($transect)),
-            'totalDistanceM' => round((float) $transects->sum('total_distance_m'), 2),
-            'totalObservations' => $transects->sum('observations_count'),
-            'completedCount' => $transects->where('status', 'completed')->count(),
+            'mapTransects' => $transects->getCollection()->map(fn (Transect $transect) => $this->mapPayload($transect)),
+            'totalDistanceM' => round((float) (clone $totalsQuery)->sum('total_distance_m'), 2),
+            'totalObservations' => (int) DB::query()->fromSub(
+                (clone $totalsQuery)->select('id')->withCount('observations'), 'filtered_transects'
+            )->sum('observations_count'),
+            'completedCount' => (clone $totalsQuery)->where('status', 'completed')->count(),
             'userOptions' => $canViewAll
                 ? User::query()->orderBy('name')->get(['id', 'name', 'email'])
                 : collect(),

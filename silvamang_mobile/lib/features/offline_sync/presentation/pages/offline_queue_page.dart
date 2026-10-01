@@ -142,7 +142,7 @@ class _OfflineQueuePageState extends ConsumerState<OfflineQueuePage> {
             SilvamangButton(
               text: 'Clear Recently Deleted',
               icon: Icons.delete_forever_rounded,
-              type: SilvamangButtonType.outline,
+              type: SilvamangButtonType.danger,
               onPressed: state.isSyncing
                   ? null
                   : () => ref
@@ -361,7 +361,7 @@ class _QueueItemCard extends StatelessWidget {
                 child: SilvamangButton(
                   text: 'Remove',
                   icon: Icons.delete_outline_rounded,
-                  type: SilvamangButtonType.outline,
+                  type: SilvamangButtonType.danger,
                   onPressed: isSyncing ? null : onRemove,
                 ),
               ),
@@ -445,7 +445,7 @@ class _DeletedQueueItemCard extends StatelessWidget {
                 child: SilvamangButton(
                   text: 'Delete',
                   icon: Icons.delete_forever_rounded,
-                  type: SilvamangButtonType.outline,
+                  type: SilvamangButtonType.danger,
                   onPressed: isSyncing ? null : onDeleteForever,
                 ),
               ),

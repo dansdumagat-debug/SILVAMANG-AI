@@ -122,6 +122,7 @@ Route::prefix('admin')
         Route::get('/assistant-logs/{assistantLog}', [AssistantLogController::class, 'show'])->name('assistant-logs.show');
         Route::middleware('role:super_admin,admin')->group(function () {
             Route::get('/chatbot-management', ChatbotManagementController::class)->name('chatbot-management.index');
+            Route::get('/chatbot-management/conversations', [ChatbotManagementController::class, 'conversations'])->name('chatbot-management.conversations');
             Route::post('/chatbot-management/message', ApiAssistantChatController::class)->name('chatbot-management.message');
             Route::patch('/chatbot-management/unanswered/{unansweredQuestion}/resolve', [ChatbotManagementController::class, 'resolveUnanswered'])->name('chatbot-management.unanswered.resolve');
             Route::get('/mangrove-knowledge', [MangroveKnowledgeController::class, 'index'])->name('mangrove-knowledge.index');

@@ -9,7 +9,7 @@
             @if ($measurement->scanRecord)
                 <a href="{{ route('admin.scan-records.show', $measurement->scanRecord) }}" class="primary-action">View Scan Record</a>
             @endif
-            <a href="{{ route('admin.measurements.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.measurements.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

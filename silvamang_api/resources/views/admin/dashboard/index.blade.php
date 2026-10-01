@@ -79,7 +79,7 @@
 
     <section class="dashboard-grid">
         <article class="panel wide">
-            <div class="panel-header"><h3>Recent Identifications</h3><span>Latest 5</span></div>
+            <div class="panel-header"><h3>Recent Identifications</h3><span>Latest 5</span><a class="secondary-action" href="{{ route('admin.scan-records.index') }}">View all</a></div>
             @if ($latestScanRecords->isEmpty())
                 <div class="empty-card">No recent scan records yet.</div>
             @else

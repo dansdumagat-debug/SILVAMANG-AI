@@ -9,6 +9,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/record_pagination.dart';
 import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
@@ -27,6 +28,8 @@ class TransectHistoryPage extends ConsumerStatefulWidget {
 }
 
 class _TransectHistoryPageState extends ConsumerState<TransectHistoryPage> {
+  int _page = 1;
+  static const _pageSize = 10;
   _HistoryFilter _filter = _HistoryFilter.all;
 
   @override
@@ -40,13 +43,23 @@ class _TransectHistoryPageState extends ConsumerState<TransectHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(transectsControllerProvider);
-    final records = state.records.where((record) {
-      return switch (_filter) {
-        _HistoryFilter.all => true,
-        _HistoryFilter.gps => record.isGpsTracking,
-        _HistoryFilter.manual => !record.isGpsTracking,
-      };
-    }).toList();
+    final records =
+        state.records.where((record) {
+          return switch (_filter) {
+            _HistoryFilter.all => true,
+            _HistoryFilter.gps => record.isGpsTracking,
+            _HistoryFilter.manual => !record.isGpsTracking,
+          };
+        }).toList()..sort((a, b) {
+          final order = b.recordedAt.compareTo(a.recordedAt);
+          return order == 0 ? b.localId.compareTo(a.localId) : order;
+        });
+    final pages = ((records.length + _pageSize - 1) ~/ _pageSize).clamp(
+      1,
+      1 << 30,
+    );
+    final page = _page.clamp(1, pages);
+    final visibleRecords = records.skip((page - 1) * _pageSize).take(_pageSize);
 
     return Scaffold(
       backgroundColor: AppColors.mintBackground,
@@ -153,7 +166,10 @@ class _TransectHistoryPageState extends ConsumerState<TransectHistoryPage> {
               selected: {_filter},
               showSelectedIcon: false,
               onSelectionChanged: (selection) {
-                setState(() => _filter = selection.first);
+                setState(() {
+                  _filter = selection.first;
+                  _page = 1;
+                });
               },
             ),
             if (state.isLoading) ...[
@@ -188,11 +204,17 @@ class _TransectHistoryPageState extends ConsumerState<TransectHistoryPage> {
                 icon: Icons.route_rounded,
               )
             else
-              ...records.map(
+              ...visibleRecords.map(
                 (record) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: _TransectCard(record: record),
                 ),
+              ),
+            if (pages > 1)
+              RecordPagination(
+                page: page,
+                pages: pages,
+                onChanged: (value) => setState(() => _page = value),
               ),
           ],
         ),

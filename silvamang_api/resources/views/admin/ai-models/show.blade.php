@@ -7,7 +7,7 @@
         <div><h2>{{ $aiModel->model_name }}</h2><p>AI model detail record.</p></div>
         <div class="action-row">
             <a href="{{ route('admin.ai-models.edit', $aiModel) }}" class="primary-action">Edit AI Model</a>
-            <a href="{{ route('admin.ai-models.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.ai-models.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

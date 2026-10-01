@@ -5,7 +5,7 @@
 @section('content')
     <div class="page-heading">
         <div><h2>{{ $alert->title }}</h2><p>Alert and monitoring detail.</p></div>
-        <a href="{{ route('admin.alerts.index') }}" class="secondary-action">Back</a>
+        <a href="{{ route('admin.alerts.index') }}" class="neutral-action">Back</a>
     </div>
 
     <section class="review-grid">

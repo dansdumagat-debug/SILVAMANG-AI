@@ -23,7 +23,7 @@
         <div class="action-row">
             @include('admin.partials.status-badge', ['status' => $transect->status])
             <a href="{{ route('admin.transects.export-excel', ['transect_id' => $transect->id]) }}" class="primary-action">Export Excel</a>
-            <a href="{{ route('admin.transects.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.transects.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

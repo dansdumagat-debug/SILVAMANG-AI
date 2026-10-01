@@ -7,7 +7,7 @@
         <div><h2>{{ $user->name }}</h2><p>User account review and activity summary.</p></div>
         <div class="action-row">
             <a href="{{ route('admin.users.edit', $user) }}" class="primary-action">Edit</a>
-            <a href="{{ route('admin.users.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.users.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

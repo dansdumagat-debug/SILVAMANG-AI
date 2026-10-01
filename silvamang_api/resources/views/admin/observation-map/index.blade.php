@@ -157,13 +157,14 @@
         const leafletMarkers = [];
 
         const map = L.map('observation-map', {
-            zoomControl: true,
+            zoomControl: false,
             preferCanvas: true,
             maxZoom: 24,
             zoomSnap: 0.5,
             zoomDelta: 0.5,
         }).setView(defaultCenter, 9);
 
+        L.control.zoom({ position: 'bottomleft' }).addTo(map);
         map.createPane('labels');
         map.getPane('labels').style.zIndex = 450;
         map.getPane('labels').style.pointerEvents = 'none';

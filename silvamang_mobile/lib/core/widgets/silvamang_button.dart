@@ -2,7 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
 
-enum SilvamangButtonType { primary, secondary, outline, danger }
+enum SilvamangButtonType {
+  primary,
+  secondary,
+  outline,
+  danger,
+  success,
+  warning,
+  neutral,
+}
 
 class SilvamangButton extends StatelessWidget {
   const SilvamangButton({
@@ -25,10 +33,15 @@ class SilvamangButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             width: 18,
             height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: type == SilvamangButtonType.outline
+                  ? AppColors.actionBlue
+                  : AppColors.primaryDarkGreen,
+            ),
           )
         : Row(
             mainAxisSize: MainAxisSize.min,
@@ -38,16 +51,23 @@ class SilvamangButton extends StatelessWidget {
                 Icon(icon, size: 18),
                 const SizedBox(width: 8),
               ],
-              Text(text),
+              Flexible(child: Text(text, textAlign: TextAlign.center)),
             ],
           );
 
-    final size = fullWidth ? const Size.fromHeight(52) : null;
+    const size = Size(0, 52);
 
     if (type == SilvamangButtonType.outline) {
-      return OutlinedButton(
-        onPressed: isLoading ? null : onPressed,
-        child: child,
+      return SizedBox(
+        width: fullWidth ? double.infinity : null,
+        child: OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            minimumSize: size,
+            foregroundColor: AppColors.actionBlue,
+          ),
+          onPressed: isLoading ? null : onPressed,
+          child: child,
+        ),
       );
     }
 
@@ -57,10 +77,14 @@ class SilvamangButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           minimumSize: size,
+          foregroundColor: AppColors.primaryDarkGreen,
           backgroundColor: switch (type) {
             SilvamangButtonType.primary => AppColors.primaryDarkGreen,
-            SilvamangButtonType.secondary => AppColors.primaryGreen,
-            SilvamangButtonType.danger => AppColors.dangerRed,
+            SilvamangButtonType.secondary => AppColors.actionBlue,
+            SilvamangButtonType.success => AppColors.actionSuccess,
+            SilvamangButtonType.warning => AppColors.actionWarning,
+            SilvamangButtonType.neutral => AppColors.actionNeutral,
+            SilvamangButtonType.danger => AppColors.actionDanger,
             SilvamangButtonType.outline => AppColors.primaryDarkGreen,
           },
         ),

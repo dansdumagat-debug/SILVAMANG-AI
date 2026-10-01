@@ -264,7 +264,7 @@ class _OfflineMapDownloadPageState
                   SilvamangButton(
                     text: 'Cancel Download',
                     icon: Icons.cancel_rounded,
-                    type: SilvamangButtonType.outline,
+                    type: SilvamangButtonType.neutral,
                     onPressed: _cancelDownload,
                   ),
                 ],

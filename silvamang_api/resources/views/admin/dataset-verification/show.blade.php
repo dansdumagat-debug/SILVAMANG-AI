@@ -16,7 +16,7 @@
         </div>
         <div class="action-row">
             @include('admin.partials.status-badge', ['status' => $scanImage->dataset_status ?? 'pending'])
-            <a href="{{ route('admin.dataset-verification.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.dataset-verification.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 
@@ -116,7 +116,7 @@
 
             <div class="form-actions form-wide">
                 <button type="submit" class="primary-action">Save Verification</button>
-                <a href="{{ route('admin.dataset-verification.index') }}" class="secondary-action">Back</a>
+                <a href="{{ route('admin.dataset-verification.index') }}" class="neutral-action">Back</a>
             </div>
         </form>
     </article>

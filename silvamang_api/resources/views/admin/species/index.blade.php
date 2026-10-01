@@ -33,7 +33,12 @@
         </form>
 
         @if ($species->isEmpty())
-            <div class="empty-card">No species match the current filters.</div>
+            <div class="empty-card empty-state">
+                <span class="empty-state-icon" aria-hidden="true">&#127807;</span>
+                <h3>{{ request()->anyFilled(['search', 'family', 'conservation_status', 'status']) ? 'No matching species' : ($species->total() ? 'No species records on this page' : 'No species records yet') }}</h3>
+                <p>Species information will appear here when records are available. Add a species or adjust your filters.</p>
+                <a href="{{ route('admin.species.create') }}" class="primary-action">Add Species</a>
+            </div>
         @else
         <div class="table-wrap">
             <table>
@@ -63,7 +68,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="pagination-wrap">{{ $species->links() }}</div>
         @endif
+        @include('admin.partials.pagination', ['paginator' => $species])
     </article>
 @endsection

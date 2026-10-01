@@ -22,7 +22,7 @@
             @include('admin.partials.status-badge', ['status' => $scanRecord->identification_status])
             @include('admin.partials.status-badge', ['status' => $scanRecord->validation_status])
             @include('admin.partials.status-badge', ['status' => $syncStatus])
-            <a href="{{ route('admin.scan-monitoring.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.scan-monitoring.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

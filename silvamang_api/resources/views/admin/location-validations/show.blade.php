@@ -9,7 +9,7 @@
             @if ($locationValidation->scanRecord)
                 <a href="{{ route('admin.scan-records.show', $locationValidation->scanRecord) }}" class="primary-action">View Scan Record</a>
             @endif
-            <a href="{{ route('admin.location-validations.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.location-validations.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

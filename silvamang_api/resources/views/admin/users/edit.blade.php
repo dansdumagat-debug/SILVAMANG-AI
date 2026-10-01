@@ -7,7 +7,7 @@
         <div><h2>Edit User</h2><p>Update account details, roles, or password.</p></div>
         <div class="action-row">
             <a href="{{ route('admin.users.show', $user) }}" class="secondary-action">View</a>
-            <a href="{{ route('admin.users.index') }}" class="secondary-action">Back</a>
+            <a href="{{ route('admin.users.index') }}" class="neutral-action">Back</a>
         </div>
     </div>
 

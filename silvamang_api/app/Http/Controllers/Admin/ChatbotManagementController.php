@@ -16,6 +16,15 @@ use Throwable;
 
 class ChatbotManagementController extends Controller
 {
+    public function conversations(Request $request): View
+    {
+        $logs = ChatbotLog::query()->with(['user.roles', 'scanRecord'])
+            ->when($request->filled('search'), fn ($query) => $query->where('question', 'like', '%'.trim((string) $request->query('search')).'%'))
+            ->latest()->orderByDesc('id')->paginate(10)->withQueryString();
+
+        return view('admin.chatbot-management.conversations', ['recentLogs' => $logs]);
+    }
+
     public function __invoke(Request $request, AIChatbotService $assistantService): View
     {
         $hasKnowledge = Schema::hasTable('mangrove_knowledge');
@@ -88,9 +97,10 @@ class ChatbotManagementController extends Controller
                 : collect(),
             'recentLogs' => $hasLogs
                 ? ChatbotLog::query()
-                    ->with(['user', 'scanRecord'])
+                    ->with(['user.roles', 'scanRecord'])
                     ->latest()
-                    ->limit(6)
+                    ->orderByDesc('id')
+                    ->limit(5)
                     ->get()
                 : collect(),
             'recentKnowledgeItems' => $hasKnowledge
