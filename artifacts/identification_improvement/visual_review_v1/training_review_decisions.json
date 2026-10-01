@@ -1,0 +1,1639 @@
+{
+  "schema": 1,
+  "usage": "training_review_only",
+  "review_scope": "204 contact-sheet previews; pixel comparison for 3 duplicate pairs; not expert botanical verification",
+  "decisions": [
+    {
+      "id": "0e789c72ab0b39d4e474b903414a35421fc604caa559add9f080b498709629f1",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d82cdd947b7e807d1b88a986248363fccb2aae167334efa5e794b631fd6025aa",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "41218f4e7d70542fed6b5a809f35f7b54e6d711231d0cb02d1ff841dfbb48975",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "04ee19e2dfc32310c14374e5108cce6ac9cac5e43780a6111581a2fde57c1811",
+      "species": "Aegiceras_corniculatum",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "623df9f311c76826478921aab6db5dab967bee1497bea7c01ae6a15bb072774c",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b60507704c3e3f58cc924e853304fc3df109d0a164cd5de8874aa18ca7d3ddb8",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2bd0173ab68b43f00722c0655269562ac1cad5a07835f3e826b47e709e641764",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "79f8d606d2c3597f46cb7e608bef55b3362b64ac3b41e2cd0d09aacd07ca59b5",
+      "species": "Aegiceras_corniculatum",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "355867a9a994d1319b97f93d7f1d4b0f5f0bb2930e4da7fbce4e21da229bc568",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "ca77f7f7a14d1b78be8f4454e36887d0277b27163969439ee2d1dd7a3f80ef8a",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "ab3492d9804e45f988d8d0e7b5171cd4091584d3924ed9170fa4ba1ef6b6f0ce",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6a795a4eaac54d4b53456c4ee9c2a5dc2103fd75cc1fadf2b7b86de9e13823ee",
+      "species": "Aegiceras_corniculatum",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2255b81dfc90b530143d9b85d2e22cb57ec880d1bcab1a9931a2a5b88aef516c",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a5d95408f304d29ba070c5e4c6d3978f08e74911c2c4e08415bf0504991f787c",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5324e3fced30984162e5a3d67c7b11f3004eb7b018415b7b2c7ff8abbd606ee5",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "cce81a08a566ac151cb93965525b92e7abcdaee319bafc16ad0e5f0f1a017881",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "795d2377adb5784d996a3901af2c120199b738a58efc4adf29cad8f2205cb9d4",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "89081696955f573416970bc722f69c98c721c0e95e31e6888f3bfae5652fb377",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d25e6c149dcfdd01ca736add038ed10c149e8d2ac24598237d1f4e39a80f842f",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3f3197e345a57d7228eb6b5f8222447c942915345e8d82e412607044dbedfc72",
+      "species": "Aegiceras_corniculatum",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "e063d379c42289bc91316ca920abde1d7624eeb915198129fd10682a40006be0",
+      "species": "Avicennia_alba",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "01207db296d5f7c97001ae8d08da75d53aa6e125f8f0790b565f28b2d5d71a12",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "cc782ef232aa69d40627b206f808ae418da889ba2683c551f98923dcd3560137",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3850ac3d11cd86c7b921dfebec13789c73946cf9b96fbfbe9416a14dcf6faf2b",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "22854812642fc1bb0afceafc59f81fbae9d5a2ef99df339ab5185d2ef5d83578",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a29d62f69cf41567df36a9cb8322a4a0ca967ce6c8f3f0f2c06d4e2cbb6db1cb",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "20574b1e977a523ea627741308e1f5404b2765c228ea5f888b2697bc4e86ef90",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "30c1c90e0d9bc91f5db1d49383c3d55bc9c2132ea7fe2307fd9599d68679ac8e",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "14cb5254854d4188b2142b71b1a01f1aabdc7e9f92e4d2671f3e0b3e9b44f033",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bebe10297806a4cdb2c03fe134ab23513c7ca7f514952dea53371e75d890a997",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a8bcce685cbbbc0aca7b6ab27a88313c02e5d91063485623cfaac978c3b251dd",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "acad176a07e2e4484a4e3f969e71567e8beaabe538f36426413be5727c21c5a9",
+      "species": "Avicennia_alba",
+      "decision": "needs_expert_check",
+      "notes": "Soft or hazy fine details in preview. Inspect original before excluding; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9ca81fc225d5924466128438247a471b8c7d53751af9c04526f47a0a37c6036e",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "dfe33163a8969d4a632d4103847bc60fb18540aa1612f2b0852c2273800c65e3",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a99a72290a7abd2d7c52618d17549c28fd6af3b1c90ae14d8f264f97f659f34c",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bc5be2b8434bf4f8c0c0129114168e99f67390ca55fc7e98c4cd4a20c9821cd7",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5bd41dd11d4faadfd3b52fa3f2abe3d595db54018da4dfdcdd6d0d834e9914df",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "e9a997bba24f370ffce4b8f48b7906e98833af448ad91d171dd1a4c127e77a49",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9e246b5cc1ce17bf18eafc1d2f35e8619d68adb8f7d4b21e75f062bf396cd752",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d10a449c0cd780c75bed5e3309e00a438cb85db4e2ef2fb116dc8c9eacf7a872",
+      "species": "Avicennia_alba",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "58a43c6ded4bf000c086eaff5023087d6ec9ea953562fc7a6b755b446064c1e1",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5c36b26d2fdf41b7bfa9b5f915fdba7198abf1f394d2187e85b2e958bfab0977",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0acf7488e6fc39c52a79f676bcc5c0882c01a30cf0c4713f3b7ce5a28234d214",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6ec93a9169d72ee7774111ef2b7360fb7c1607dd4a90ef6f96dc7967a7f6d38a",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3aae304aefe8149cca316f2f2e57181a5f19ef635b43ab0ca68c3fb020b9ad44",
+      "species": "Avicennia_officinalis",
+      "decision": "needs_expert_check",
+      "notes": "Soft or hazy fine details in preview. Inspect original before excluding; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "81c40dc5d6a8424546418c7209507dc4916098f9b3b5b48e04ee3331883f9d48",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9b46157f4372e8ff8e10fb9dd77f30cf0166f89ecec13d40675eee6affe2b872",
+      "species": "Avicennia_officinalis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "1592aebc53ada3eda884468bc748c8fa88143b92d0bbce40851c810100a69836",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "51759fdd11ba2db94a2a0f1efc594d00d027d36e8c4028d6e546de9ccae27535",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "fb8f13f64635e358346a90e4c730fef09dc3b4421c50be1f55f3ee53c00b32d3",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "25fd2ec8b53b8e24712bf95142ca0df2cba92485ff13d044421f4f54b3af90d2",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7d5497380b14731ab5f7a5b29cf0bd0233e50ae4ad3fce06ebf6fbde26162ad8",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "4f92c76bf2d82a0a16c0e5352ff747450704d02b632ea5a4572258e2ae159744",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b5c6455511c1a8e9fb79d596d8ce97440b1de90d8e11a1c7eb891f5c41f50821",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7b1150c16f1c741dbe1396010894353cad0bc21f6379ab7aea98c69567745af3",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a538498cf2318e92c14d60f7b7a63d918da3030840214babcc3a3320fd53ebd2",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "04c31ca520f065033763532d627961d763fd12ff975b052f9c398cb893e21b4b",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b3e8ed8c601f00d98e4e313202514f6705f79ea3b6a697048818a44637fe1df7",
+      "species": "Avicennia_officinalis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f3a759244dbe0b2eabca30c37035c1a86c7530ccafca6b91342c6315d720b354",
+      "species": "Avicennia_officinalis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8b99a2a1dd94b4b60212cca69e2bc98a0c6d2a2c4c1d78c901df065ceeccafd9",
+      "species": "Avicennia_officinalis",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6e35873c22d12aa78f77b5b685cbcc86564a7e6dfc3809458fcb7fb0bf36a5fa",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "516250bd5b41e31e854b4213d93e358d3b0e015d966c51a82191b88049d3b1e0",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "284f90bbdf57d4ad8f9b7fe45a5e116987d954573525e9eb49b764b26aacb497",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "40821f566798041c59e968efaeb047fd12ef6114921f51bff501849fcf354e0f",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "e658fa0433439914f1012bbf871b7aa6cf8916ffcdcb567e841498713e670fd6",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6e76f755fa2aeeb66e009a35cd3bfbc36359620df1ed96947dabcb5afb2defb3",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d2b7a5de9e34ec07a28d8c44f4e12a5dd7743f3705a76a9852fa589d07dca60f",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a64ea7b779a2657f18b34a5adaf2506711cdfb7ff4302e9f6c286b2fc146aef0",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "31a3446ea0e40a1107f9b8724610078e86029c9c28908c3c81284bf3ff1a292d",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "be1038f944d9738e19060a3357be1779e08c6419309d27c09cb8f3630e250fc0",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "350a36e5aa16ba04be6bed0c93993cc38d43ddef563155c358401e292d428bc4",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7b3d5f55bf8d0139acb14b9660c453d3eca4fa7f7806b53c9824c53382414c56",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "05e0c7eb7b9072959934d830b9090d252684446d78278d5b0e88b638fec1e9de",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c1c100ddfe3d5d016bd85d085f4cb1c6f67ec9008163057d00380c76f9aa2f5a",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "4efbbe019a86c1d2ae9603a51803509cc963a0841b2c41acdf410ceb2b3735ed",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a44fa85875bc95eb89ed968de5b08777022181c6189d8c4124a11d05badc6315",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bca156cf020101057c99119dc67c005c4d62669e783464ddbd6c634effbb0b6f",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a8b86b0f34f7802a4afb47814e167dfadcf815a2abbc68f5b9d8170400d4203f",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2795cb03bca0d8642686cda0c255cf04d44305c67f7efd8727ddccfc66372ed8",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "17a7b6d4b35d1949e3e27e6db08b8fef44b2d72d50cf2eddece8f9ba0b9bfa14",
+      "species": "Bruguiera_cylindrica",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "ee4dbf69f7bbab4ffdb221117d4752a107ad19e90227c27e591908601514f4e4",
+      "species": "Bruguiera_sexangula",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2063807ee7650b3d3b243374586f4148ec09900c1b2f778e2c7400213bd14922",
+      "species": "Bruguiera_sexangula",
+      "decision": "needs_expert_check",
+      "notes": "Flower occupies a small fraction of pavement scene; image crops may lose the subject. Retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0d2ba100121a6180bfec10f5bc3b54819c8940a8e532c020c8d5d8d27d02ee05",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c20b20c85564ad7f1f4dda904a13c98ef8a0f35c8fdf1d3c846d197fffc1f2af",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "ea7ad4a7a566bc589913338ea797fce285a49b7f742cf9d77ac2b9fad55d7420",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9ecaaa2fb553217a144631e55e29b9eb6744c0486e17165fd94575ae3a91dbe0",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "548dca9f7a9e1cee7a8bc023bd6a0bb6fd02224e2b4f33cb8ff2f2fe67013e88",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5d4290e30a95444805f9fe7d994d65ed46670f6a5afe71f64d9273765810c0e7",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "de5eabb7070754cc9b719f27c5633d01b756f0ac063aaede4bc52b058db7605b",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "20fa849c939ec733cae24eddda81fd90e8ad4cf26d023d37716e43ea7b151d8c",
+      "species": "Bruguiera_sexangula",
+      "decision": "exclude_duplicate",
+      "notes": "Lower-resolution duplicate of 5d4290e30a95444805f9fe7d994d65ed46670f6a5afe71f64d9273765810c0e7. Retain larger training copy; species label unchanged and not independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7a4787303d22567c2019e9acae047553067e2d4d4ca59b96e99ed6fccffe2c9b",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7180b1a219e0804beece6e3a0a66dfa7a79b59f93be02d29f0fbf42fd2b8a2cc",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0148ce1d475a658bc21c26de844aba45d03c0b76530b8d0830c23e40f6598a62",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bd8435f5b6e3a401b1ad6b96f36849ffa973d8cf20c62bb8fc3cb14dd2f2e60b",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2dc9e79f4a39483cec2b908c9eb7c8f1118794a29e79bdf6c43d5994c1e0c0da",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9cf47101c1318d8fd98ad6ef8a285088ae8347c92cd506db5a73db7f0c4282b6",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a7c35967ccdcba708c52e7fe02661fe58cf0a61799cc3cab5679d4014cf70a9b",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bdb7f80873d54468a35dbf3ef04038e7971059a611fe692ac869dd7c0699b6fb",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "848109fef65d0f28449fbbf48bd9181af7401fa379f2799331e2fdb907e41d63",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "793be8daa5fcfe65202d7f8d2a211fb1cc7db82166239e1a7703d58c9ebeb7eb",
+      "species": "Bruguiera_sexangula",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0c445444760f2fb7def033aaf50c3b773cdba7747339877769f861aaeb5fbf2d",
+      "species": "Camptostemon_philippinensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "353d43b3054859322b5e71a1833e4d492100c99a66859dd3718136d24b3d4ecf",
+      "species": "Camptostemon_philippinensis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c9100fbb509fb1ac915650b40edb6a794a87fefbcf27b417f86cbe2ce911ca91",
+      "species": "Camptostemon_philippinensis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "520d5cf6da7a0dc52504b382391dc18ae5a1d086d41a648bd81019e6de716b9b",
+      "species": "Camptostemon_philippinensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9323e16147ee68bf65ad8759c413bc62788603414b6c24370fd245d149365fd4",
+      "species": "Camptostemon_philippinensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6e459fc7c6aab2f07fee80076f93417f3cfeeea6b8adb77f12a1ba575ded2364",
+      "species": "Camptostemon_philippinensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f1b9f891a892577198a4000611cf27ef7cb6e5a83cb88704374ece2f617f6dd0",
+      "species": "Camptostemon_philippinensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b060b57ce449354919d2a00a5a7d1157a074372801f482ff5708c28f6ae473ca",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "770dadc1e6ac06328fa7f42ef135a2fe8b4989bff8dd6199a44eb6fd6fa68d00",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "069d22363796b18342d1472ac0f308f8cb4b09300d7ed160f8775100a5f802ed",
+      "species": "Ceriops_zippeliana",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "761a01f1cc36b6c123c26f3d6204ce9f020f3b35893fc4b1f791327131258172",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d6b11b060b9814c75c2e8de9d8509863911dd9386be4a80d5516b2a183b62953",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8a042223fe74450581b9cbb55ea5b1f6738fbf19b194787ab2fa90c6938732c4",
+      "species": "Ceriops_zippeliana",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0b86f105eb726c51e36cfbaebaf96a5d47df930637ba0abc9b8cd4120c91dd31",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "28d2c1b13dd1aeb3a764db05cd234fbd97b0cc9f75139334d024eecd058fe104",
+      "species": "Ceriops_zippeliana",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "341fcd256f6a00bd13404db000506746323aa125f15dc1d6e36a36dad9156801",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "dbc92066510e73bf7c90682d98a7a27d892162109b528a6d809d00079a33a153",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c5a86ddd6cc64ed9d7c1bc79c89ad6cab75f457cc89dc9b8beed1c16fb280323",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f8461e122a4f288450c914ebb34acaca2fdadda88c41446aba79ffdcf4ebdd49",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "fe3c528f8556724822e0e2135eb9b26489e44bc04b80d561fa2306d1d31749ef",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "74bece230bad9060ee0aacf476a828a0d2af0ac21b49adc11f3dfa7651df8be5",
+      "species": "Ceriops_zippeliana",
+      "decision": "exclude_duplicate",
+      "notes": "Lower-resolution duplicate of c5a86ddd6cc64ed9d7c1bc79c89ad6cab75f457cc89dc9b8beed1c16fb280323. Retain larger training copy; species label unchanged and not independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8807593c6c493a23eaf2b2be7ded52d8b51b1c0979ee547a4d317a06f1146db2",
+      "species": "Ceriops_zippeliana",
+      "decision": "needs_expert_check",
+      "notes": "Soft or hazy fine details in preview. Inspect original before excluding; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "9bd9524df7d1084123541e8d611da5e5e54545cda77399c919f44f43944dac0a",
+      "species": "Ceriops_zippeliana",
+      "decision": "exclude_duplicate",
+      "notes": "Lower-resolution duplicate of 770dadc1e6ac06328fa7f42ef135a2fe8b4989bff8dd6199a44eb6fd6fa68d00. Retain larger training copy; species label unchanged and not independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5d4fa15b75d2f32d1f46c999e46eaf10b1443b39e751cedef35515a97126a527",
+      "species": "Ceriops_zippeliana",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6cf31ef039de01bbe50904a2d452e477f750acb13e384a8174bd9b015a66d59b",
+      "species": "Lumnitzera_racemosa",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b1e3d5c917868e2db88283c8865c044c0dada31a12707778cafaeff09909ef74",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "038e4b1669246d5e627cd1dc34fa8e2db9891d3002fd98af7975261c0d4bd62b",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5598ec7e948551241d3e2498b5ad0968e23d7fed56b5bd62c47500ec7341db3c",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2d90ab8e206263124fa3fd0242f87fec7c45647173f160e9ab6552c49436cd78",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f8c57dd6e6577f846a944dcd7fb6aa4fa3f8e66403e8d1d7edb3ebb5b9ef443b",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8e8ed8746b1163d185c70954ae94e914d503cf63192bbf737d2f21cf4cb3b867",
+      "species": "Lumnitzera_racemosa",
+      "decision": "needs_expert_check",
+      "notes": "Soft or hazy fine details in preview. Inspect original before excluding; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0c6e06b814ee4e39c63d2926b4ce14ab1c7a3be60c1cf80437d364b74fe06e97",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b33fc548af51d9d9b6bc66e19619e0760117327243463d57a84da3ff7a96dd09",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "99e25eec2dc937dc906f48b1f50932a2f033aebfb8d2c3a04277ee4b310f0b83",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "1cd46b1607cabce0da345da00761eba103bcfa700862186cdcb8aa8266e2ca3b",
+      "species": "Lumnitzera_racemosa",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "ee4d5d3e46e885225a09bbe46faa63c57b95fb29fa9574900875bdf05999295f",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0cdc5c265a7be9ec1acfb5ab09df8bb069191b1b967b5aa742d976dd72c62e78",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bd44a09d5cc0a07be6b2474855c6d1af6b78402aa619978f18cfc551288af2ba",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "49003a2c3bf53071e6aa56d820e687043a9e12cbf482489cd97df268fbdc5865",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3885c9e57bee206bb90aca74ff5389572f0dcd2f17efd2c048012eeca4033a78",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b0a96cfc697e6b6851eba84f9b884453340b4cd3663226eddfb106d2e0b51d45",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0065269859956479cdfe3dae552485514432faf3e47842b99ad81a46df778631",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c02eacd34ea11b8f8c31dbead2335d095d4a0515d47313a9a8c148dd44b5f79b",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "e7682fc6a050d52f9f1988afddf6ffe6bd474792864ec02b1800bbba70ce826f",
+      "species": "Lumnitzera_racemosa",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a75720fce5b2d3578162b33439b7a7640310c10d5f745285f61fec1d7048435c",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "731ec2535a96e1a05778eff8bc9117cb064b0e3b1f386aa2a736a6c4d2f6f3fa",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f49480925c73f7f7db03b286c9cc55c09264db4c26e724743fb69c8d862bca94",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3dae56c66bd369a83c22e28ce6d88e139154540e5fce1b745a180e00761e7d43",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "cdfc4632ecf54696c89b2b3069d20b5308861d51edd3a4bfd1ef0fe742af70f7",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d06451fea60a18adf107d59a31c84dbecd272883ee5e598af2117716c55bf1ea",
+      "species": "Osbornia_octodonta",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7adacf7903d80ccbdb72eb35cc854d8adf4b2f29bdea88b5f7ed1c1e7cf0c506",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "275637e8f03ea8fb0086821f90ea65542157ca83a7f7ce7cf72fa9b77f6979a7",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0303131524e7ac8828bd3aae7d950bd6bcc5c595329ac860377170c4d8a549ae",
+      "species": "Osbornia_octodonta",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "82a9b7aecf05de4fd03cdd6e9b4f256edc28a798b61fe52f92a37f7f79e747e1",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "522134e7fe8f3b630567d4af12b4386d7c1dd832a745a3edaa924b72fc899b19",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "4688423ad4bd790261d6f69d3951d05495420c74c61ef5fbbadd7ab1a1db1d00",
+      "species": "Osbornia_octodonta",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3379bd6ed7c12e7cf47fd40bd9be545255891b7376bcbddc4b6b1b4985791770",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "e5da090b7c1aadbfe0dc93526fdae1221675af4c7c5d0ac3168996e7797c5e49",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "bd53216240147dd1f7993deb358ff1dc224f0009621ddd95f2eb4fbf1fe12fe9",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b4ad52fcf87d4c2ca4383fb1e7c89a12e45fec678a82ef957aad52026051186c",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3c193aaf591462cc1d1d114273427c2c20be86814989aeb75335df8282b097c6",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "6634c157eb698eeb0aa1d4310e97c1351554ef141a37d0b6e556692abe88c840",
+      "species": "Osbornia_octodonta",
+      "decision": "needs_expert_check",
+      "notes": "Dark, shaded, or low-contrast subject in preview. Inspect full-resolution details; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "22f25abd65741cd89e0d042c23a2615576832fc865d99b977b7ea83abacc7bb4",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "318464c62aaf51268fc1368e26a400d34610a43824b3fb46ebbe91735e09d4ed",
+      "species": "Osbornia_octodonta",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "1e1b987dbd2234c8f28cffe6f5b0cce1d502ff3487629684a0545f45898e8daf",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "44728ee474dbc942bda21554deef71281b26f34ec6e519c36e49210ffdf7ce4d",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f2f662f333f8be4401e1f3e842a82bc9d9c62e3b823309777c03993e519da943",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "92228adac35f4ba73f034a9720b0118478b77ec0b04b4026b9e9656558f46571",
+      "species": "Rhizophora_mucronata",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "e696a85757ae3e5f2aba099238f7321ec31900730a436408f79aae400d513dfa",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "12d5fa8db381fc3b9b70fd971e5f7a81031ee20d99f881c37eaf841ed992427f",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "27573489f27e82bcec248b28e1893a7559e89c15592fcf98a04d7bddedf1c397",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5e57084d43d756ccd672d2791ae0846f79adcf576e724c6e50518a655bb93f59",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "ab5c6cf46d028d2619345adc99bb603c227528c3d1fecc9d28a13ebbccfdeeb0",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8f14c82a1575a4feff535e532c71437e076427687792946960faef544dba3d35",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8e97c7da9761507a6e27b7abe180a14fe2ded1de0632c0ab43d7128aa3bb6934",
+      "species": "Rhizophora_mucronata",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "fa0ba815f89882680383bd607b8b843993981064492cee49371f93e7a1ccaee5",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5ff62cacc76e0196d40c2670333dd0eeba99c47135492844b5dc2f0ee8443ae6",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a3fcee0f07b3e958a011ec28a33465e7f2d70c42770285a34a030ca3e2e79b2d",
+      "species": "Rhizophora_mucronata",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "48070788cd48a4bb10d7b489b41702a636d95c2f849ddeac95bdb3d521102372",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "13e8056be021e17fb4b3ce1133145967631b6efa9beee0c617d480977dbf1457",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "49e352ab672a2b3ad5917a87caacdbfe1e4f39a2535b9a287df4c424b7af09e0",
+      "species": "Rhizophora_mucronata",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c63ff1697809ba21aae1620e1a4fb3c056e7631152f29e5521b4a50bb889ab21",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8f63b1269318906c33a2fdff1222ad1d95e2d7f0ab554483790d0a71c8236952",
+      "species": "Rhizophora_mucronata",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5055a4d7e87536b3102b3419feac63f0b86e1cd141988cda0d8347e2b8d5418b",
+      "species": "Rhizophora_mucronata",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7893afe93cacdd22982898d64650f460a6857711acaa5770e284e61d46fbc0cd",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "0b6f52f517f9dc1e03e3905ae6209a424dad54f270f55ee042dc865289aa61b7",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "5d34d8b5aa113212d404af85679cc30a237031b75687c37ba35f9da5dd2c3f7a",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7a4a2a68a2027dfa29569c48238e7d8491c97097a0a178b9f73206e6a7e7c48a",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "4f0e41c056a2a6af8d769da5164e98d8b95d572891cec5bbcc643b1e3de3d364",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "70331c95eb975dfd5462bd9d8e02e3333dc7e6d2163bd3ab58b1f4a05be43393",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2e264a420483f0b96b2d395784542bf47f130df0137121012f12084c4e54e484",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "c95c7476ae9d4a89acd4f36419aaebdb049e70d8403f98041ae6d67cc5090fe7",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "219e44f705e4879cd1cfaf68bab7d7fb91bdc7ca0b3f90a16209a1e7ba2cddf6",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "3396e7f1e7f16fd5271425caa41528e3a8838a74a6d04d1cd7940904dce1e72f",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "b4279c5537baec6a374609a4cddc1bdd243b980a8edf3eb2a8979cf9e4b16e29",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7ce9f24ea36a07c79b0ad8f9d6ece23388301e9424bf355b0f3acc8226a23696",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "8ebf48ad0f45c0a3fa238f0cdf2d13e8d3a85b78f218d7d2ef8c405aeb85b4e0",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "7fe2ddbeafd7cd52be3825501bf76af1a9b0798ee40a2134e62cfcfa16929867",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "a708f717428233876bcc2560a3ce611ac3e329ebffbcc3eb629fe3bb41ae3d19",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d68d5f57f5e6f4ab3cd66ad89b4db196510715c4bed30e9d2d7bb9ac3ce49670",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "f7cf0b54b75cff2e92d8ee2b74e78af6bba3f17d350e613e85fd7ddfd8c9d29a",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "d49b1702e4149855105b81e253e709421b71bbcca3af08e580ef56c245682ffa",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "needs_expert_check",
+      "notes": "Wide or distant view: identifying details are small in the contact-sheet preview. Inspect original and source identity before deciding; not automatically excluded.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "903b8482153a346793c604f1722b09dedbebaa6786fba5e8eb9917b81629bf59",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "needs_expert_check",
+      "notes": "Soft or hazy fine details in preview. Inspect original before excluding; retained pending review.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    },
+    {
+      "id": "2cf8ce4fc8c467e38cbcffc545e05a252652000fd145fcf765c3daa4aba19afb",
+      "species": "Xylocarpus_moluccensis",
+      "decision": "quality_usable_label_unverified",
+      "notes": "Plant structures visible in contact-sheet preview; no obvious severe quality defect. Recorded species label has not been independently verified.",
+      "label_verified": false,
+      "reviewer": "AI visual quality review"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+retain_sha256,exclude_sha256,species,correlation,mean_absolute_difference,evidence
+5d4290e30a95444805f9fe7d994d65ed46670f6a5afe71f64d9273765810c0e7,20fa849c939ec733cae24eddda81fd90e8ad4cf26d023d37716e43ea7b151d8c,Bruguiera_sexangula,0.9976480995403548,1.7041219075520833,"Visually matching scene on contact sheets, supported by normalized pixel comparison. Training copies only."
+c5a86ddd6cc64ed9d7c1bc79c89ad6cab75f457cc89dc9b8beed1c16fb280323,74bece230bad9060ee0aacf476a828a0d2af0ac21b49adc11f3dfa7651df8be5,Ceriops_zippeliana,0.996980444377207,2.8515218098958335,"Visually matching scene on contact sheets, supported by normalized pixel comparison. Training copies only."
+770dadc1e6ac06328fa7f42ef135a2fe8b4989bff8dd6199a44eb6fd6fa68d00,9bd9524df7d1084123541e8d611da5e5e54545cda77399c919f44f43944dac0a,Ceriops_zippeliana,0.9924764259399718,4.583831787109375,"Visually matching scene on contact sheets, supported by normalized pixel comparison. Training copies only."

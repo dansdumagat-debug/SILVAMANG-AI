@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--queue', type=Path, required=True)
     parser.add_argument('--quality', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--decisions', type=Path, help='Prefill a previous review without changing training data.')
     args = parser.parse_args()
     frame = pd.read_csv(args.queue).fillna('')
     assert set(frame.split) == {'train'} and frame.sha256_rgb.is_unique
@@ -30,6 +31,15 @@ def main():
         records.append(dict(id=row.sha256_rgb, species=row.class_name, source=row.source,
                             original=path.resolve().as_uri(), flags=flags,
                             decision='unreviewed', notes=''))
+    if args.decisions:
+        saved = json.loads(args.decisions.read_text(encoding='utf-8'))
+        assert saved['schema'] == 1
+        by_id = {r['id']: r for r in saved['decisions']}
+        assert set(by_id) == {r['id'] for r in records}
+        for record in records:
+            decision = by_id[record['id']]
+            assert decision['species'] == record['species']
+            record.update(decision=decision['decision'], notes=decision['notes'])
     data = json.dumps(records).replace('<', '\\u003c')
     page = '''<!doctype html><html lang="en"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Training photo review</title>
@@ -39,13 +49,14 @@ main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1
 img{width:100%;height:260px;object-fit:contain}label{display:block;margin:12px 0}textarea{box-sizing:border-box;width:100%}.flags{color:#8c4a00}small{display:block}</style>
 <h1>Review training photos</h1><p>These are training photos only. No photos or labels are changed by this page.
 Check whether identifying details are visible and the recorded species is correct. Use “Needs expert check” when unsure.
+“Quality usable, label unverified” means only the visible image quality was assessed; it is not confirmation of species identity.
 Quality flags are suggestions, not proof that a photo is bad. Do not exclude difficult photos simply because the model struggles with them.</p>
 <header><label>Species <select id="species"><option value="">All species</option></select></label>
 <button id="export">Download decisions</button> <label>Restore decisions <input id="import" type="file" accept="application/json"></label>
 <span id="count"></span><p>Works offline. Download decisions before closing; browser storage is only a convenience.</p></header><main id="cards"></main>
 <script>const rows=DATA;
 const key='silvamang-training-review-'+rows.map(r=>r.id).join('').slice(0,64);
-const decisions=['unreviewed','keep','exclude_quality','needs_expert_check'];
+const decisions=['unreviewed','keep','quality_usable_label_unverified','exclude_quality','exclude_duplicate','needs_expert_check'];
 function restore(saved){for(const r of rows){const s=saved.find(x=>x.id===r.id);if(s&&decisions.includes(s.decision)){r.decision=s.decision;r.notes=typeof s.notes==='string'?s.notes:'';}}}
 try{restore(JSON.parse(localStorage.getItem(key)||'[]'));}catch(e){}
 function save(){try{localStorage.setItem(key,JSON.stringify(rows.map(({id,decision,notes})=>({id,decision,notes}))));}catch(e){} count();}

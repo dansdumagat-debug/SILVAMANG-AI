@@ -1,0 +1,21 @@
+{
+  "reviewed_previews": 204,
+  "decisions": {
+    "quality_usable_label_unverified": 168,
+    "needs_expert_check": 33,
+    "exclude_duplicate": 3
+  },
+  "excluded_training_duplicates": 3,
+  "train_before": 4040,
+  "train_after": 4037,
+  "validation_unchanged": true,
+  "test_unchanged": true,
+  "species_removed": 0,
+  "labels_changed": 0,
+  "original_files_deleted": 0,
+  "retrained": false,
+  "deployed": false,
+  "source_manifest": "C:\\laragon\\www\\SilvaMang-AI\\artifacts\\classifier_expanded\\20260929T133850136654Z\\split_manifest.csv",
+  "source_manifest_sha256": "a807d071d9e2013a8dfd6ef0404c1707134eba0d259f183a01351b1d0a7d1574",
+  "limitation": "Conservative duplicate-only candidate. No expert-confirmed species labels and no accuracy improvement measured. Quality flags require original-image review, not automatic deletion."
+}
