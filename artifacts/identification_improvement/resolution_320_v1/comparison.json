@@ -1,0 +1,26 @@
+{
+  "baseline_224": {
+    "accuracy": 0.7124711316397229,
+    "macro_f1": 0.6726329661829866,
+    "accepted_count": 444,
+    "accepted_accuracy": 0.9166666666666666,
+    "unknown_false_accepts": 1,
+    "unknown_count": 25
+  },
+  "candidate_320": {
+    "accuracy": 0.684757505773672,
+    "macro_f1": 0.6457386054833629,
+    "accepted_count": 390,
+    "accepted_accuracy": 0.9179487179487179,
+    "unknown_false_accepts": 0,
+    "unknown_count": 25
+  },
+  "improved": false,
+  "split": "val",
+  "test_evaluated": false,
+  "deployed": false,
+  "elapsed_seconds": 121.17200000002049,
+  "reference_run": "artifacts\\classifier_corrected\\20260928T124128799011Z",
+  "manifest_sha256": "4b75477a459117221714869246d755a8f5ae37f2692a86189cde7e4f5450f145",
+  "limitation": "Validation-only experiment; current production contract remains 224px. Independent field evaluation and latency testing required before deployment."
+}
