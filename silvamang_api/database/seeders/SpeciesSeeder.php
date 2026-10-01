@@ -10,7 +10,7 @@ class SpeciesSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(bool $includeDemoDistributions = true, bool $preserveExisting = false): void
     {
         $speciesList = [
             [
@@ -137,12 +137,13 @@ class SpeciesSeeder extends Seeder
         ];
 
         foreach ($speciesList as $speciesData) {
-            $species = Species::updateOrCreate(
+            $method = $preserveExisting ? 'firstOrCreate' : 'updateOrCreate';
+            $species = Species::$method(
                 ['scientific_name' => $speciesData['scientific_name']],
                 $speciesData + ['status' => 'active', 'cnn_supported' => true]
             );
 
-            foreach ($distributions as $distribution) {
+            foreach ($includeDemoDistributions ? $distributions : [] as $distribution) {
                 $species->distributions()->updateOrCreate(
                     [
                         'location_name' => $distribution['location_name'],

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MangroveEducationSeeder extends Seeder
 {
-    public function run(): void
+    public function run(bool $preserveExisting = false): void
     {
         if (! Schema::hasTable('mangrove_education')) {
             return;
@@ -22,7 +22,8 @@ class MangroveEducationSeeder extends Seeder
                 continue;
             }
 
-            MangroveEducation::updateOrCreate(
+            $method = $preserveExisting ? 'firstOrCreate' : 'updateOrCreate';
+            MangroveEducation::$method(
                 ['species_id' => $species->id],
                 $entry + ['status' => 'active']
             );

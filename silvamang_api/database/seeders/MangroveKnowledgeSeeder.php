@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class MangroveKnowledgeSeeder extends Seeder
 {
-    public function run(): void
+    public function run(bool $preserveExisting = false): void
     {
         if (! Schema::hasTable('mangrove_knowledge')) {
             return;
@@ -34,7 +34,8 @@ class MangroveKnowledgeSeeder extends Seeder
                 $payload['reference_source'] = $entry['reference_source'] ?? 'SILVAMANG AI verified local knowledge base';
             }
 
-            MangroveKnowledge::updateOrCreate(
+            $method = $preserveExisting ? 'firstOrCreate' : 'updateOrCreate';
+            MangroveKnowledge::$method(
                 ['question' => $entry['question']],
                 $payload
             );
