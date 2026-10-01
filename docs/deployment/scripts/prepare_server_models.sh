@@ -15,8 +15,7 @@ esac
 model_files='EfficientNet-B0/efficientnet_b0_runtime.pth
 EfficientNet-B0/class_order.json
 YOLOv8-Detector/yolo8 detection.pt
-YOLOv8-Seg/yolo8 seg.pt
-MiDaS/midas_small_pretrained.pth'
+YOLOv8-Seg/yolo8 seg.pt'
 
 # Check every source and destination before copying anything.
 printf '%s\n' "$model_files" | while IFS= read -r relative; do

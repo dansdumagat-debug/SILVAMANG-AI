@@ -390,7 +390,7 @@ class MockAiPredictionRepository {
       'canopy_width_m': _asNullableDouble(measurement?['canopy_width_m']),
       'dbh_cm': _asNullableDouble(measurement?['dbh_cm']),
       'measurement_method':
-          measurement?['measurement_method'] ?? 'midas_depth_estimation',
+          measurement?['measurement_method'] ?? 'not_estimated',
       'confidence': _asNullableDouble(measurement?['confidence']),
     };
   }

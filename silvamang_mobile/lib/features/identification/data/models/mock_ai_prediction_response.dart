@@ -99,14 +99,14 @@ class MockAiPredictionResponse {
     }
 
     if (isUnknownClass || _isUnknownClassName(normalizedStatus)) {
-      return 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+      return 'Please capture mangrove leaves, roots, bark, or flowers.';
     }
 
     if (normalizedStatus == 'uncertain' || isBelowConfidenceThreshold) {
-      return 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.';
+      return 'Please retake a clear photo of mangrove leaves, roots, bark, or flowers.';
     }
 
-    return 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+    return 'Please capture mangrove leaves, roots, bark, or flowers.';
   }
 
   bool get isValidCnnResult {

@@ -54,7 +54,6 @@ class SettingController extends Controller
                 'CNN classifier' => 'planned',
                 'YOLOv8 detector' => 'planned',
                 'YOLOv8-Seg segmenter' => 'planned',
-                'MiDaS depth estimator' => 'planned',
                 'Python AI service' => 'not yet integrated',
             ],
             'mobileReadiness' => [

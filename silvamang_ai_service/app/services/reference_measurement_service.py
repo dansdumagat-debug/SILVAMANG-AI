@@ -2,54 +2,11 @@ from __future__ import annotations
 
 import io
 import math
-import os
-from pathlib import Path
 
 from PIL import Image
 
 
-class MidasMeasurementService:
-    def __init__(self) -> None:
-        self.service_root = Path(__file__).resolve().parents[2]
-        self.model_path = self._resolve_model_path()
-        self._model = None
-        self._load_error: str | None = None
-
-    def is_available(self) -> bool:
-        if self.model_path is None or not self.model_path.exists():
-            self._load_error = "MiDaS model file not found"
-            return False
-
-        try:
-            self._load_model()
-            return True
-        except Exception as exc:
-            self._load_error = str(exc)
-            return False
-
-    def version(self) -> str | None:
-        return self.model_path.name if self.model_path else None
-
-    def load_error(self) -> str | None:
-        return self._load_error
-
-    def readiness(self) -> dict:
-        available = self.is_available()
-
-        return {
-            "available": available,
-            "model_path": str(self.model_path) if self.model_path else None,
-            "model_file": self.model_path.name if self.model_path else None,
-            "expected_locations": [str(path) for path in self.expected_model_locations()],
-            "required_dependency": "torch",
-            "metric_measurement_requires": [
-                "known camera-to-tree distance",
-                "ARCore/depth scale",
-                "or calibrated reference object",
-            ],
-            "load_error": self.load_error(),
-        }
-
+class ReferenceMeasurementService:
     def measure(
         self,
         image_bytes: bytes,
@@ -94,16 +51,7 @@ class MidasMeasurementService:
         reference_height = self._positive_float(reference_height_m)
 
         if subject_span_px is None or reference_span_px is None or reference_height is None:
-            if not self.is_available():
-                raise RuntimeError(
-                    "Metric measurement needs reference object calibration "
-                    "because no MiDaS depth model is available."
-                )
-
-            raise RuntimeError(
-                "MiDaS gives relative depth only. Send subject/reference pixel "
-                "spans plus reference_height_m to convert the estimate to meters."
-            )
+            raise ValueError("Measurement requires subject/reference pixel spans and reference_height_m; automatic depth estimation is not supported.")
 
         distance_ratio = self._distance_ratio(subject_distance_m, reference_distance_m)
         estimated_m = (subject_span_px / reference_span_px) * reference_height * distance_ratio
@@ -147,71 +95,6 @@ class MidasMeasurementService:
             "warning": self._warning(subject_distance_m, reference_distance_m),
             "message": "Calibrated metric measurement generated from reference object scale.",
         }
-
-    def _load_model(self):
-        if self._model is not None:
-            return self._model
-
-        if self.model_path is None:
-            raise FileNotFoundError("MiDaS model file not found")
-
-        try:
-            import torch
-        except Exception as exc:
-            raise RuntimeError(f"PyTorch unavailable: {exc}") from exc
-
-        try:
-            if self.model_path.suffix.lower() == ".pth":
-                checkpoint = torch.load(self.model_path, map_location="cpu", weights_only=True)
-                if checkpoint.get("model_type") != "MiDaS_small":
-                    raise ValueError("Expected a MiDaS_small checkpoint.")
-                # Trust only the two known architecture repositories, never a
-                # repository name supplied inside a checkpoint.
-                backbone = torch.hub.load(
-                    "rwightman/gen-efficientnet-pytorch", "tf_efficientnet_lite3",
-                    pretrained=False, exportable=True, trust_repo=True,
-                )
-                del backbone
-                model = torch.hub.load(
-                    "isl-org/MiDaS", "MiDaS_small", pretrained=False, trust_repo=True,
-                )
-                model.load_state_dict(checkpoint["model_state_dict"], strict=True)
-            else:
-                model = torch.jit.load(str(self.model_path), map_location="cpu")
-            model.eval()
-            self._model = model
-            return self._model
-        except Exception as exc:
-            raise RuntimeError(f"MiDaS model could not be loaded: {exc}") from exc
-
-    def _resolve_model_path(self) -> Path | None:
-        configured_path = os.getenv("MIDAS_MODEL_PATH")
-        if configured_path:
-            path = Path(configured_path)
-            if not path.is_absolute():
-                path = self.service_root / path
-            if path.exists():
-                return path
-
-        for folder in ("models/MiDaS", "models/midas", "models/depth", "models/midas_depth"):
-            directory = self.service_root / folder
-            if not directory.exists():
-                continue
-
-            for pattern in ("*.pt", "*.pth", "*.onnx"):
-                matches = sorted(directory.glob(pattern))
-                if matches:
-                    return matches[0]
-
-        return None
-
-    def expected_model_locations(self) -> list[Path]:
-        return [
-            self.service_root / "models" / "MiDaS" / "midas_small_pretrained.pth",
-            self.service_root / "models" / "midas" / "midas_torchscript.pt",
-            self.service_root / "models" / "depth" / "midas_torchscript.pt",
-            self.service_root / "models" / "midas_depth" / "midas_torchscript.pt",
-        ]
 
     def _image_dimensions(self, image_bytes: bytes) -> tuple[int, int]:
         try:

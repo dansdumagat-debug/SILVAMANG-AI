@@ -64,7 +64,7 @@ class AiModelHealthService
             : $model->version;
         $error = $healthKey !== null
             ? data_get($health, "errors.{$healthKey}")
-            : 'No health mapping is configured for this model type.';
+            : ($this->canonicalType($model) === 'depth_estimation' ? 'Depth estimation has been retired; use manual field measurements.' : 'No health mapping is configured for this model type.');
 
         return [
             'available' => $available,
@@ -82,7 +82,7 @@ class AiModelHealthService
             'classification' => '/ai/classify',
             'detection' => '/ai/detect',
             'segmentation' => '/ai/segment',
-            'depth_estimation' => '/ai/measure',
+            'depth_estimation' => 'Removed',
             default => 'Not mapped',
         };
     }
@@ -93,7 +93,7 @@ class AiModelHealthService
             'classification' => 'cnn',
             'detection' => 'yolov8',
             'segmentation' => 'segmentation',
-            'depth_estimation' => 'midas',
+            'depth_estimation' => null,
             default => null,
         };
     }

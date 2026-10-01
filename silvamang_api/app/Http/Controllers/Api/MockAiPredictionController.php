@@ -16,9 +16,9 @@ class MockAiPredictionController extends Controller
 
     private const UNCERTAIN_MESSAGE = 'The captured image could not be identified as a supported mangrove species with enough confidence.';
 
-    private const CAPTURE_RECOMMENDATION = 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+    private const CAPTURE_RECOMMENDATION = 'Please capture mangrove leaves, roots, bark, or flowers.';
 
-    private const CLEAR_CAPTURE_RECOMMENDATION = 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.';
+    private const CLEAR_CAPTURE_RECOMMENDATION = 'Please retake a clear photo of mangrove leaves, roots, bark, or flowers.';
 
     public function __invoke(MockPredictionRequest $request, PythonAiService $pythonAiService)
     {

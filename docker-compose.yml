@@ -112,7 +112,6 @@ services:
       CNN_CLASS_ORDER_PATH: /app/models/EfficientNet-B0/class_order.json
       YOLO_DETECTOR_MODEL_PATH: /app/models/YOLOv8-Detector/yolo8 detection.pt
       YOLO_SEGMENTATION_MODEL_PATH: /app/models/YOLOv8-Seg/yolo8 seg.pt
-      MIDAS_MODEL_PATH: /app/models/MiDaS/midas_small_pretrained.pth
     expose:
       - "9000"
     volumes:

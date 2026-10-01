@@ -41,7 +41,6 @@ class StoreScanImageRequest extends FormRequest
                 'bark',
                 'roots',
                 'flowers',
-                'canopy',
                 'full_tree',
                 'other',
             ])],

@@ -81,6 +81,8 @@ def main():
     parser.add_argument('--compare-run', type=Path, help='Completed reference run with the identical validation manifest.')
     parser.add_argument('--dataset-bundle', type=Path, help='Automatically screened expansion with preserved baseline splits.')
     parser.add_argument('--validate-only', action='store_true', help='Check data contracts without training.')
+    parser.add_argument('--exclude-canopy', action='store_true', help='Create an explicit non-canopy experiment; preserve original files/splits.')
+    parser.add_argument('--training-exclusions', type=Path, help='Reviewed CSV with exclude_sha256; only train rows may be excluded.')
     args = parser.parse_args()
     source = root / 'dataset/retraining/EfficientNet-B0/rebuild_20260926'
     proposal = root / 'artifacts/dataset_quality_review/proposed_split_manifest.csv'
@@ -112,6 +114,16 @@ def main():
     for name in ['source', 'class_name', 'label', 'split', 'saved_path']:
         assert (merged[name] == merged[name + '_original']).all(), f'Unexpected changes to {name}'
     assert all(classes[int(r.label)] == r.class_name for r in frame.itertuples())
+    if args.exclude_canopy:
+        assert not args.compare_run, 'Full-scope reference metrics cannot be compared with a non-canopy evaluation.'
+        canopy = frame.source.str.replace('\\', '/', regex=False).str.contains(r'(?i)(?:^|/)canopy(?:/|$)', regex=True)
+        frame = frame.loc[~canopy].copy()
+    if args.training_exclusions:
+        excluded = set(pd.read_csv(args.training_exclusions).exclude_sha256)
+        matches = frame[frame.sha256_rgb.isin(excluded)]
+        assert set(matches.sha256_rgb) == excluded and set(matches.split) == {'train'}
+        frame = frame.loc[~frame.sha256_rgb.isin(excluded)].copy()
+    manifest_bytes = frame.to_csv(index=False).encode('utf-8') if (args.exclude_canopy or args.training_exclusions) else proposal.read_bytes()
     counts = pd.crosstab(frame.class_name, frame.split).reindex(classes, fill_value=0)
     assert (counts[['train', 'val', 'test']] > 0).all().all()
     for row in frame.itertuples():
@@ -123,10 +135,12 @@ def main():
     output = 'classifier_corrected' if args.model == 'efficientnet_b0' else 'classifier_resnet18'
     if args.dataset_bundle:
         output = 'classifier_expanded'
+    if args.exclude_canopy:
+        output = 'classifier_non_canopy'
     run = args.resume or root / 'artifacts' / output / datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     if not args.validate_only:
         run.mkdir(parents=True, exist_ok=True)
-    config = dict(source=str(source), manifest_sha256=digest(proposal),
+    config = dict(source=str(source), manifest_sha256=hashlib.sha256(manifest_bytes).hexdigest(),
                   original_manifest_sha256=digest(original_path),
                   initialization='ImageNet EfficientNet_B0_Weights.DEFAULT; fresh 29-class head',
                   classes=classes, head_epochs=3, finetune_epochs=22, patience=6,
@@ -137,6 +151,10 @@ def main():
     if args.dataset_bundle:
         config['dataset_bundle'] = str(args.dataset_bundle.resolve())
         config['additional_label_verification'] = 'Source research-grade labels with automated screening; not expert reviewed.'
+    if args.exclude_canopy or args.training_exclusions:
+        config['scope'] = 'non_canopy' if args.exclude_canopy else 'all_parts'
+        config['training_exclusions_sha256'] = digest(args.training_exclusions) if args.training_exclusions else None
+        config['baseline_comparison_requires_same_scope'] = True
     if args.model == 'resnet18':
         config['initialization'] = 'ImageNet ResNet18_Weights.DEFAULT; fresh 29-class head'
         config['model_name'] = args.model
@@ -163,7 +181,7 @@ def main():
         assert json.loads((run / 'config.json').read_text()) == config
     else:
         write_json(run / 'config.json', config)
-        (run / 'split_manifest.csv').write_bytes(proposal.read_bytes())
+        (run / 'split_manifest.csv').write_bytes(manifest_bytes)
         write_json(run / 'class_order.json', classes)
         counts.to_csv(run / 'split_counts.csv')
     print('Run:', run, flush=True)

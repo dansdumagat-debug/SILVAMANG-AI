@@ -37,12 +37,6 @@ class AiModelSeeder extends Seeder
                 'version' => '0.1.0',
                 'status' => 'inactive',
             ],
-            [
-                'model_name' => 'SILVAMANG MiDaS Depth Estimator',
-                'model_type' => 'depth_estimation',
-                'version' => '0.1.0',
-                'status' => 'inactive',
-            ],
         ];
 
         foreach ($models as $model) {

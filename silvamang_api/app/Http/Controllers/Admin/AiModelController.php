@@ -13,7 +13,7 @@ class AiModelController extends Controller
 {
     public function index(Request $request, AiModelHealthService $healthService)
     {
-        $query = AiModel::query()
+        $query = AiModel::query()->where('model_type', '!=', 'depth_estimation')->where('model_name', 'not like', '%MiDaS%')
             ->when(request('search'), function ($query, $search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('model_name', 'like', "%{$search}%")

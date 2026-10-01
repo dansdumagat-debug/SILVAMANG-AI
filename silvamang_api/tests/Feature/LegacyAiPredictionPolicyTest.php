@@ -34,13 +34,21 @@ class LegacyAiPredictionPolicyTest extends TestCase
             ->assertJsonPath('message', 'The captured image does not appear to be a supported mangrove species.')
             ->assertJsonPath('data.status', 'unknown')
             ->assertJsonPath('data.message', 'The captured image does not appear to be a supported mangrove species.')
-            ->assertJsonPath('data.recommendation', 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.')
+            ->assertJsonPath('data.recommendation', 'Please capture mangrove leaves, roots, bark, or flowers.')
             ->assertJsonPath('data.top_prediction.scientific_name', '')
             ->assertJsonPath('data.top_prediction.confidence', null)
             ->assertJsonCount(0, 'data.predictions');
 
         $this->assertDatabaseCount('scan_records', 0);
         $this->assertDatabaseCount('predictions', 0);
+    }
+
+    public function test_canopy_is_no_longer_an_identification_part(): void
+    {
+        Http::fake();
+        $this->postJson('/api/ai/predict', ['plant_part' => 'canopy'])
+            ->assertUnprocessable()->assertJsonValidationErrors('plant_part');
+        Http::assertNothingSent();
     }
 
     public function test_mock_predict_route_rejects_non_mangrove_alias(): void
@@ -75,7 +83,7 @@ class LegacyAiPredictionPolicyTest extends TestCase
                 ->assertJsonPath('message', 'The captured image could not be identified as a supported mangrove species with enough confidence.')
                 ->assertJsonPath('data.status', 'uncertain')
                 ->assertJsonPath('data.message', 'The captured image could not be identified as a supported mangrove species with enough confidence.')
-                ->assertJsonPath('data.recommendation', 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.')
+                ->assertJsonPath('data.recommendation', 'Please retake a clear photo of mangrove leaves, roots, bark, or flowers.')
                 ->assertJsonPath('data.top_prediction.scientific_name', '')
                 ->assertJsonPath('data.top_prediction.confidence', null)
                 ->assertJsonCount(0, 'data.predictions');

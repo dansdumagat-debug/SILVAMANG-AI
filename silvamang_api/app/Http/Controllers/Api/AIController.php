@@ -24,9 +24,9 @@ class AIController extends Controller
 
     private const UNCERTAIN_MESSAGE = 'The captured image could not be identified as a supported mangrove species with enough confidence.';
 
-    private const CAPTURE_RECOMMENDATION = 'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.';
+    private const CAPTURE_RECOMMENDATION = 'Please capture mangrove leaves, roots, bark, or flowers.';
 
-    private const CLEAR_CAPTURE_RECOMMENDATION = 'Please retake a clear photo of mangrove leaves, roots, bark, flowers, or canopy structures.';
+    private const CLEAR_CAPTURE_RECOMMENDATION = 'Please retake a clear photo of mangrove leaves, roots, bark, or flowers.';
 
     private const NO_STRUCTURE_MESSAGE = 'No mangrove structure detected. Please capture a valid mangrove image.';
 
@@ -114,8 +114,8 @@ class AIController extends Controller
 
         return response()->json([
             'message' => ($response['status'] ?? null) === 'error'
-                ? ($response['message'] ?? 'MiDaS measurement failed.')
-                : 'MiDaS measurement completed successfully.',
+                ? ($response['message'] ?? 'Reference measurement failed.')
+                : 'Reference measurement completed successfully.',
             'data' => $response,
             'storage' => $storage,
         ], $this->statusCode($response));
@@ -324,7 +324,7 @@ class AIController extends Controller
         $height = $this->nullableFloat($response['height_m'] ?? null);
         $canopyWidth = $this->nullableFloat($response['canopy_width_m'] ?? null);
         $confidence = $this->nullableFloat($response['confidence'] ?? null);
-        $measurementMethod = (string) ($response['measurement_method'] ?? 'midas_depth_estimation');
+        $measurementMethod = (string) ($response['measurement_method'] ?? 'calibrated_reference_object');
         $modelName = (string) ($response['model_name'] ?? 'SILVAMANG Calibrated Measurement');
 
         if ($height === null && $canopyWidth === null) {
@@ -465,11 +465,11 @@ class AIController extends Controller
 
     private function updateModelStatuses(array $health): void
     {
+        AiModel::where('model_type', 'depth_estimation')->update(['status' => 'inactive']);
         $models = [
             'cnn' => 'classification',
             'yolov8' => 'detection',
             'segmentation' => 'segmentation',
-            'midas' => 'depth_estimation',
         ];
 
         foreach ($models as $healthKey => $modelType) {

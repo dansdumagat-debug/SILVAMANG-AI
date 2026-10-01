@@ -2,18 +2,15 @@ import base64
 import binascii
 from typing import Annotated
 
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.schemas.measurement_schema import MeasurementResponse
 from app.schemas.prediction_schema import MockPredictionResponse
 from app.services.cnn_prediction_service import CNNPredictionService
-from app.services.midas_measurement_service import MidasMeasurementService
-from app.services.mock_measurement_service import build_mock_measurement
+from app.services.reference_measurement_service import ReferenceMeasurementService
 from app.services.mock_prediction_service import build_mock_prediction
 from app.services.yolo_vision_service import YOLOVisionService
-from app.utils.image_utils import count_uploaded_images
 
 app = FastAPI(
     title=settings.app_name,
@@ -25,7 +22,7 @@ app = FastAPI(
 cnn_prediction_service = CNNPredictionService()
 yolo_detection_service = YOLOVisionService("detection")
 yolo_segmentation_service = YOLOVisionService("segmentation")
-midas_measurement_service = MidasMeasurementService()
+reference_measurement_service = ReferenceMeasurementService()
 
 app.add_middleware(
     CORSMiddleware,
@@ -74,9 +71,9 @@ async def health() -> dict:
             "load_error": cnn_prediction_service.load_error(),
         },
         "measurement": {
-            "mode": "mock",
+            "mode": "manual_reference",
             "available": True,
-            "method": "depth_estimation_mock",
+            "method": "calibrated_reference_object",
         },
     }
 
@@ -86,18 +83,15 @@ async def ai_health() -> dict:
     cnn_ready = cnn_prediction_service.readiness()
     yolo_ready = yolo_detection_service.readiness()
     segmentation_ready = yolo_segmentation_service.readiness()
-    midas_ready = midas_measurement_service.readiness()
     cnn_available = bool(cnn_ready["available"])
     yolo_available = bool(yolo_ready["available"])
     segmentation_available = bool(segmentation_ready["available"])
-    midas_available = bool(midas_ready["available"])
     class_order = cnn_prediction_service.class_order() if cnn_available else []
     all_ready = all(
         [
             cnn_available,
             yolo_available,
             segmentation_available,
-            midas_available,
         ]
     )
 
@@ -108,14 +102,12 @@ async def ai_health() -> dict:
             "cnn": cnn_available,
             "yolov8": yolo_available,
             "segmentation": segmentation_available,
-            "midas": midas_available,
         },
         "ready": all_ready,
         "endpoints": {
             "cnn": "/ai/classify",
             "yolov8": "/ai/detect",
             "segmentation": "/ai/segment",
-            "midas": "/ai/measure",
         },
         "model_versions": {
             "cnn": cnn_ready["model_file"] if cnn_available else None,
@@ -123,7 +115,6 @@ async def ai_health() -> dict:
             "segmentation": segmentation_ready["model_file"]
             if segmentation_available
             else None,
-            "midas": midas_ready["model_file"] if midas_available else None,
         },
         "class_count": len(class_order),
         "class_order": class_order,
@@ -131,13 +122,11 @@ async def ai_health() -> dict:
             "cnn": cnn_ready,
             "yolov8": yolo_ready,
             "segmentation": segmentation_ready,
-            "midas": midas_ready,
         },
         "errors": {
             "cnn": cnn_ready["load_error"],
             "yolov8": yolo_ready["load_error"],
             "segmentation": segmentation_ready["load_error"],
-            "midas": midas_ready["load_error"],
         },
     }
 
@@ -316,7 +305,7 @@ async def ai_measure(
             image=image,
             image_base64=image_base64,
         )
-        measurement = midas_measurement_service.measure(
+        measurement = reference_measurement_service.measure(
             image_bytes,
             measurement_type=measurement_type,
             reference_height_m=reference_height_m,
@@ -346,7 +335,7 @@ async def ai_measure(
     except Exception as exc:
         return {
             "status": "error",
-            "message": f"MiDaS measurement failed: {exc}",
+            "message": f"Reference measurement failed: {exc}",
         }
 
 
@@ -492,22 +481,6 @@ async def _read_image_bytes(
     raise ValueError("No image file or base64 image was received")
 
 
-@app.post("/measure", response_model=MeasurementResponse)
-async def measure(
-    image: Annotated[UploadFile | None, File()] = None,
-    images: Annotated[list[UploadFile] | None, File()] = None,
-    reference_height_m: Annotated[float | None, Form()] = None,
-    reference_distance_m: Annotated[float | None, Form()] = None,
-) -> dict:
-    image_count = await count_uploaded_images(images)
-    if image is not None:
-        image_count += 1
-
-    return {
-        "message": "Mock AI measurement completed successfully.",
-        "data": build_mock_measurement(
-            image_count=image_count,
-            reference_height_m=reference_height_m,
-            reference_distance_m=reference_distance_m,
-        ),
-    }
+@app.post("/measure")
+async def measure() -> dict:
+    raise HTTPException(status_code=410, detail="Automatic measurement has been removed. Enter field measurements or use calibrated /ai/measure with a reference object.")

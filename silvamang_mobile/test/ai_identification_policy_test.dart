@@ -56,7 +56,7 @@ void main() {
     );
     expect(
       response.rejectionRecommendation,
-      'Please capture mangrove leaves, roots, bark, flowers, or canopy structures.',
+      'Please capture mangrove leaves, roots, bark, or flowers.',
     );
   });
 

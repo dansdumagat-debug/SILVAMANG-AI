@@ -4,7 +4,7 @@
 
 - Laravel **10.50.2** (Composer lock), PHP 8.1+; production image uses PHP 8.2 with Apache on **8080**. Website and admin pages use Blade and static public assets. Vite 5 builds CSS/JS in a separate Node 22 stage; Node is absent from the runtime image.
 - MySQL is configured in the existing local API environment. The old Render image defaulted to SQLite; this Compose stack uses **MySQL 8.4**. An existing SQLite installation needs an explicit, verified data conversion before cutover; mounting a SQLite file will not import it into MySQL.
-- FastAPI, Uvicorn, PyTorch, torchvision, Ultralytics and MiDaS run as a private Python 3.12 service on **9000**, with one CPU inference worker to avoid duplicating model memory. Runtime dependency versions match the inspected local environment. Model compatibility and Linux wheel availability must be verified by the image build and readiness gate.
+- FastAPI, Uvicorn, PyTorch, torchvision, Ultralytics run as a private Python 3.12 service on **9000**, with one CPU inference worker to avoid duplicating model memory. Runtime dependency versions match the inspected local environment. Model compatibility and Linux wheel availability must be verified by the image build and readiness gate.
 - Flutter/Dart 3.12 is a separately built mobile client, not a website container. Its public API URL is `https://silvamangai.online/api`. No mobile signing secrets belong in Compose or the repository.
 - Laravel uses file sessions/cache and synchronous jobs. There are no active scheduled tasks or dispatched queue jobs requiring a worker, scheduler or Redis service.
 - Laravel uploads, dataset exports and CNN report files use the persistent storage volume. Metrics/report paths are configurable so existing admin reporting continues to work without a sibling source checkout.
@@ -85,10 +85,9 @@ EfficientNet-B0/efficientnet_b0_runtime.pth
 EfficientNet-B0/class_order.json
 YOLOv8-Detector/yolo8 detection.pt
 YOLOv8-Seg/yolo8 seg.pt
-MiDaS/midas_small_pretrained.pth
 ```
 
-The directory must already exist and be readable/traversable by container UID 10001. Compare SHA-256 checksums against your source bundle. Store model backups separately; these files do not need to be in Git. MiDaS fetches its architecture repositories through torch.hub on first load, requiring outbound HTTPS; `ai_cache` preserves the downloaded code. Warm and validate models before admitting users. Only use trusted checkpoints.
+The directory must already exist and be readable/traversable by container UID 10001. Compare SHA-256 checksums against your source bundle. Store model backups separately; these files do not need to be in Git. MiDaS is retired and is not required for readiness. Calibrated reference measurements do not load a depth model. Warm and validate models before admitting users. Only use trusted checkpoints.
 
 If deployment reports `bind source path does not exist: /opt/silvamang/models`, the image build succeeded but the server model directory has not been provisioned. This repository currently includes the required bundle. On the VPS, run the following from the Dokploy repository checkout (after the setup script is available there):
 

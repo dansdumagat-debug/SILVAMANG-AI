@@ -18,7 +18,7 @@ class DatasetVerificationController extends Controller
 
     private const IMAGE_QUALITIES = ['good', 'acceptable', 'reject'];
 
-    private const PLANT_PARTS = ['leaves', 'bark', 'roots', 'flowers', 'canopy', 'full_tree', 'other'];
+    private const PLANT_PARTS = ['leaves', 'bark', 'roots', 'flowers', 'full_tree', 'other'];
 
     public function index(Request $request)
     {

@@ -157,7 +157,7 @@ class MangroveAssistantService
             'marine_life' => 'Mangrove roots provide nursery habitat, shelter, and feeding areas for fish, crabs, shrimp, mollusks, birds, and many other coastal organisms.',
             'blue_carbon' => 'Mangroves store blue carbon in trunks, branches, roots, and especially in waterlogged soils where plant material breaks down slowly.',
             'conservation' => 'Mangrove conservation focuses on avoiding cutting, protecting habitat, supporting reforestation, reducing pollution, and verifying species records for long-term monitoring and restoration planning.',
-            'measurement' => 'Current height, canopy, and DBH values are prototype depth-estimation measurements. Real MiDaS integration is planned, and estimates may vary depending on image angle, distance, lighting, and reference scale.',
+            'measurement' => 'Height, canopy width, and DBH are field measurements. Reference-object calculations depend on accurate calibration, angle, and distance; automatic depth estimation is not available.',
             'root_types' => 'Mangrove roots help trees survive in soft, salty, waterlogged soil. Rhizophora commonly has prop or stilt roots for support. Avicennia and Sonneratia can have pneumatophores, which are breathing roots that rise from the mud.',
             'adaptations' => 'Mangrove adaptations include salt filtering, salt excretion, thick leaves, floating propagules, support roots, and breathing roots that help trees survive salty tides and low-oxygen mud.',
             'reproduction' => 'Many mangroves reproduce through propagules that can float with tides before settling in suitable mud. Seedling survival depends on tides, salinity, sediment, sunlight, and protection from disturbance.',

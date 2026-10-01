@@ -1,0 +1,18 @@
+{
+  "scope": "non_canopy",
+  "train_images": 3820,
+  "validation_images": 827,
+  "test_images": 827,
+  "excluded_canopy_by_split": {
+    "train": 217,
+    "test": 52,
+    "val": 39
+  },
+  "excluded_duplicate_training_images": 3,
+  "reference_run": "artifacts/classifier_corrected/20260928T124128799011Z",
+  "reference_validation_accuracy": 0.7158403869407497,
+  "reference_validation_macro_f1": 0.6735184143519016,
+  "species_removed": 0,
+  "original_files_deleted": 0,
+  "limitation": "Reference predictions evaluated on the same non-canopy validation subset. Scope differs from earlier 866-photo scores. Test images not evaluated."
+}
