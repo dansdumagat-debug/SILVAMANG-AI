@@ -1,0 +1,37 @@
+{
+  "split": "val",
+  "images": 866,
+  "deployed": false,
+  "test_evaluated": false,
+  "checkpoint_sha256": "1729df552c97f04bc61307ce8c02d9c8bea88b07792d2df33c800a6e8f7112d2",
+  "manifest_sha256": "a807d071d9e2013a8dfd6ef0404c1707134eba0d259f183a01351b1d0a7d1574",
+  "recipes": {
+    "center": {
+      "accuracy": 0.6986143187066974,
+      "macro_f1": 0.6624148990682279,
+      "accepted_count": 446,
+      "accepted_accuracy": 0.92152466367713,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25
+    },
+    "center_flip_average": {
+      "accuracy": 0.6974595842956121,
+      "macro_f1": 0.6630992786905026,
+      "accepted_count": 447,
+      "accepted_accuracy": 0.912751677852349,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25
+    },
+    "center_full_average": {
+      "accuracy": 0.6974595842956121,
+      "macro_f1": 0.6619961123493326,
+      "accepted_count": 420,
+      "accepted_accuracy": 0.9238095238095239,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25
+    }
+  },
+  "limitation": "Selection on validation is not independent test evidence; no production replacement.",
+  "selected_candidate": "center",
+  "elapsed_seconds": 162.56199999997625
+}

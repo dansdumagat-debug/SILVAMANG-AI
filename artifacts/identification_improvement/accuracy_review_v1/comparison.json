@@ -1,0 +1,41 @@
+{
+  "split": "val",
+  "images": 866,
+  "metrics": {
+    "reference": {
+      "accuracy": 0.7124711316397229,
+      "macro_f1": 0.6726329661829866,
+      "accepted_count": 444,
+      "accepted_accuracy": 0.9166666666666666,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25,
+      "coverage": 0.5127020785219399
+    },
+    "expanded": {
+      "accuracy": 0.6986143187066974,
+      "macro_f1": 0.6624148990682279,
+      "accepted_count": 446,
+      "accepted_accuracy": 0.92152466367713,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25,
+      "coverage": 0.5150115473441108
+    },
+    "equal_weight_ensemble": {
+      "accuracy": 0.7009237875288684,
+      "macro_f1": 0.6624468273107966,
+      "accepted_count": 441,
+      "accepted_accuracy": 0.927437641723356,
+      "unknown_false_accepts": 1,
+      "unknown_count": 25,
+      "coverage": 0.5092378752886836
+    }
+  },
+  "selected": "reference",
+  "deployed": false,
+  "test_evaluated": false,
+  "references": [
+    "artifacts\\identification_improvement\\validation_inference_v1",
+    "artifacts\\identification_improvement\\expanded_validation_recipes_v1"
+  ],
+  "limitation": "Validation experiment only. Ensemble requires two models and extra inference time. Accepted accuracy uses confidence >= 0.70 and excludes unknown predictions; it is not overall accuracy. Dataset labels and source independence still need review. No guarantee of 85-90% accuracy."
+}

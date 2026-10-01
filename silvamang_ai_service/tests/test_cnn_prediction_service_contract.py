@@ -4,12 +4,41 @@ import hashlib
 import json
 import shutil
 import uuid
+from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
 from app.services.cnn_prediction_service import CNNPredictionService
+
+
+@pytest.mark.parametrize('orientation', [1, 3, 6, 8])
+def test_phone_orientation_matches_upright_training_input(orientation):
+    import torch
+    from PIL import Image
+    from torchvision import transforms
+
+    image = Image.new('RGB', (360, 280), 'green')
+    image.paste('red', (0, 0, 180, 140))
+    image.paste('blue', (180, 140, 360, 280))
+    exif = Image.Exif()
+    exif[274] = orientation
+    buffer = BytesIO()
+    image.save(buffer, format='JPEG', exif=exif)
+    buffer.seek(0)
+    rotations = {3: Image.Transpose.ROTATE_180, 6: Image.Transpose.ROTATE_270, 8: Image.Transpose.ROTATE_90}
+    service = CNNPredictionService()
+    with Image.open(buffer) as photo:
+        upright = photo.copy()
+        upright.info.pop('exif', None)
+        if orientation in rotations:
+            upright = upright.transpose(rotations[orientation])
+        expected = transforms.Compose([
+            transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor(),
+            transforms.Normalize([.485, .456, .406], [.229, .224, .225]),
+        ])(upright)
+        assert torch.equal(service._preprocess(photo, transforms), expected)
 
 
 @pytest.fixture

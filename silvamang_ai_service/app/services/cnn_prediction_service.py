@@ -80,8 +80,8 @@ class CNNPredictionService:
         model_name = "SILVAMANG EfficientNet-B0"
         model_version = f"efficientnet-b0-{self._checkpoint_sha256[:12]}"
 
-        image = Image.open(BytesIO(image_bytes)).convert("RGB")
-        tensor = self._preprocess(image, transforms).unsqueeze(0)
+        with Image.open(BytesIO(image_bytes)) as image:
+            tensor = self._preprocess(image, transforms).unsqueeze(0)
 
         model.eval()
         with torch.no_grad():
@@ -235,6 +235,10 @@ class CNNPredictionService:
         return self._classes
 
     def _preprocess(self, image, transforms):
+        from PIL import ImageOps
+
+        # Match training: phone photos may store rotation in EXIF rather than pixels.
+        image = ImageOps.exif_transpose(image).convert("RGB")
         transform = transforms.Compose(
             [
                 transforms.Resize(self.RUNTIME_RESIZE_SIZE),
