@@ -123,6 +123,16 @@ $user->assignRole('super_admin');
 
 Review and import the needed species/education/knowledge/model catalog data. Individual catalog seeders are in `database/seeders`; execute only reviewed seeders on an empty installation. **Do not run `DatabaseSeeder` or `AdminUserSeeder` in production**: they include known demo passwords and demo records. Do not automatically reseed during releases.
 
+To fill the learning catalog and copy the bundled local iNaturalist reference cache after redeploying, run this in Dokploy's **app** terminal:
+
+```sh
+cd /var/www/html &&
+php artisan db:seed --class=ProductionLearningSeeder --force &&
+php artisan db:seed --class=ProductionBiodiversitySeeder --force
+```
+
+These scoped importers preserve existing learning content and reference records. The biodiversity snapshot contains 36 public observation references across five species, exported on October 2, 2026. It copies no users, credentials, scans, or local numeric IDs; species are matched by scientific name. Missing species or conflicting observation assignments abort and roll back the reference import. Repeating the import does not duplicate records or overwrite newer cached values. Photos remain remote URLs and require internet access. This is a one-time snapshot, not continuous synchronization; use **Refresh / Update Cache** in External Biodiversity Data for newer references or additional species.
+
 6. Existing files belong under `storage/app/public`; exports under `storage/app/dataset`; existing `reports/efficientnet_transfer` contents under `storage/app/model-reports`. Fresh named volumes inherit UID 33 ownership from the image. When restoring files, retain/restore that ownership. The public storage symlink is baked into the image; the target remains persistent. Back up the whole app storage volume together with the database.
 7. Build the signed mobile release separately, using a public-only mobile `.env` and:
 
