@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Download SILVAMANG AI for Android. Identify mangroves, record field observations, and connect to your online account.">
-    <title>Download the App | SILVAMANG AI</title>
+    <title>Download or Update the App | SILVAMANG AI</title>
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/download.css') }}">
 </head>
@@ -29,17 +29,37 @@
             </div>
             <aside class="download-card" aria-labelledby="android-title">
                 <span class="download-platform">ANDROID</span>
-                <h2 id="android-title">Your field companion</h2>
+                <h2 id="android-title">Download or update</h2>
                 @if ($available)
                     <p>Download the Android installation file directly to your phone.</p>
                     <a class="solid-public-button download-button" href="{{ route('app.download.android') }}" download="silvamang-ai.apk">Download Android APK</a>
                     <p class="download-detail">APK file &middot; {{ $size }} MB</p>
+                    @if (!empty($release['version']))
+                        <p class="download-detail">Version {{ $release['version'] }}@if (!empty($release['build'])) &middot; Build {{ $release['build'] }}@endif</p>
+                    @endif
+                    @if (!empty($release['published_at']))
+                        <p class="download-detail">Released {{ $release['published_at'] }}</p>
+                    @endif
                 @else
                     <p>The Android download is being prepared. Check back here for the installation file.</p>
                     <p class="download-unavailable" role="status">Download coming soon</p>
                 @endif
                 <p class="download-detail">Android phones only. An iPhone download is not currently available.</p>
+                <a href="#update-title" class="download-back">Already have the app? Update instructions &darr;</a>
             </aside>
+        </section>
+        <section class="download-install" aria-labelledby="update-title">
+            <p class="download-eyebrow">KEEP YOUR APP UP TO DATE</p>
+            <h2 id="update-title">Already using SILVAMANG AI?</h2>
+            <ol class="download-steps">
+                <li><h3>Check your version</h3><p>On your phone, open Settings, then Apps, then SILVAMANG AI to find the installed version. Compare it with the release shown above.</p></li>
+                <li><h3>Download the latest APK</h3><p>Sync any pending field records first. Use the same download button above to get the latest published release.</p></li>
+                <li><h3>Confirm the update</h3><p>Open the downloaded APK and follow Android's update prompt. Keep the existing app installed to preserve its local data.</p></li>
+            </ol>
+            <p class="download-note">This website provides manual updates. It cannot check your installed version or silently update your phone. If Android refuses the update, contact your administrator before uninstalling.</p>
+            @if (!empty($release['notes']))
+                <div class="download-card"><h3>What's new</h3><p style="white-space: pre-line">{{ $release['notes'] }}</p></div>
+            @endif
         </section>
         <section class="download-install" aria-labelledby="install-title">
             <p class="download-eyebrow">GETTING STARTED</p>

@@ -8,10 +8,14 @@ class AppDownloadController extends Controller
     {
         $path = storage_path('app/releases/silvamang-ai.apk');
         $available = is_file($path) && is_readable($path) && filesize($path) > 0;
+        $metadataPath = storage_path('app/releases/release.json');
+        $metadata = is_readable($metadataPath) ? json_decode(file_get_contents($metadataPath), true) : null;
+        $release = is_array($metadata) ? array_filter($metadata, fn ($value) => is_string($value)) : [];
 
         return response()->view('download', [
             'available' => $available,
             'size' => $available ? number_format(filesize($path) / 1048576, 1) : null,
+            'release' => $available ? $release : [],
         ])->header('Cache-Control', 'no-store');
     }
 

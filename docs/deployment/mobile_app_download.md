@@ -22,6 +22,21 @@ Official signing workflow: https://docs.flutter.dev/deployment/android#sign-the-
 
 ## Publish after verification
 
+The page also explains how to update an existing installation. Android installation still requires the user's confirmation; the website does not detect the installed version or perform silent updates.
+
+Optionally publish `storage/app/releases/release.json` alongside the verified APK to show its version and release notes:
+
+```json
+{
+  "version": "1.1.0",
+  "build": "2",
+  "published_at": "2026-10-02",
+  "notes": "Describe the changes included in this release."
+}
+```
+
+These are example values: replace them with the actual APK version, build number, publication date and notes. Use strings for all fields. Update the metadata when replacing the APK so it describes the same release. Metadata is hidden when the APK is unavailable; missing or invalid metadata does not prevent a download. This file is informational, not a signature verification mechanism.
+
 Deploy the website code through the existing Dokploy application. Transfer the verified APK to a private staging path on the VPS, for example `/root/silvamang-ai-release.apk`. Then run on the VPS:
 
 ```sh
