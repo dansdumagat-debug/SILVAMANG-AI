@@ -106,7 +106,13 @@ class ScanRecordRepository {
         'scan_record_id': scanRecordId,
         'height_m': _finiteOrNull(result.heightM),
         'canopy_width_m': _finiteOrNull(result.canopyWidthM),
-        'dbh_cm': _finiteOrNull(result.dbhCm),
+        'dbh_cm': _finiteOrNull(result.effectiveDbhCm),
+        'gbh_cm': _finiteOrNull(result.gbhCm),
+        'gbh_m': result.gbhM,
+        'dbh_m': result.dbhM,
+        'basal_area_m2': result.basalAreaM2,
+        'canopy_1_m': _finiteOrNull(result.canopy1M),
+        'canopy_2_m': _finiteOrNull(result.canopy2M),
         'measurement_method': result.measurementMethod,
         'confidence': _finiteOrNull(result.measurementConfidence),
         'notes': notes,
@@ -134,6 +140,7 @@ class ScanRecordRepository {
     final cleanManualBarangay = _cleanString(manualBarangay);
     final hasMeasurementEstimate = _hasMeasurementEstimate(result);
     final scanData = <String, dynamic>{
+      'plot_no': result.plotNo,
       'top_scientific_name': result.scientificName,
       'top_common_name': result.commonName,
       'species_id': result.speciesId,
@@ -211,7 +218,13 @@ class ScanRecordRepository {
             'scan_record_id': scanRecordId,
             'height_m': _finiteOrNull(result.heightM),
             'canopy_width_m': _finiteOrNull(result.canopyWidthM),
-            'dbh_cm': _finiteOrNull(result.dbhCm),
+            'dbh_cm': _finiteOrNull(result.effectiveDbhCm),
+            'gbh_cm': _finiteOrNull(result.gbhCm),
+            'gbh_m': result.gbhM,
+            'dbh_m': result.dbhM,
+            'basal_area_m2': result.basalAreaM2,
+            'canopy_1_m': _finiteOrNull(result.canopy1M),
+            'canopy_2_m': _finiteOrNull(result.canopy2M),
             'measurement_method': result.measurementMethod,
             'confidence': _finiteOrNull(result.measurementConfidence),
             'notes': result.captureMode == 'manual_species'
@@ -370,7 +383,10 @@ class ScanRecordRepository {
   bool _hasMeasurementEstimate(MockIdentificationResult result) {
     return _hasMeasurementValue(result.heightM) ||
         _hasMeasurementValue(result.canopyWidthM) ||
-        _finiteOrNull(result.dbhCm) != null;
+        _finiteOrNull(result.dbhCm) != null ||
+        _finiteOrNull(result.gbhCm) != null ||
+        _finiteOrNull(result.canopy1M) != null ||
+        _finiteOrNull(result.canopy2M) != null;
   }
 
   bool _hasMeasurementValue(double? value) {

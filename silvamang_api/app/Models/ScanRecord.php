@@ -12,6 +12,7 @@ class ScanRecord extends Model
 
     protected $fillable = [
         'record_code',
+        'plot_no',
         'user_id',
         'species_id',
         'top_scientific_name',

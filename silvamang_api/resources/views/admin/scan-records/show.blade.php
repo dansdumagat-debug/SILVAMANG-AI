@@ -105,6 +105,24 @@
                     <div><span>Height</span><strong>{{ $scanRecord->measurement->height_m ?? 'N/A' }} m</strong></div>
                     <div><span>Canopy Width</span><strong>{{ $scanRecord->measurement->canopy_width_m ?? 'N/A' }} m</strong></div>
                     <div><span>DBH</span><strong>{{ $scanRecord->measurement->dbh_cm ?? 'N/A' }} cm</strong></div>
+            @if ($scanRecord->measurement->gbh_cm !== null)
+                <div><span>GBH</span><strong>{{ $scanRecord->measurement->gbh_cm }} cm</strong></div>
+            @endif
+            @if ($scanRecord->measurement->gbh_m !== null)
+                <div><span>GBH</span><strong>{{ $scanRecord->measurement->gbh_m }} m</strong></div>
+            @endif
+            @if ($scanRecord->measurement->dbh_m !== null)
+                <div><span>DBH</span><strong>{{ $scanRecord->measurement->dbh_m }} m</strong></div>
+            @endif
+            @if ($scanRecord->measurement->basal_area_m2 !== null)
+                <div><span>Basal Area</span><strong>{{ $scanRecord->measurement->basal_area_m2 }} m²</strong></div>
+            @endif
+            @if ($scanRecord->measurement->canopy_1_m !== null)
+                <div><span>Canopy 1</span><strong>{{ $scanRecord->measurement->canopy_1_m }} m</strong></div>
+            @endif
+            @if ($scanRecord->measurement->canopy_2_m !== null)
+                <div><span>Canopy 2</span><strong>{{ $scanRecord->measurement->canopy_2_m }} m</strong></div>
+            @endif
                     <div><span>Method</span><strong>{{ $scanRecord->measurement->measurement_method }}</strong></div>
                     <div><span>Confidence</span>@include('admin.partials.confidence-bar', ['value' => $scanRecord->measurement->confidence])</div>
                     <div><span>Measured At</span><strong>{{ $scanRecord->measurement->measured_at?->format('M d, Y h:i A') ?? 'N/A' }}</strong></div>

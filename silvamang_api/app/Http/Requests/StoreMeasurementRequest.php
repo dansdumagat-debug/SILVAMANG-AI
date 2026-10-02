@@ -40,9 +40,12 @@ class StoreMeasurementRequest extends FormRequest
     {
         return [
             'scan_record_id' => ['required', 'exists:scan_records,id'],
-            'height_m' => ['nullable', 'numeric', 'min:0.001', 'required_without_all:canopy_width_m,dbh_cm'],
-            'canopy_width_m' => ['nullable', 'numeric', 'min:0.001', 'required_without_all:height_m,dbh_cm'],
-            'dbh_cm' => ['nullable', 'numeric', 'min:0.001', 'required_without_all:height_m,canopy_width_m'],
+            'height_m' => ['nullable', 'numeric', 'min:0.01', 'max:100000', 'required_without_all:canopy_width_m,dbh_cm,gbh_cm,canopy_1_m,canopy_2_m'],
+            'canopy_width_m' => ['nullable', 'numeric', 'min:0.01', 'max:100000', 'required_without_all:height_m,dbh_cm,gbh_cm,canopy_1_m,canopy_2_m'],
+            'dbh_cm' => ['nullable', 'numeric', 'min:0.01', 'max:100000', 'required_without_all:height_m,canopy_width_m,gbh_cm,canopy_1_m,canopy_2_m'],
+            'gbh_cm' => ['nullable', 'numeric', 'min:0.01', 'max:100000', 'required_without_all:height_m,canopy_width_m,dbh_cm,canopy_1_m,canopy_2_m'],
+            'canopy_1_m' => ['nullable', 'numeric', 'min:0.01', 'max:100000', 'required_without_all:height_m,canopy_width_m,dbh_cm,gbh_cm,canopy_2_m'],
+            'canopy_2_m' => ['nullable', 'numeric', 'min:0.01', 'max:100000', 'required_without_all:height_m,canopy_width_m,dbh_cm,gbh_cm,canopy_1_m'],
             'measurement_method' => ['nullable', 'string', 'max:50'],
             'confidence' => ['nullable', 'numeric', 'between:0,100'],
             'notes' => ['nullable', 'string'],

@@ -185,6 +185,23 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     }
   }
 
+  void setPlotNumber(String value) {
+    state = state.copyWith(result: state.result.copyWith(plotNo: value.trim()));
+  }
+
+  void setStructuralMeasurements(Map<String, double?> values) {
+    final r = state.result;
+    state = state.copyWith(
+      result: r.copyWith(
+        replaceStructural: true,
+        gbhCm: values['gbh_cm'],
+        dbhCm: values['dbh_cm'],
+        canopy1M: values['canopy_1_m'],
+        canopy2M: values['canopy_2_m'],
+      ),
+    );
+  }
+
   Future<void> saveManualObservation({
     required String scientificName,
     required String commonName,
@@ -192,6 +209,11 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     required double heightM,
     required double canopyWidthM,
     String? transectLocalId,
+    double? gbhCm,
+    double? dbhCm,
+    double? canopy1M,
+    double? canopy2M,
+    String? plotNo,
     String measurementMethod = 'manual_input',
     double? latitude,
     double? longitude,
@@ -208,13 +230,12 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     if (name.isEmpty ||
         !heightM.isFinite ||
         heightM <= 0 ||
-        !canopyWidthM.isFinite ||
-        canopyWidthM <= 0 ||
+        (!canopyWidthM.isNaN &&
+            (!canopyWidthM.isFinite || canopyWidthM <= 0)) ||
         latitude == null ||
         longitude == null) {
       state = state.copyWith(
-        errorMessage:
-            'Species, height, canopy width, and location are required.',
+        errorMessage: 'Species, height, and location are required.',
       );
       return;
     }
@@ -234,6 +255,11 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         predictions: const [],
         heightM: heightM,
         canopyWidthM: canopyWidthM,
+        gbhCm: gbhCm,
+        dbhCm: dbhCm,
+        canopy1M: canopy1M,
+        canopy2M: canopy2M,
+        plotNo: plotNo,
         measurementMethod: measurementMethod,
         measurementConfidence: double.nan,
         validationResult: 'not_checked',
@@ -709,7 +735,10 @@ class IdentificationController extends StateNotifier<IdentificationState> {
   bool _hasMeasurementEstimate(MockIdentificationResult result) {
     return _hasMeasurementValue(result.heightM) ||
         _hasMeasurementValue(result.canopyWidthM) ||
-        _finiteOrNull(result.dbhCm) != null;
+        _finiteOrNull(result.dbhCm) != null ||
+        _finiteOrNull(result.gbhCm) != null ||
+        _finiteOrNull(result.canopy1M) != null ||
+        _finiteOrNull(result.canopy2M) != null;
   }
 
   bool _hasMeasurementValue(double? value) {
@@ -782,7 +811,13 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         ? {
             'height_m': _finiteOrNull(result.heightM),
             'canopy_width_m': _finiteOrNull(result.canopyWidthM),
-            'dbh_cm': _finiteOrNull(result.dbhCm),
+            'dbh_cm': _finiteOrNull(result.effectiveDbhCm),
+            'gbh_cm': _finiteOrNull(result.gbhCm),
+            'gbh_m': result.gbhM,
+            'dbh_m': result.dbhM,
+            'basal_area_m2': result.basalAreaM2,
+            'canopy_1_m': _finiteOrNull(result.canopy1M),
+            'canopy_2_m': _finiteOrNull(result.canopy2M),
             'measurement_method': result.measurementMethod,
             'confidence': _finiteOrNull(result.measurementConfidence),
             'notes': result.captureMode == 'manual_species'
@@ -853,6 +888,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           ? 'Scan will synchronize when internet is available.'
           : 'Image upload requires internet connection and will be finalized during sync.',
       'scan_record': {
+        'plot_no': result.plotNo,
         'top_scientific_name': result.scientificName,
         'top_common_name': result.commonName,
         'species_id': result.speciesId,

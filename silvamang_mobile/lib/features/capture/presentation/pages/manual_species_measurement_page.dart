@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/structural_measurement_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,6 +37,8 @@ class _ManualSpeciesMeasurementPageState
   final _width = TextEditingController();
   final _latitude = TextEditingController();
   final _longitude = TextEditingController();
+  Map<String, double?> _structural = {};
+  final _plot = TextEditingController();
   bool _saving = false;
   bool _heightFromCamera = false;
   bool _widthFromCamera = false;
@@ -54,6 +57,7 @@ class _ManualSpeciesMeasurementPageState
 
   @override
   void dispose() {
+    _plot.dispose();
     _height.dispose();
     _width.dispose();
     _latitude.dispose();
@@ -117,12 +121,9 @@ class _ManualSpeciesMeasurementPageState
   }
 
   Future<void> _save() async {
-    if (_saving) return;
-    if (!_heightConfirmed ||
-        !_widthConfirmed ||
-        _positiveNumber(_height.text) != null ||
-        _positiveNumber(_width.text) != null) {
-      _showError('Confirm height and canopy width before saving.');
+    if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
+    if (!_heightConfirmed || _positiveNumber(_height.text) != null) {
+      _showError('Confirm height before saving. Canopy width is optional.');
       return;
     }
     final location = ref.read(locationControllerProvider);
@@ -155,8 +156,13 @@ class _ManualSpeciesMeasurementPageState
             commonName: widget.commonName,
             transectLocalId: widget.transectLocalId,
             capturedImages: ref.read(captureControllerProvider).capturedImages,
+            gbhCm: _structural['gbh_cm'],
+            dbhCm: _structural['dbh_cm'],
+            canopy1M: _structural['canopy_1_m'],
+            canopy2M: _structural['canopy_2_m'],
+            plotNo: _plot.text.trim().isEmpty ? null : _plot.text.trim(),
             heightM: double.parse(_height.text.trim()),
-            canopyWidthM: double.parse(_width.text.trim()),
+            canopyWidthM: double.tryParse(_width.text.trim()) ?? double.nan,
             measurementMethod: _heightFromCamera || _widthFromCamera
                 ? 'camera_pointing_and_manual'
                 : 'manual_input',
@@ -241,10 +247,30 @@ class _ManualSpeciesMeasurementPageState
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _plot,
+                      maxLength: 50,
+                      decoration: const InputDecoration(
+                        labelText: 'Plot No (optional)',
+                      ),
+                    ),
+                    StructuralMeasurementFields(
+                      onChanged: (values) => _structural = values,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Measurements',
+                      'Structural Measurements',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
@@ -309,7 +335,7 @@ class _ManualSpeciesMeasurementPageState
                         TextFormField(
                           controller: _width,
                           decoration: const InputDecoration(
-                            labelText: 'Canopy width (m)',
+                            labelText: 'Canopy width (m, optional)',
                           ),
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
@@ -384,7 +410,7 @@ class _ManualSpeciesMeasurementPageState
                 ),
               ),
             ),
-            if (_heightConfirmed && _widthConfirmed) ...[
+            if (_heightConfirmed) ...[
               const SizedBox(height: 20),
               SilvamangButton(
                 text: 'Save Observation',

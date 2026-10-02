@@ -9,6 +9,7 @@ class ScanRecordModel {
     required this.id,
     required this.recordCode,
     this.userId,
+    this.plotNo,
     this.speciesId,
     required this.topScientificName,
     required this.topCommonName,
@@ -41,6 +42,7 @@ class ScanRecordModel {
   final String id;
   final String recordCode;
   final String? userId;
+  final String? plotNo;
   final int? speciesId;
   final String topScientificName;
   final String topCommonName;
@@ -73,6 +75,7 @@ class ScanRecordModel {
     return ScanRecordModel(
       id: _asString(json['id']),
       recordCode: _asString(json['record_code'] ?? json['recordCode']),
+      plotNo: _asNullableString(json['plot_no']),
       userId: _asNullableString(json['user_id'] ?? json['userId']),
       speciesId: _asNullableInt(json['species_id'] ?? json['speciesId']),
       topScientificName: canonicalSpeciesName(
@@ -127,6 +130,7 @@ class ScanRecordModel {
     return {
       'id': id,
       'record_code': recordCode,
+      'plot_no': plotNo,
       'user_id': userId,
       'species_id': speciesId,
       'top_scientific_name': topScientificName,

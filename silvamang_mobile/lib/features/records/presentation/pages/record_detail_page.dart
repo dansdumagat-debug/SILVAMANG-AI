@@ -287,22 +287,24 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
                   SilvamangCard(
                     child: Column(
                       children: [
-                        _DetailRow(
-                          label: 'Height',
-                          value:
-                              '${record!.measurement!.heightM.toStringAsFixed(1)} m',
-                        ),
-                        _DetailRow(
-                          label: 'Canopy Width',
-                          value:
-                              '${record.measurement!.canopyWidthM.toStringAsFixed(1)} m',
-                        ),
-                        _DetailRow(
-                          label: 'DBH',
-                          value: record.measurement!.dbhCm == null
-                              ? ''
-                              : '${record.measurement!.dbhCm!.toStringAsFixed(1)} cm',
-                        ),
+                        for (final entry in <String, double?>{
+                          'Height (m)': record!.measurement!.heightM,
+                          'GBH (cm)': record.measurement!.gbhCm,
+                          'GBH (m)': record.measurement!.gbhM,
+                          'DBH (cm)': record.measurement!.dbhCm,
+                          'DBH (m)': record.measurement!.dbhM,
+                          'Basal Area (m²)': record.measurement!.basalAreaM2,
+                          'Canopy 1 (m)': record.measurement!.canopy1M,
+                          'Canopy 2 (m)': record.measurement!.canopy2M,
+                          'Canopy Width (m)': record.measurement!.canopyWidthM,
+                        }.entries)
+                          if (entry.value != null &&
+                              entry.value!.isFinite &&
+                              entry.value! > 0)
+                            _DetailRow(
+                              label: entry.key,
+                              value: entry.value!.toStringAsFixed(4),
+                            ),
                         _DetailRow(
                           label: 'Method',
                           value: record.measurement!.method,

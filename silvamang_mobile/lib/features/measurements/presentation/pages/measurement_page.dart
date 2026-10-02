@@ -1,3 +1,5 @@
+import '../../../../shared/widgets/structural_measurement_fields.dart';
+import '../../../identification/presentation/controllers/identification_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +29,7 @@ class MeasurementPage extends ConsumerStatefulWidget {
 }
 
 class _MeasurementPageState extends ConsumerState<MeasurementPage> {
+  final _formKey = GlobalKey<FormState>();
   _MeasurementType _type = _MeasurementType.height;
 
   Future<void> _openCameraMeasurement() async {
@@ -58,75 +61,120 @@ class _MeasurementPageState extends ConsumerState<MeasurementPage> {
         leading: const SilvamangBackButton(),
         title: const Text('Measurements'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppConstants.screenPadding,
-          AppConstants.screenPadding,
-          AppConstants.screenPadding,
-          112,
-        ),
-        children: [
-          const SectionHeader(title: 'Measurement Workflow'),
-          const SizedBox(height: AppSpacing.md),
-          SilvamangCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Choose a measurement, then point the live camera at the tree. '
-                  'The app uses your field or manually entered distance with the '
-                  'camera angle to estimate the size.',
-                  style: AppTextStyles.bodyMedium,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _MeasurementTypeButton(
-                        label: 'Tree Height',
-                        icon: Icons.height_rounded,
-                        isSelected: _type == _MeasurementType.height,
-                        onTap: () =>
-                            setState(() => _type = _MeasurementType.height),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: _MeasurementTypeButton(
-                        label: 'Canopy Width',
-                        icon: Icons.width_wide_rounded,
-                        isSelected: _type == _MeasurementType.canopy,
-                        onTap: () =>
-                            setState(() => _type = _MeasurementType.canopy),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                SilvamangButton(
-                  text: 'Start Camera Measurement',
-                  icon: Icons.center_focus_strong_rounded,
-                  onPressed: _openCameraMeasurement,
-                ),
-              ],
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            AppConstants.screenPadding,
+            AppConstants.screenPadding,
+            AppConstants.screenPadding,
+            112,
+          ),
+          children: [
+            const SectionHeader(title: 'Structural Measurements'),
+            TextFormField(
+              initialValue: ref
+                  .read(identificationControllerProvider)
+                  .result
+                  .plotNo,
+              maxLength: 50,
+              decoration: const InputDecoration(
+                labelText: 'Plot No (optional)',
+              ),
+              onChanged: (value) => ref
+                  .read(identificationControllerProvider.notifier)
+                  .setPlotNumber(value),
             ),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          _FieldDistanceCard(
-            measurement: fieldDistance,
-            onMeasure: () => context.pushNamed(RouteNames.fieldDistance),
-          ),
-          if (cameraResult != null) ...[
+            SilvamangCard(
+              child: StructuralMeasurementFields(
+                initial: {
+                  'gbh_cm': ref
+                      .read(identificationControllerProvider)
+                      .result
+                      .gbhCm,
+                  'dbh_cm': ref
+                      .read(identificationControllerProvider)
+                      .result
+                      .dbhCm,
+                  'canopy_1_m': ref
+                      .read(identificationControllerProvider)
+                      .result
+                      .canopy1M,
+                  'canopy_2_m': ref
+                      .read(identificationControllerProvider)
+                      .result
+                      .canopy2M,
+                },
+                onChanged: (values) => ref
+                    .read(identificationControllerProvider.notifier)
+                    .setStructuralMeasurements(values),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            SilvamangCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Choose a measurement, then point the live camera at the tree. '
+                    'The app uses your field or manually entered distance with the '
+                    'camera angle to estimate the size.',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _MeasurementTypeButton(
+                          label: 'Tree Height',
+                          icon: Icons.height_rounded,
+                          isSelected: _type == _MeasurementType.height,
+                          onTap: () =>
+                              setState(() => _type = _MeasurementType.height),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _MeasurementTypeButton(
+                          label: 'Canopy Width',
+                          icon: Icons.width_wide_rounded,
+                          isSelected: _type == _MeasurementType.canopy,
+                          onTap: () =>
+                              setState(() => _type = _MeasurementType.canopy),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  SilvamangButton(
+                    text: 'Start Camera Measurement',
+                    icon: Icons.center_focus_strong_rounded,
+                    onPressed: _openCameraMeasurement,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: AppSpacing.lg),
-            _CameraMeasurementSummaryCard(result: cameraResult),
+            _FieldDistanceCard(
+              measurement: fieldDistance,
+              onMeasure: () => context.pushNamed(RouteNames.fieldDistance),
+            ),
+            if (cameraResult != null) ...[
+              const SizedBox(height: AppSpacing.lg),
+              _CameraMeasurementSummaryCard(result: cameraResult),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            SilvamangButton(
+              text: 'Continue to Location Validation',
+              icon: Icons.location_on_rounded,
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  context.pushNamed(RouteNames.locationValidation);
+                }
+              },
+            ),
           ],
-          const SizedBox(height: AppSpacing.xl),
-          SilvamangButton(
-            text: 'Continue to Location Validation',
-            icon: Icons.location_on_rounded,
-            onPressed: () => context.pushNamed(RouteNames.locationValidation),
-          ),
-        ],
+        ),
       ),
     );
   }

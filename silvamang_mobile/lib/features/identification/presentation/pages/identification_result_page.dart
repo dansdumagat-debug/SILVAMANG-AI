@@ -489,7 +489,7 @@ class _IdentificationResultPageState
             ),
             if (hasMeasurementEstimate) ...[
               const SizedBox(height: AppSpacing.xl),
-              const SectionHeader(title: 'Measurement Estimate'),
+              const SectionHeader(title: 'Structural Measurements'),
               const SizedBox(height: AppSpacing.md),
               SilvamangCard(
                 child: Column(
@@ -504,10 +504,26 @@ class _IdentificationResultPageState
                         label: 'Canopy',
                         value: '${result.canopyWidthM.toStringAsFixed(1)} m',
                       ),
-                    if (_hasValidNullableMeasurementValue(result.dbhCm))
+                    for (final entry in <String, double?>{
+                      'GBH (cm)': result.gbhCm,
+                      'GBH (m)': result.gbhM,
+                      'DBH (m)': result.dbhM,
+                      'Basal Area (m²)': result.basalAreaM2,
+                      'Canopy 1 (m)': result.canopy1M,
+                      'Canopy 2 (m)': result.canopy2M,
+                    }.entries)
+                      if (_hasValidNullableMeasurementValue(entry.value))
+                        _LocationRow(
+                          label: entry.key,
+                          value: entry.value!.toStringAsFixed(4),
+                        ),
+                    if (_hasValidNullableMeasurementValue(
+                      result.effectiveDbhCm,
+                    ))
                       _LocationRow(
                         label: 'DBH',
-                        value: '${result.dbhCm!.toStringAsFixed(1)} cm',
+                        value:
+                            '${result.effectiveDbhCm!.toStringAsFixed(2)} cm',
                       ),
                     if (_hasValidConfidence(result.measurementConfidence))
                       _LocationRow(
@@ -1782,7 +1798,7 @@ class _EducationAskAiCard extends StatelessWidget {
       ),
       (
         label: 'Ecosystem role',
-        prompt: 'How does $displayName help the mangrove ecosystem?',
+        prompt: 'How does $displayName help the mangrove ecosystem²',
       ),
       (label: 'Where found?', prompt: 'Where is $displayName commonly found?'),
     ];
@@ -2372,7 +2388,10 @@ String _assistantPromptForSpecies(MockTopPrediction prediction) {
 bool _hasValidMeasurementEstimate(MockIdentificationResult result) {
   return _hasValidMeasurementValue(result.heightM) ||
       _hasValidMeasurementValue(result.canopyWidthM) ||
-      _hasValidNullableMeasurementValue(result.dbhCm);
+      _hasValidNullableMeasurementValue(result.effectiveDbhCm) ||
+      _hasValidNullableMeasurementValue(result.gbhCm) ||
+      _hasValidNullableMeasurementValue(result.canopy1M) ||
+      _hasValidNullableMeasurementValue(result.canopy2M);
 }
 
 MockIdentificationResult _resultWithManualMeasurements(

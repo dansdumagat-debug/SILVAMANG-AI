@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreMeasurementRequest;
 use App\Http\Resources\MeasurementResource;
 use App\Models\Measurement;
 use App\Models\ScanRecord;
-use App\Http\Controllers\Controller;
 use App\Support\ApiAccess;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,7 +34,7 @@ class MeasurementController extends Controller
 
         $measurementData = collect($data)
             ->except('scan_record_id')
-            ->reject(fn ($value, $key) => in_array($key, ['height_m', 'canopy_width_m', 'dbh_cm'], true) && $value === null)
+            ->reject(fn ($value, $key) => in_array($key, ['height_m', 'canopy_width_m', 'dbh_cm', 'gbh_cm', 'canopy_1_m', 'canopy_2_m'], true) && $value === null)
             ->all();
 
         $measurement = Measurement::updateOrCreate(

@@ -208,14 +208,14 @@ class TransectApiTest extends TestCase
         $this->assertSame('Rhizophora apiculata', $sheet->getCell('F2')->getValue());
         $this->assertSame('SC-EXPORT-001', $book->getSheetByName('Raw Scans')->getCell('C2')->getValue());
         $this->assertSame(20.0, $book->getSheetByName('Raw Scans')->getCell('H2')->getValue());
-        $this->assertSame(100.0, $book->getSheetByName('Export Notes')->getCell('B4')->getValue());
-        $this->assertStringContainsString("'Export Notes'!\$B\$4", $sheet->getCell('I2')->getValue());
-        $this->assertStringContainsString('PI()', $sheet->getCell('M2')->getValue());
-        $this->assertStringContainsString('0.5', $sheet->getCell('Q2')->getValue());
-        $this->assertEqualsWithDelta(100, $sheet->getCell('I2')->getCalculatedValue(), 0.0001);
-        $this->assertEqualsWithDelta(0.2, $sheet->getCell('L2')->getCalculatedValue(), 0.0001);
-        $this->assertEqualsWithDelta(pi() * 0.1 * 0.1, $sheet->getCell('M2')->getCalculatedValue(), 0.0001);
-        $this->assertEqualsWithDelta(pi() * 0.1 * 0.1 * 5.2 * 0.5, $sheet->getCell('Q2')->getCalculatedValue(), 0.0001);
+        $this->assertNull($sheet->getCell('J2')->getValue()); // No measured girth on a legacy DBH-only record.
+        $this->assertEqualsWithDelta(100, $sheet->getCell('I2')->getValue(), 0.0001);
+        $this->assertEqualsWithDelta(20, $sheet->getCell('L2')->getValue(), 0.0001);
+        $this->assertEqualsWithDelta(0.2, $sheet->getCell('M2')->getValue(), 0.0001);
+        $this->assertEqualsWithDelta(pi() * 0.1 * 0.1, $sheet->getCell('N2')->getValue(), 0.0001);
+        $this->assertEqualsWithDelta(pi() * 0.1 * 0.1 * 5.2 * 0.5, $sheet->getCell('Q2')->getValue(), 0.0001);
+        $this->assertNull($sheet->getCell('S2')->getValue());
+        $this->assertEquals(3.4, $sheet->getCell('U2')->getValue());
         $book->disconnectWorksheets();
         @unlink($path);
 
@@ -224,7 +224,7 @@ class TransectApiTest extends TestCase
             ->assertOk();
         $blankAreaPath = $withoutArea->baseResponse->getFile()->getPathname();
         $blankAreaBook = IOFactory::load($blankAreaPath);
-        $this->assertSame('', $blankAreaBook->getSheetByName('Vegetation Data')->getCell('I2')->getCalculatedValue());
+        $this->assertNull($blankAreaBook->getSheetByName('Vegetation Data')->getCell('I2')->getValue());
         $blankAreaBook->disconnectWorksheets();
         @unlink($blankAreaPath);
     }

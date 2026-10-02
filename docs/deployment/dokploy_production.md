@@ -145,6 +145,12 @@ The build requires the Flutter SDK matching the project's Dart constraint and yo
 
 ## K. Validation and remaining release risks
 
+Structural measurement release: apply `2026_10_02_140000_add_structural_measurements.php` after reviewing pending migrations. It adds nullable GBH centimeters/meters, DBH meters, basal area, two canopy axes, and an observation plot number. Existing height, DBH centimeters and canopy width columns are reused. Legacy DBH records receive missing meter/basal-area conversions; original measurements are preserved. Rollback intentionally retains these collected-data columns.
+
+The existing workbook methodology is GBH = DBH × pi; entered GBH derives DBH centimeters rounded to the existing two-decimal storage precision. GBH meters = GBH centimeters / 100, DBH meters = DBH centimeters / 100, basal area = pi × (DBH meters / 2)^2. GBH input takes precedence over a simultaneous diameter input. Canopy 1 and Canopy 2 never imply a width; width remains separately recorded. The existing volume form factor 0.5 is retained and documented in Export Notes. Deploy the backend migration before distributing the updated mobile app.
+
+The ecological workbook includes Vegetation Data, Raw Scans (observation IDs and GPS), Transect Summary, Species Summary and Export Notes. Plot numbers identify observations within existing transects; there is no separate Plot entity. Missing category, substrate, associated flora/fauna, activity and impact remain blank. Summaries average available valid measurements only. No AI depth module is used.
+
 Preparation checks executed locally:
 
 | Check | Result |

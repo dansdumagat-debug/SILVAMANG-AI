@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import '../../../../shared/models/prediction_model.dart';
 import '../../../../shared/utils/species_taxonomy.dart';
 import 'mock_ai_prediction_response.dart';
@@ -18,6 +19,10 @@ class MockIdentificationResult {
     required this.heightM,
     required this.canopyWidthM,
     this.dbhCm,
+    this.gbhCm,
+    this.canopy1M,
+    this.canopy2M,
+    this.plotNo,
     this.measurementMethod = 'not_estimated',
     required this.measurementConfidence,
     required this.validationResult,
@@ -40,6 +45,16 @@ class MockIdentificationResult {
   final double heightM;
   final double canopyWidthM;
   final double? dbhCm;
+  final double? gbhCm;
+  final double? canopy1M;
+  final double? canopy2M;
+  final String? plotNo;
+  double? get effectiveDbhCm =>
+      gbhCm != null ? (gbhCm! / math.pi * 100).round() / 100 : dbhCm;
+  double? get gbhM => gbhCm != null ? gbhCm! / 100 : null;
+  double? get dbhM => effectiveDbhCm != null ? effectiveDbhCm! / 100 : null;
+  double? get basalAreaM2 =>
+      dbhM != null ? math.pi * math.pow(dbhM! / 2, 2) : null;
   final String measurementMethod;
   final double measurementConfidence;
   final String validationResult;
@@ -62,11 +77,16 @@ class MockIdentificationResult {
     double? heightM,
     double? canopyWidthM,
     double? dbhCm,
+    double? gbhCm,
+    double? canopy1M,
+    double? canopy2M,
+    String? plotNo,
     String? measurementMethod,
     double? measurementConfidence,
     String? validationResult,
     String? validationMessage,
     double? distanceToKnownDistributionKm,
+    bool replaceStructural = false,
     String? explanation,
   }) {
     return MockIdentificationResult(
@@ -83,7 +103,11 @@ class MockIdentificationResult {
       predictions: predictions ?? this.predictions,
       heightM: heightM ?? this.heightM,
       canopyWidthM: canopyWidthM ?? this.canopyWidthM,
-      dbhCm: dbhCm ?? this.dbhCm,
+      dbhCm: replaceStructural ? dbhCm : dbhCm ?? this.dbhCm,
+      gbhCm: replaceStructural ? gbhCm : gbhCm ?? this.gbhCm,
+      canopy1M: replaceStructural ? canopy1M : canopy1M ?? this.canopy1M,
+      canopy2M: replaceStructural ? canopy2M : canopy2M ?? this.canopy2M,
+      plotNo: plotNo ?? this.plotNo,
       measurementMethod: measurementMethod ?? this.measurementMethod,
       measurementConfidence:
           measurementConfidence ?? this.measurementConfidence,

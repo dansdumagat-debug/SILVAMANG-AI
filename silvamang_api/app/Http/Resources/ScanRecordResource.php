@@ -34,6 +34,7 @@ class ScanRecordResource extends JsonResource
             'barangay' => $this->barangay,
             'manual_barangay' => $this->manual_barangay,
             'location_lookup_status' => $this->location_lookup_status,
+            'plot_no' => $this->plot_no,
             'height_m' => $this->height_m !== null ? (float) $this->height_m : null,
             'canopy_width_m' => $this->canopy_width_m !== null ? (float) $this->canopy_width_m : null,
             'notes' => $this->notes,

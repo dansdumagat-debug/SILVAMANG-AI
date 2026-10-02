@@ -56,6 +56,7 @@ class StoreScanRecordRequest extends FormRequest
             'barangay' => ['nullable', 'string', 'max:255'],
             'manual_barangay' => ['nullable', 'string', 'max:255'],
             'location_lookup_status' => ['nullable', 'string', 'max:255'],
+            'plot_no' => ['nullable', 'string', 'max:50'],
             'height_m' => ['nullable', 'numeric', 'min:0'],
             'canopy_width_m' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
