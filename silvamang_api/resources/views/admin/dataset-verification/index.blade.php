@@ -3,6 +3,7 @@
 @section('title', 'Dataset Verification')
 
 @section('content')
+<div class="dataset-verification-page">
     <div class="page-heading">
         <div>
             <h2>Dataset Verification</h2>
@@ -14,7 +15,7 @@
         <article class="export-action-card">
             <div>
                 <h3>Export Verified Images</h3>
-                <p>Copy verified scan images into dataset/raw/ for future CNN and YOLO training.</p>
+                <p>Prepare verified images for future species identification and plant-part training.</p>
             </div>
             <form method="POST" action="{{ route('admin.dataset-verification.export') }}">
                 @csrf
@@ -32,33 +33,35 @@
 
     <article class="panel">
         <form method="GET" action="{{ route('admin.dataset-verification.index') }}" class="filter-toolbar dataset-filter-toolbar">
-            <input type="search" name="search" value="{{ request('search') }}" placeholder="Search filename, record, species...">
-            <select name="dataset_status">
+            <input type="search" name="search" value="{{ request('search') }}" aria-label="Search images" placeholder="Search filename, record, species...">
+            <select name="dataset_status" aria-label="Dataset status">
                 <option value="">All dataset status</option>
                 @foreach ($datasetStatuses as $status)
                     <option value="{{ $status }}" @selected(request('dataset_status') === $status)>{{ ucfirst($status) }}</option>
                 @endforeach
             </select>
-            <select name="image_quality">
+            <select name="image_quality" aria-label="Image quality">
                 <option value="">All image quality</option>
                 @foreach ($imageQualities as $quality)
                     <option value="{{ $quality }}" @selected(request('image_quality') === $quality)>{{ ucfirst($quality) }}</option>
                 @endforeach
             </select>
-            <select name="verified_species_id">
+            <select name="verified_species_id" aria-label="Verified species">
                 <option value="">All verified species</option>
                 @foreach ($speciesOptions as $species)
                     <option value="{{ $species->id }}" @selected((string) request('verified_species_id') === (string) $species->id)>{{ $species->scientific_name }}</option>
                 @endforeach
             </select>
-            <select name="verified_plant_part">
+            <select name="verified_plant_part" aria-label="Plant part">
                 <option value="">All plant parts</option>
                 @foreach ($plantParts as $plantPart)
                     <option value="{{ $plantPart }}" @selected(request('verified_plant_part') === $plantPart)>{{ ucfirst(str_replace('_', ' ', $plantPart)) }}</option>
                 @endforeach
             </select>
-            <button type="submit" class="small-button">Apply Filter</button>
+            <div class="dataset-filter-actions">
+                <button type="submit" class="small-button">Apply Filter</button>
             <a href="{{ route('admin.dataset-verification.index') }}" class="reset-link">Reset</a>
+            </div>
         </form>
 
         @if ($scanImages->isEmpty())
@@ -74,7 +77,7 @@
                     @endphp
                     <article class="dataset-image-card">
                         @if ($imageUrl)
-                            <img src="{{ $imageUrl }}" alt="{{ $uploadedPlantPart }} preview">
+                            <img loading="lazy" src="{{ $imageUrl }}" alt="{{ $uploadedPlantPart }} preview">
                         @else
                             <div class="dataset-image-placeholder">Preview unavailable</div>
                         @endif
@@ -97,4 +100,5 @@
             <div class="pagination-wrap">{{ $scanImages->links() }}</div>
         @endif
     </article>
+</div>
 @endsection
