@@ -162,7 +162,7 @@ class TransectFieldMap extends ConsumerWidget {
               initialCenter: initialCenter,
               initialZoom: points.isEmpty && currentLocation == null ? 6 : 16,
               minZoom: 4,
-              maxZoom: 24,
+              maxZoom: 25,
               onTap: onMapTap == null ? null : (_, point) => onMapTap!(point),
             ),
             children: [
@@ -171,8 +171,8 @@ class TransectFieldMap extends ConsumerWidget {
                   urlTemplate: OfflineMapCacheService.tileUrlTemplate,
                   userAgentPackageName:
                       OfflineMapCacheService.userAgentPackageName,
-                  maxZoom: 24,
-                  maxNativeZoom: offlineNativeZoom ?? 13,
+                  maxZoom: 25,
+                  maxNativeZoom: isOnline ? 20 : offlineNativeZoom ?? 13,
                   tileProvider: ref
                       .read(offlineMapCacheServiceProvider)
                       .tileProvider(isOnline: isOnline),
@@ -183,7 +183,7 @@ class TransectFieldMap extends ConsumerWidget {
                       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName:
                       OfflineMapCacheService.userAgentPackageName,
-                  maxZoom: 24,
+                  maxZoom: 25,
                   maxNativeZoom: 19,
                 ),
               if (layer == TransectMapLayer.satellite && isOnline)
@@ -191,7 +191,7 @@ class TransectFieldMap extends ConsumerWidget {
                   urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                   userAgentPackageName:
                       OfflineMapCacheService.userAgentPackageName,
-                  maxZoom: 24,
+                  maxZoom: 25,
                   maxNativeZoom: 19,
                 ),
               if (straightLines.isNotEmpty)
@@ -248,7 +248,7 @@ class TransectFieldMap extends ConsumerWidget {
       final camera = mapController.camera;
       mapController.move(
         camera.center,
-        (camera.zoom + difference).clamp(4.0, 24.0),
+        (camera.zoom + difference).clamp(4.0, 25.0),
       );
     } catch (_) {
       // Ignore taps before the map has attached its controller.

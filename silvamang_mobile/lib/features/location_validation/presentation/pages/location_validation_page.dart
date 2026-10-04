@@ -1,3 +1,6 @@
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import '../../../transects/presentation/widgets/transect_field_map.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +27,14 @@ class LocationValidationPage extends ConsumerStatefulWidget {
 
 class _LocationValidationPageState
     extends ConsumerState<LocationValidationPage> {
+  final _mapController = MapController();
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -129,82 +140,29 @@ class _LocationValidationPageState
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  'No map SDK is enabled in this phase.',
+                  'You can save observations even when location validation is unavailable.',
                   style: AppTextStyles.bodySmall,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          const SectionHeader(title: 'Distribution Map'),
+          const SectionHeader(title: 'Location Map'),
           const SizedBox(height: AppSpacing.md),
-          SilvamangCard(
-            padding: EdgeInsets.zero,
-            child: Container(
-              height: 220,
-              decoration: BoxDecoration(
-                color: AppColors.softBlue,
-                borderRadius: BorderRadius.circular(AppConstants.cardRadius),
+          SizedBox(
+            height: 360,
+            child: TransectFieldMap(
+              key: ValueKey(
+                '${locationState.latitude},${locationState.longitude}',
               ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: 28,
-                    left: 32,
-                    child: _MapMarker(
-                      color: AppColors.primaryGreen.withValues(alpha: 0.18),
-                      size: 96,
-                    ),
-                  ),
-                  Positioned(
-                    right: 38,
-                    bottom: 30,
-                    child: _MapMarker(
-                      color: AppColors.successGreen.withValues(alpha: 0.18),
-                      size: 120,
-                    ),
-                  ),
-                  const Center(
-                    child: Icon(
-                      Icons.location_pin,
-                      color: AppColors.dangerRed,
-                      size: 44,
-                    ),
-                  ),
-                  Positioned(
-                    right: AppSpacing.md,
-                    top: AppSpacing.md,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryGreen,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Text(
-                            'Known Distribution',
-                            style: AppTextStyles.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              mapController: _mapController,
+              points: const [],
+              observations: const [],
+              isOnline: true,
+              layer: TransectMapLayer.satellite,
+              currentLocation: locationState.hasLocation
+                  ? LatLng(locationState.latitude!, locationState.longitude!)
+                  : null,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -224,22 +182,6 @@ class _LocationValidationPageState
           ),
         ],
       ),
-    );
-  }
-}
-
-class _MapMarker extends StatelessWidget {
-  const _MapMarker({required this.color, required this.size});
-
-  final Color color;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
     );
   }
 }

@@ -2033,14 +2033,14 @@ class _DistributionMapPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _ScanLocationMapPreview extends StatelessWidget {
+class _ScanLocationMapPreview extends ConsumerWidget {
   const _ScanLocationMapPreview({this.latitude, this.longitude});
 
   final double? latitude;
   final double? longitude;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hasLocation = latitude != null && longitude != null;
 
     return ClipRRect(
@@ -2054,7 +2054,7 @@ class _ScanLocationMapPreview extends StatelessWidget {
                   initialCenter: latlong.LatLng(latitude!, longitude!),
                   initialZoom: 16,
                   minZoom: 4,
-                  maxZoom: 24,
+                  maxZoom: 25,
                   interactionOptions: const InteractionOptions(
                     flags:
                         InteractiveFlag.pinchZoom |
@@ -2065,16 +2065,19 @@ class _ScanLocationMapPreview extends StatelessWidget {
                 children: [
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.tileUrlTemplate,
+                    tileProvider: ref
+                        .read(offlineMapCacheServiceProvider)
+                        .tileProvider(isOnline: true),
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 24,
-                    maxNativeZoom: 19,
+                    maxZoom: 25,
+                    maxNativeZoom: 20,
                   ),
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 24,
+                    maxZoom: 25,
                     maxNativeZoom: 19,
                   ),
                   MarkerLayer(
@@ -2266,7 +2269,6 @@ String _locationSourceLabel(String? source) {
     _ => _cleanLabel(source!),
   };
 }
-
 
 IconData _triviaIcon(int index) {
   return switch (index % 4) {

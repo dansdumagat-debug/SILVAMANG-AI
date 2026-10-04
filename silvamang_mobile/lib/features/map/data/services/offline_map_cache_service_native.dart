@@ -1,3 +1,4 @@
+import 'parent_fallback_tile_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
@@ -58,9 +59,9 @@ class OfflineMapCacheService {
 
   static const storeName = 'silvamang_field_map';
   static const tileUrlTemplate =
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?blankTile=false';
   static const labelTileUrlTemplate =
-      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}?blankTile=false';
   static const userAgentPackageName = 'com.silvamang.mobile';
   static const minDownloadZoom = 9;
   static const maxDownloadZoom = 16;
@@ -103,19 +104,22 @@ class OfflineMapCacheService {
   }
 
   TileProvider tileProvider({required bool isOnline}) {
-    if (kIsWeb) {
-      return NetworkTileProvider();
+    if (kIsWeb || (isOnline && !_initialized)) {
+      return ParentFallbackTileProvider(NetworkTileProvider());
     }
 
-    return FMTCTileProvider(
-      stores: {
-        storeName: isOnline
-            ? BrowseStoreStrategy.readUpdateCreate
-            : BrowseStoreStrategy.read,
-      },
-      loadingStrategy: isOnline
-          ? BrowseLoadingStrategy.cacheFirst
-          : BrowseLoadingStrategy.cacheOnly,
+    return ParentFallbackTileProvider(
+      legacyCacheFallback: !isOnline,
+      FMTCTileProvider(
+        stores: {
+          storeName: isOnline
+              ? BrowseStoreStrategy.readUpdateCreate
+              : BrowseStoreStrategy.read,
+        },
+        loadingStrategy: isOnline
+            ? BrowseLoadingStrategy.cacheFirst
+            : BrowseLoadingStrategy.cacheOnly,
+      ),
     );
   }
 

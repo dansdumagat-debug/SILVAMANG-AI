@@ -356,14 +356,14 @@ class _OfflineMapManagerPageState extends ConsumerState<OfflineMapManagerPage> {
   }
 }
 
-class _OfflineAreaMapPreview extends StatelessWidget {
+class _OfflineAreaMapPreview extends ConsumerWidget {
   const _OfflineAreaMapPreview({required this.target, required this.radiusKm});
 
   final OfflineMapAreaTarget? target;
   final double radiusKm;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final center = target == null
         ? const LatLng(12.8797, 121.774)
         : LatLng(target!.latitude, target!.longitude);
@@ -381,21 +381,24 @@ class _OfflineAreaMapPreview extends StatelessWidget {
                   initialCenter: center,
                   initialZoom: _zoomForRadius(radiusKm),
                   minZoom: 4,
-                  maxZoom: 24,
+                  maxZoom: 25,
                 ),
                 children: [
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.tileUrlTemplate,
+                    tileProvider: ref
+                        .read(offlineMapCacheServiceProvider)
+                        .tileProvider(isOnline: true),
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 24,
-                    maxNativeZoom: 19,
+                    maxZoom: 25,
+                    maxNativeZoom: 20,
                   ),
                   TileLayer(
                     urlTemplate: OfflineMapCacheService.labelTileUrlTemplate,
                     userAgentPackageName:
                         OfflineMapCacheService.userAgentPackageName,
-                    maxZoom: 24,
+                    maxZoom: 25,
                     maxNativeZoom: 19,
                   ),
                   CircleLayer(

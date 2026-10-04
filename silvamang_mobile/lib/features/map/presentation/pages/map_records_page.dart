@@ -133,7 +133,7 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
       final camera = _mapController.camera;
       _mapController.move(
         camera.center,
-        (camera.zoom + difference).clamp(4.0, 24.0),
+        (camera.zoom + difference).clamp(4.0, 25.0),
       );
     } catch (_) {
       // The map controller may not be attached during the first frame.
@@ -231,16 +231,16 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
                                   : 15
                             : 13,
                         minZoom: 4,
-                        maxZoom: 24,
+                        maxZoom: 25,
                       ),
                       children: [
                         TileLayer(
                           urlTemplate: OfflineMapCacheService.tileUrlTemplate,
                           userAgentPackageName:
                               OfflineMapCacheService.userAgentPackageName,
-                          maxZoom: 24,
+                          maxZoom: 25,
                           maxNativeZoom: state.isOnline
-                              ? 19
+                              ? 20
                               : state.cacheStatus?.maxDownloadedZoom ?? 13,
                           tileProvider: ref
                               .read(offlineMapCacheServiceProvider)
@@ -252,7 +252,7 @@ class _MapRecordsPageState extends ConsumerState<MapRecordsPage> {
                                 OfflineMapCacheService.labelTileUrlTemplate,
                             userAgentPackageName:
                                 OfflineMapCacheService.userAgentPackageName,
-                            maxZoom: 24,
+                            maxZoom: 25,
                             maxNativeZoom: 19,
                           ),
                         MarkerLayer(markers: markers),

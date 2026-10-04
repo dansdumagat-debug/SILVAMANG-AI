@@ -1,3 +1,4 @@
+import 'parent_fallback_tile_provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
@@ -56,9 +57,9 @@ class OfflineMapCacheService {
 
   static const storeName = 'silvamang_field_map';
   static const tileUrlTemplate =
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?blankTile=false';
   static const labelTileUrlTemplate =
-      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}';
+      'https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}?blankTile=false';
   static const userAgentPackageName = 'com.silvamang.mobile';
   static const minDownloadZoom = 12;
   static const maxDownloadZoom = 16;
@@ -66,7 +67,7 @@ class OfflineMapCacheService {
   Future<void> initialize() async {}
 
   TileProvider tileProvider({required bool isOnline}) {
-    return NetworkTileProvider();
+    return ParentFallbackTileProvider(NetworkTileProvider());
   }
 
   Future<OfflineMapCacheStatus> status() async {
