@@ -12,7 +12,6 @@ import '../../features/identification/presentation/pages/offline_model_diagnosti
 import '../../features/location_validation/presentation/pages/location_validation_page.dart';
 import '../../features/map/presentation/pages/offline_map_manager_page.dart';
 import '../../features/map/presentation/pages/map_records_page.dart';
-import '../../features/measurement/presentation/pages/field_distance_page.dart';
 import '../../features/measurements/presentation/pages/camera_pointing_measurement_page.dart';
 import '../../features/measurements/presentation/pages/measurement_page.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
@@ -93,11 +92,6 @@ class AppRouter {
                 transectLocalId: state.uri.queryParameters['transectId'],
               );
             },
-          ),
-          GoRoute(
-            path: '/field-distance',
-            name: RouteNames.fieldDistance,
-            builder: (context, state) => const FieldDistancePage(),
           ),
           GoRoute(
             path: '/identification-result',

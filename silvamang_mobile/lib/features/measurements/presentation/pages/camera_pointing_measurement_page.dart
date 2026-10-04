@@ -17,7 +17,6 @@ import '../../../../core/widgets/silvamang_badge.dart';
 import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
 import '../../../../core/widgets/silvamang_card.dart';
-import '../../../measurement/presentation/controllers/field_distance_controller.dart';
 import '../../data/models/camera_measurement_result.dart';
 import '../../data/services/measurement_geometry.dart';
 import '../controllers/camera_measurement_controller.dart';
@@ -175,13 +174,8 @@ class _CameraPointingMeasurementPageState
 
   @override
   Widget build(BuildContext context) {
-    final fieldDistance = ref
-        .watch(fieldDistanceControllerProvider)
-        .measurement;
-    final distanceM = _selectedDistanceM(fieldDistance.distanceMeters);
-    final distanceSource = _selectedDistanceSource(
-      fieldDistance.distanceMeters,
-    );
+    final distanceM = _selectedDistanceM();
+    final distanceSource = _selectedDistanceSource();
     final cameraReady = _cameraController?.value.isInitialized == true;
     final currentResult = _result;
 
@@ -218,6 +212,12 @@ class _CameraPointingMeasurementPageState
           112,
         ),
         children: [
+          _DistanceInputCard(
+            type: _type,
+            manualDistanceController: _manualDistanceController,
+            cameraHeightController: _cameraHeightController,
+          ),
+          const SizedBox(height: AppSpacing.lg),
           _MeasurementHeroHeader(
             type: _type,
             hasDistance: distanceM != null && distanceM > 0,
@@ -312,6 +312,7 @@ class _CameraPointingMeasurementPageState
                       isTracking: _isSensorTracking,
                       canStart:
                           cameraReady &&
+                          distanceM != null &&
                           !_isSettingPoint &&
                           (!_isExtendedMode || _orientationStable),
                       canUseResult:
@@ -364,16 +365,6 @@ class _CameraPointingMeasurementPageState
               ),
             ),
           ],
-          const SizedBox(height: AppSpacing.lg),
-          _DistanceInputCard(
-            type: _type,
-            fieldDistanceAvailable: fieldDistance.hasDistance,
-            fieldDistanceM: fieldDistance.distanceMeters,
-            manualDistanceController: _manualDistanceController,
-            cameraHeightController: _cameraHeightController,
-            onMeasureDistance: () =>
-                context.pushNamed(RouteNames.fieldDistance),
-          ),
           const SizedBox(height: AppSpacing.lg),
           if (currentResult != null)
             _CameraResultCard(
@@ -774,11 +765,7 @@ class _CameraPointingMeasurementPageState
       return;
     }
 
-    final fieldDistance = ref.read(fieldDistanceControllerProvider).measurement;
-    _applyLiveEstimate(
-      _selectedDistanceM(fieldDistance.distanceMeters),
-      _selectedDistanceSource(fieldDistance.distanceMeters),
-    );
+    _applyLiveEstimate(_selectedDistanceM(), _selectedDistanceSource());
   }
 
   void _toggleLivePointing(double? distanceM, String distanceSource) {
@@ -790,6 +777,14 @@ class _CameraPointingMeasurementPageState
   }
 
   void _startLivePointing(double? distanceM, String distanceSource) {
+    if (distanceM == null || !distanceM.isFinite || distanceM <= 0) {
+      setState(
+        () => _errorMessage =
+            'Enter a positive manual distance above before measuring.',
+      );
+      return;
+    }
+    FocusScope.of(context).unfocus();
     final baseElevation = _currentElevationRadians;
     if (_isExtendedMode && (!_orientationStable || baseElevation == null)) {
       setState(() {
@@ -881,11 +876,7 @@ class _CameraPointingMeasurementPageState
             .clamp(-_maxLiveAngleRadians, _maxLiveAngleRadians)
             .toDouble();
 
-    final fieldDistance = ref.read(fieldDistanceControllerProvider).measurement;
-    _updateSensorLiveLine(
-      _selectedDistanceM(fieldDistance.distanceMeters),
-      _selectedDistanceSource(fieldDistance.distanceMeters),
-    );
+    _updateSensorLiveLine(_selectedDistanceM(), _selectedDistanceSource());
   }
 
   void _updateSensorLiveLine(double? distanceM, String distanceSource) {
@@ -1233,27 +1224,13 @@ class _CameraPointingMeasurementPageState
     context.pop(result);
   }
 
-  double? _selectedDistanceM(double? fieldDistanceM) {
-    final manualDistance = double.tryParse(
-      _manualDistanceController.text.trim(),
-    );
-    if (manualDistance != null && manualDistance > 0) {
-      return manualDistance;
-    }
-    return fieldDistanceM != null && fieldDistanceM > 0 ? fieldDistanceM : null;
+  double? _selectedDistanceM() {
+    final value = double.tryParse(_manualDistanceController.text.trim());
+    return value != null && value.isFinite && value > 0 ? value : null;
   }
 
-  String _selectedDistanceSource(double? fieldDistanceM) {
-    final manualDistance = double.tryParse(
-      _manualDistanceController.text.trim(),
-    );
-    if (manualDistance != null && manualDistance > 0) {
-      return 'manual_input';
-    }
-    return fieldDistanceM != null && fieldDistanceM > 0
-        ? 'gps_walk_measurement'
-        : 'unavailable';
-  }
+  String _selectedDistanceSource() =>
+      _selectedDistanceM() == null ? 'unavailable' : 'manual_input';
 
   double? _selectedCameraHeightM() {
     final cameraHeight = double.tryParse(_cameraHeightController.text.trim());
@@ -1593,7 +1570,7 @@ class _DistanceGuidanceBanner extends StatelessWidget {
 
     if (distanceM == null || distanceM! <= 0) {
       title = 'Distance required';
-      message = 'Measure or enter your distance from the trunk first.';
+      message = 'Enter your manual distance from the trunk above first.';
       icon = Icons.straighten_rounded;
       color = AppColors.warningOrange;
     } else if (isTooClose) {
@@ -2827,26 +2804,16 @@ class _StepCard extends StatelessWidget {
 class _DistanceInputCard extends StatelessWidget {
   const _DistanceInputCard({
     required this.type,
-    required this.fieldDistanceAvailable,
-    required this.fieldDistanceM,
     required this.manualDistanceController,
     required this.cameraHeightController,
-    required this.onMeasureDistance,
   });
 
   final _CameraMeasurementType type;
-  final bool fieldDistanceAvailable;
-  final double? fieldDistanceM;
   final TextEditingController manualDistanceController;
   final TextEditingController cameraHeightController;
-  final VoidCallback onMeasureDistance;
 
   @override
   Widget build(BuildContext context) {
-    final fieldDistanceText = fieldDistanceM == null
-        ? 'Not measured'
-        : '${fieldDistanceM!.toStringAsFixed(2)} meters';
-
     return SilvamangCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2871,12 +2838,12 @@ class _DistanceInputCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Distance for accuracy',
+                      'Enter distance before measuring',
                       style: AppTextStyles.titleMedium,
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Use Field Distance Meter or enter the phone-to-mangrove distance. Species identification can still continue without measurement.',
+                      'Enter your measured horizontal distance from the phone to the trunk in meters, then use the camera below. Keep this distance while measuring.',
                       style: AppTextStyles.bodySmall,
                     ),
                   ],
@@ -2885,14 +2852,10 @@ class _DistanceInputCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _DetailRow(label: 'Field distance', value: fieldDistanceText),
-          const SizedBox(height: AppSpacing.md),
           _NumberField(
             controller: manualDistanceController,
             label: 'Manual distance (meters)',
-            hint: fieldDistanceAvailable
-                ? 'Leave blank to use Field Distance Meter'
-                : 'Example: 5',
+            hint: 'Example: 5',
             icon: Icons.social_distance_rounded,
           ),
           if (type == _CameraMeasurementType.treeHeight) ...[
@@ -2904,16 +2867,6 @@ class _DistanceInputCard extends StatelessWidget {
               icon: Icons.accessibility_new_rounded,
             ),
           ],
-          const SizedBox(height: AppSpacing.md),
-          SilvamangButton(
-            text: fieldDistanceAvailable
-                ? 'Update Field Distance'
-                : 'Measure Field Distance',
-            icon: Icons.my_location_rounded,
-            type: SilvamangButtonType.outline,
-            fullWidth: false,
-            onPressed: onMeasureDistance,
-          ),
         ],
       ),
     );

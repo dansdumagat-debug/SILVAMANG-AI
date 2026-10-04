@@ -8,7 +8,6 @@ class RouteNames {
   static const home = 'home';
   static const captureGuide = 'captureGuide';
   static const manualSpeciesMeasurement = 'manualSpeciesMeasurement';
-  static const fieldDistance = 'fieldDistance';
   static const identificationResult = 'identificationResult';
   static const offlineModelDiagnostic = 'offlineModelDiagnostic';
   static const measurement = 'measurement';

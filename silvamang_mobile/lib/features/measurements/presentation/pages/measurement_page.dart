@@ -60,12 +60,6 @@ class _MeasurementPageState extends ConsumerState<MeasurementPage> {
               ),
             ),
             const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => context.pushNamed(RouteNames.fieldDistance),
-              icon: const Icon(Icons.straighten),
-              label: const Text('Measure distance for camera'),
-            ),
-            const SizedBox(height: 16),
             SilvamangButton(
               text: 'Continue to Location Validation',
               icon: Icons.location_on_outlined,

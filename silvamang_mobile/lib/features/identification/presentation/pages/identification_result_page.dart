@@ -22,7 +22,6 @@ import '../../../capture/data/models/captured_plant_part_image.dart';
 import '../../../capture/presentation/controllers/capture_controller.dart';
 import '../../../location_validation/presentation/controllers/location_controller.dart';
 import '../../../map/data/services/offline_map_cache_service.dart';
-import '../../../measurement/presentation/controllers/field_distance_controller.dart';
 import '../../../measurements/data/models/camera_measurement_result.dart';
 import '../../../measurements/presentation/controllers/camera_measurement_controller.dart';
 import '../../../species_database/data/models/external_species_observation_model.dart';
@@ -70,7 +69,6 @@ class _IdentificationResultPageState
     await ref.read(locationControllerProvider.notifier).captureScanLocation();
     final locationState = ref.read(locationControllerProvider);
     final captureState = ref.read(captureControllerProvider);
-    final fieldDistance = ref.read(fieldDistanceControllerProvider).measurement;
     await ref
         .read(identificationControllerProvider.notifier)
         .runMockPrediction(
@@ -82,9 +80,6 @@ class _IdentificationResultPageState
               : null,
           address: locationState.hasLocation ? locationState.address : null,
           barangay: locationState.hasLocation ? locationState.barangay : null,
-          fieldDistanceMeasurement: fieldDistance.hasDistance
-              ? fieldDistance
-              : null,
         );
   }
 
@@ -130,8 +125,6 @@ class _IdentificationResultPageState
     final predictionResponse = state.predictionResponse;
     final captureState = ref.watch(captureControllerProvider);
     final locationState = ref.watch(locationControllerProvider);
-    final fieldDistanceState = ref.watch(fieldDistanceControllerProvider);
-    final fieldDistance = fieldDistanceState.measurement;
     final selectedImage = captureState.capturedImages.isEmpty
         ? null
         : captureState.capturedImages.first;
@@ -589,73 +582,6 @@ class _IdentificationResultPageState
             ),
           ],
           const SizedBox(height: AppSpacing.xl),
-          const SectionHeader(title: 'Field Distance'),
-          const SizedBox(height: AppSpacing.md),
-          SilvamangCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AppColors.softGreen,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(
-                        Icons.social_distance_rounded,
-                        color: AppColors.primaryDarkGreen,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Text(
-                        'Estimated distance',
-                        style: AppTextStyles.titleMedium,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _LocationRow(
-                  label: 'Distance',
-                  value: fieldDistance.distanceMeters == null
-                      ? ''
-                      : '${fieldDistance.distanceMeters!.toStringAsFixed(2)} meters',
-                ),
-                _LocationRow(
-                  label: 'Source',
-                  value: _distanceSourceLabel(fieldDistance.distanceSource),
-                ),
-                _LocationRow(
-                  label: 'Reliability',
-                  value: fieldDistance.distanceReliability,
-                ),
-                _LocationRow(label: 'Status', value: fieldDistance.status),
-                if (fieldDistance.warningMessage != null) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    fieldDistance.warningMessage!,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.warningOrange,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                SilvamangButton(
-                  text: fieldDistance.hasDistance
-                      ? 'Remeasure Distance'
-                      : 'Measure Distance First',
-                  icon: Icons.directions_walk_rounded,
-                  type: SilvamangButtonType.outline,
-                  onPressed: () => context.pushNamed(RouteNames.fieldDistance),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
           const SectionHeader(title: 'Scan Location'),
           const SizedBox(height: AppSpacing.md),
           SilvamangCard(
@@ -917,10 +843,6 @@ class _IdentificationResultPageState
                                           true
                                   ? 'manual_barangay'
                                   : locationState.barangaySource,
-                              fieldDistanceMeasurement:
-                                  fieldDistance.hasDistance
-                                  ? fieldDistance
-                                  : null,
                               cameraMeasurementSelection:
                                   cameraMeasurementSelection,
                               isUsingFallback: false,
@@ -2345,13 +2267,6 @@ String _locationSourceLabel(String? source) {
   };
 }
 
-String _distanceSourceLabel(String source) {
-  return switch (source) {
-    'gps_walk_measurement' => 'GPS walk measurement',
-    'manual_input' => 'Manual input',
-    _ => 'Unavailable',
-  };
-}
 
 IconData _triviaIcon(int index) {
   return switch (index % 4) {
