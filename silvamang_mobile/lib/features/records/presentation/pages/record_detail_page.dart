@@ -1,3 +1,4 @@
+import '../../../../core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -94,6 +95,11 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
                         record?.recordCode ?? '',
                         style: AppTextStyles.bodySmall,
                       ),
+                      if (record != null)
+                        Text(
+                          'Saved: ${Formatters.dateTime(record.capturedAt ?? record.createdAt)}',
+                          style: AppTextStyles.bodySmall,
+                        ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
                         record?.topScientificName.isNotEmpty == true

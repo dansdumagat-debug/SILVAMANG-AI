@@ -73,6 +73,13 @@ class ScanRecordRepository {
     return ScanRecordModel.fromJson(response.data ?? {});
   }
 
+  Future<void> updateObservationSavedAt(String id, DateTime savedAt) async {
+    await apiClient.put<Map<String, dynamic>>(
+      '/scan-records/$id',
+      data: {'captured_at': savedAt.toUtc().toIso8601String()},
+    );
+  }
+
   Future<int> uploadCapturedImagesToRecord({
     required String scanRecordId,
     required List<CapturedPlantPartImage> capturedImages,
@@ -116,12 +123,13 @@ class ScanRecordRepository {
         'measurement_method': result.measurementMethod,
         'confidence': _finiteOrNull(result.measurementConfidence),
         'notes': notes,
-        'measured_at': (measuredAt ?? DateTime.now()).toIso8601String(),
+        'measured_at': (measuredAt ?? DateTime.now()).toUtc().toIso8601String(),
       },
     );
   }
 
   Future<ScanRecordModel> createScanRecordFromMock({
+    DateTime? savedAt,
     required MockIdentificationResult result,
     List<CapturedPlantPartImage> capturedImages = const [],
     double? locationAccuracy,
@@ -131,7 +139,7 @@ class ScanRecordRepository {
     String? manualBarangay,
     FieldDistanceMeasurement? fieldDistanceMeasurement,
   }) async {
-    final capturedAt = (locationCapturedAt ?? DateTime.now()).toIso8601String();
+    final capturedAt = (savedAt ?? DateTime.now()).toUtc().toIso8601String();
     final resolvedLocationName = _resolvedLocationName(
       locationName: result.locationName,
       barangay: result.barangay,
@@ -247,6 +255,13 @@ class ScanRecordRepository {
       );
     }
 
+    if (result.latitude == null || result.longitude == null) {
+      try {
+        return await getScanRecordById(scanRecordId);
+      } catch (_) {
+        return createdRecord;
+      }
+    }
     try {
       return await validateScanRecordLocation(scanRecordId);
     } catch (_) {
@@ -294,6 +309,9 @@ class ScanRecordRepository {
       );
     }
 
+    if (scan['latitude'] == null || scan['longitude'] == null) {
+      return getScanRecordById(scanRecordId);
+    }
     try {
       return await validateScanRecordLocation(scanRecordId);
     } catch (_) {

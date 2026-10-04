@@ -1,3 +1,4 @@
+import '../routing/work_navigation_observer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -18,64 +19,85 @@ class BottomNavShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      body: child,
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: Container(
-          height: 78,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryDarkGreen.withValues(alpha: 0.12),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _NavItem(
-                icon: Icons.home_rounded,
-                label: 'Home',
-                active: location == '/home',
-                onTap: () => _openPage(context, RouteNames.home, '/home'),
-              ),
-              _NavItem(
-                icon: Icons.history_rounded,
-                label: 'History',
-                active: location == '/records',
-                onTap: () => _openPage(context, RouteNames.records, '/records'),
-              ),
-              _CaptureButton(
-                active:
-                    location == '/capture-guide' ||
-                    location == '/field-distance',
-                onTap: () => _openPage(
-                  context,
-                  RouteNames.captureGuide,
-                  '/capture-guide',
+    return AnimatedBuilder(
+      animation: workNavigationObserver,
+      builder: (context, _) => Scaffold(
+        extendBody: true,
+        body: Column(
+          children: [
+            if (workNavigationObserver.unfinishedRoute != null)
+              SafeArea(
+                bottom: false,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.edit_note),
+                  label: const Text('Resume unfinished work'),
+                  onPressed: () => workNavigationObserver.resume(),
                 ),
               ),
-              _NavItem(
-                icon: Icons.chat_bubble_rounded,
-                label: 'AI',
-                active: location == '/ai-assistant',
-                onTap: () =>
-                    _openPage(context, RouteNames.aiAssistant, '/ai-assistant'),
-              ),
-              _NavItem(
-                icon: Icons.person_rounded,
-                label: 'Profile',
-                active: location == '/profile',
-                onTap: () => _openPage(context, RouteNames.profile, '/profile'),
-              ),
-            ],
+            Expanded(child: child),
+          ],
+        ),
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Container(
+            height: 78,
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryDarkGreen.withValues(alpha: 0.12),
+                  blurRadius: 24,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavItem(
+                  icon: Icons.home_rounded,
+                  label: 'Home',
+                  active: location == '/home',
+                  onTap: () => _openPage(context, RouteNames.home, '/home'),
+                ),
+                _NavItem(
+                  icon: Icons.history_rounded,
+                  label: 'History',
+                  active: location == '/records',
+                  onTap: () =>
+                      _openPage(context, RouteNames.records, '/records'),
+                ),
+                _CaptureButton(
+                  active:
+                      location == '/capture-guide' ||
+                      location == '/manual-species-measurement',
+                  onTap: () => _openPage(
+                    context,
+                    RouteNames.captureGuide,
+                    '/capture-guide',
+                  ),
+                ),
+                _NavItem(
+                  icon: Icons.chat_bubble_rounded,
+                  label: 'AI',
+                  active: location == '/ai-assistant',
+                  onTap: () => _openPage(
+                    context,
+                    RouteNames.aiAssistant,
+                    '/ai-assistant',
+                  ),
+                ),
+                _NavItem(
+                  icon: Icons.person_rounded,
+                  label: 'Profile',
+                  active: location == '/profile',
+                  onTap: () =>
+                      _openPage(context, RouteNames.profile, '/profile'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -83,10 +105,16 @@ class BottomNavShell extends StatelessWidget {
   }
 
   void _openPage(BuildContext context, String routeName, String routePath) {
-    if (location == routePath) {
+    if (location == routePath ||
+        (routeName == RouteNames.captureGuide &&
+            workNavigationObserver.isWorking)) {
       return;
     }
 
+    if (routeName == RouteNames.captureGuide &&
+        workNavigationObserver.resume()) {
+      return;
+    }
     context.pushNamed(routeName);
   }
 }

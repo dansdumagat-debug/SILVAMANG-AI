@@ -1,3 +1,4 @@
+import 'work_navigation_observer.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/ai_assistant/presentation/pages/ai_assistant_page.dart';
@@ -64,6 +65,7 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
       ),
       ShellRoute(
+        observers: [workNavigationObserver],
         builder: (context, state, child) =>
             BottomNavShell(location: state.uri.path, child: child),
         routes: [

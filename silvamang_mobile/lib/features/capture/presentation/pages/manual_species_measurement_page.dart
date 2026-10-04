@@ -79,15 +79,18 @@ class _ManualSpeciesMeasurementPageState
     final lon = hasManualCoordinates
         ? double.tryParse(lonText)
         : location.longitude;
-    if (lat == null ||
-        lon == null ||
-        !lat.isFinite ||
-        !lon.isFinite ||
-        lat < -90 ||
-        lat > 90 ||
-        lon < -180 ||
-        lon > 180) {
-      _showError('Get GPS location or enter valid latitude and longitude.');
+    if (hasManualCoordinates &&
+        (lat == null ||
+            lon == null ||
+            !lat.isFinite ||
+            !lon.isFinite ||
+            lat < -90 ||
+            lat > 90 ||
+            lon < -180 ||
+            lon > 180)) {
+      _showError(
+        'Enter both valid latitude and longitude, or leave both blank.',
+      );
       return;
     }
     setState(() => _saving = true);
@@ -216,7 +219,7 @@ class _ManualSpeciesMeasurementPageState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Location',
+                      'Location (optional)',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 8),
@@ -234,7 +237,9 @@ class _ManualSpeciesMeasurementPageState
                       icon: const Icon(Icons.my_location_rounded),
                       label: const Text('Get GPS location'),
                     ),
-                    const Text('If GPS is unavailable, enter coordinates:'),
+                    const Text(
+                      'You can save without location validation. Coordinates are optional:',
+                    ),
                     TextField(
                       controller: _latitude,
                       decoration: const InputDecoration(labelText: 'Latitude'),

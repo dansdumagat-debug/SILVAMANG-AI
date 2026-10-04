@@ -233,11 +233,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         !heightM.isFinite ||
         heightM <= 0 ||
         (!canopyWidthM.isNaN &&
-            (!canopyWidthM.isFinite || canopyWidthM <= 0)) ||
-        latitude == null ||
-        longitude == null) {
+            (!canopyWidthM.isFinite || canopyWidthM <= 0))) {
       state = state.copyWith(
-        errorMessage: 'Species, height, and location are required.',
+        errorMessage: 'Species and a valid height are required.',
       );
       return;
     }
@@ -306,6 +304,8 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     bool manualSpecies = false,
     String? transectLocalId,
   }) async {
+    if (state.isSaving) return;
+    final savedAt = DateTime.now().toUtc();
     if (!manualSpecies && (capturedImages.isEmpty || !state.hasValidAiResult)) {
       state = state.copyWith(
         isSaving: false,
@@ -342,6 +342,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       final isOnline = await connectivityService.isOnline();
       if (!isOnline) {
         final offlineReference = await _queueOfflineSave(
+          savedAt: savedAt,
           result: resultWithLocation,
           capturedImages: capturedImages,
           locationAccuracy: locationAccuracy,
@@ -354,6 +355,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
               'You are offline. Scan was saved to the offline queue.',
         );
         await _saveLocalMapScanRecord(
+          savedAt: savedAt,
           result: resultWithLocation,
           capturedImages: capturedImages,
           locationAccuracy: locationAccuracy,
@@ -376,6 +378,10 @@ class IdentificationController extends StateNotifier<IdentificationState> {
 
       final serverScanRecordId = state.predictionResponse?.serverScanRecordId;
       if (serverScanRecordId != null) {
+        await scanRecordRepository.updateObservationSavedAt(
+          serverScanRecordId,
+          savedAt,
+        );
         final uploadedCount = await scanRecordRepository
             .uploadCapturedImagesToRecord(
               scanRecordId: serverScanRecordId,
@@ -385,12 +391,13 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           await scanRecordRepository.storeMeasurementForRecord(
             scanRecordId: serverScanRecordId,
             result: resultWithLocation,
-            measuredAt: locationCapturedAt,
+            measuredAt: savedAt,
           );
         }
         final record = await scanRecordRepository
             .getValidatedScanRecordOrCurrent(serverScanRecordId);
         await _saveLocalMapScanRecord(
+          savedAt: savedAt,
           result: resultWithLocation,
           capturedImages: capturedImages,
           locationAccuracy: locationAccuracy,
@@ -420,6 +427,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       }
 
       final record = await scanRecordRepository.createScanRecordFromMock(
+        savedAt: savedAt,
         result: resultWithLocation,
         capturedImages: capturedImages,
         locationAccuracy: locationAccuracy,
@@ -430,6 +438,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         fieldDistanceMeasurement: fieldDistanceMeasurement,
       );
       await _saveLocalMapScanRecord(
+        savedAt: savedAt,
         result: resultWithLocation,
         capturedImages: capturedImages,
         locationAccuracy: locationAccuracy,
@@ -456,7 +465,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         isSaving: false,
         uploadedImagesCount: uploadedCount,
         successMessage: manualSpecies
-            ? 'Manual species, measurements, and location saved successfully.'
+            ? 'Manual species and measurements saved successfully.'
             : hasScanLocation
             ? 'Scan record, GPS location, and selected images saved successfully.'
             : 'Scan record and selected images saved. GPS location was unavailable.',
@@ -481,6 +490,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
             barangay: barangay,
           );
       final offlineReference = await _queueOfflineSave(
+        savedAt: savedAt,
         result: failedResultWithLocation,
         capturedImages: capturedImages,
         locationAccuracy: locationAccuracy,
@@ -493,6 +503,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
             'Server unavailable. Scan was saved to the offline queue.',
       );
       await _saveLocalMapScanRecord(
+        savedAt: savedAt,
         result: failedResultWithLocation,
         capturedImages: capturedImages,
         locationAccuracy: locationAccuracy,
@@ -658,6 +669,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
   }
 
   Future<void> _saveLocalMapScanRecord({
+    DateTime? savedAt,
     required MockIdentificationResult result,
     List<CapturedPlantPartImage> capturedImages = const [],
     double? locationAccuracy,
@@ -671,8 +683,8 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     String? localId,
   }) async {
     try {
-      final now = DateTime.now();
-      final createdAt = locationCapturedAt ?? now;
+      final now = savedAt ?? DateTime.now().toUtc();
+      final createdAt = now;
       await localMapScanRepository.saveLocalRecord(
         MapScanRecord(
           localId:
@@ -767,6 +779,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
   }
 
   Future<String> _queueOfflineSave({
+    DateTime? savedAt,
     required MockIdentificationResult result,
     List<CapturedPlantPartImage> capturedImages = const [],
     double? locationAccuracy,
@@ -777,9 +790,9 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     FieldDistanceMeasurement? fieldDistanceMeasurement,
     required String successMessage,
   }) async {
-    final now = DateTime.now();
+    final now = savedAt ?? DateTime.now().toUtc();
     final offlineReference = 'scan_${now.microsecondsSinceEpoch}';
-    final scanCapturedAt = locationCapturedAt ?? now;
+    final scanCapturedAt = now;
     final offlineLocationNote = [
       'Offline queued scan.',
       if (result.captureMode == 'manual_species')
@@ -839,7 +852,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
       'barangay': cleanBarangay,
       'manual_barangay': cleanManualBarangay,
       'accuracy_m': _finiteOrNull(locationAccuracy),
-      'location_captured_at': scanCapturedAt.toIso8601String(),
+      'location_captured_at': locationCapturedAt?.toUtc().toIso8601String(),
       'barangay_lookup_status': cleanLookupStatus,
       'location_source': locationSource,
       'field_distance_m': _finiteOrNull(

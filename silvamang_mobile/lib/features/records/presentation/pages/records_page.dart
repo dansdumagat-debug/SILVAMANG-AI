@@ -1,3 +1,4 @@
+import '../../../../core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -303,8 +304,4 @@ SilvamangBadgeType _statusBadge(String status) {
   return SilvamangBadgeType.neutral;
 }
 
-String _dateLabel(DateTime date) {
-  final month = date.month.toString().padLeft(2, '0');
-  final day = date.day.toString().padLeft(2, '0');
-  return '${date.year}-$month-$day ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-}
+String _dateLabel(DateTime value) => Formatters.dateTime(value);
