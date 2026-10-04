@@ -89,11 +89,11 @@ class _StructuralMeasurementFieldsState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Structural Measurements',
+          'Structural Measurements (optional)',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
         const Text(
-          'Enter measured girth in centimeters. Diameter is calculated automatically from GBH.',
+          'Measurements are optional. Enter any values you have, or leave them blank and save. GBH is recorded in centimeters.',
         ),
         for (final entry in labels.entries)
           Padding(

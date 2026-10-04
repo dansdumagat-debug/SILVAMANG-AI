@@ -70,49 +70,56 @@ void main() {
     },
   );
 
-  for (final hasLocation in [false, true]) {
-    test(
-      'save with location=$hasLocation uses save instant and optional validation',
-      () async {
-        final api = FakeApi();
-        final repository = ScanRecordRepository(
-          apiClient: api,
-          scanImageRepository: FakeImages(),
-        );
-        final result = MockIdentificationResult(
-          scientificName: 'Rhizophora stylosa',
-          commonName: '',
-          confidence: double.nan,
-          captureMode: 'manual_species',
-          latitude: hasLocation ? 10.1 : null,
-          longitude: hasLocation ? 124.8 : null,
-          locationName: '',
-          address: '',
-          predictions: [],
-          heightM: 9,
-          canopyWidthM: double.nan,
-          gbhCm: 174,
-          canopy1M: 5,
-          canopy2M: 3.5,
-          measurementMethod: 'manual_input',
-          measurementConfidence: double.nan,
-          validationResult: 'not_checked',
-          validationMessage: '',
-          distanceToKnownDistributionKm: double.nan,
-        );
-        final savedAt = DateTime.parse('2026-10-04T22:30:00+08:00');
-        await repository.createScanRecordFromMock(
-          result: result,
-          savedAt: savedAt,
-          locationCapturedAt: DateTime.parse('2026-10-04T01:00:00Z'),
-        );
-        expect(api.scan['captured_at'], '2026-10-04T14:30:00.000Z');
-        expect(api.scan['latitude'], hasLocation ? 10.1 : null);
-        expect(
-          api.calls.contains('/scan-records/1/validate-location'),
-          hasLocation,
-        );
-      },
-    );
+  for (final measurements in ['none', 'gbh_only', 'complete']) {
+    for (final hasLocation in [false, true]) {
+      test(
+        'save measurements=$measurements location=$hasLocation preserves blanks',
+        () async {
+          final api = FakeApi();
+          final repository = ScanRecordRepository(
+            apiClient: api,
+            scanImageRepository: FakeImages(),
+          );
+          final result = MockIdentificationResult(
+            scientificName: 'Rhizophora stylosa',
+            commonName: '',
+            confidence: double.nan,
+            captureMode: 'manual_species',
+            latitude: hasLocation ? 10.1 : null,
+            longitude: hasLocation ? 124.8 : null,
+            locationName: '',
+            address: '',
+            predictions: [],
+            heightM: measurements == 'complete' ? 9 : double.nan,
+            canopyWidthM: double.nan,
+            gbhCm: measurements == 'none' ? null : 174,
+            canopy1M: measurements == 'complete' ? 5 : null,
+            canopy2M: measurements == 'complete' ? 3.5 : null,
+            measurementMethod: 'manual_input',
+            measurementConfidence: double.nan,
+            validationResult: 'not_checked',
+            validationMessage: '',
+            distanceToKnownDistributionKm: double.nan,
+          );
+          final savedAt = DateTime.parse('2026-10-04T22:30:00+08:00');
+          await repository.createScanRecordFromMock(
+            result: result,
+            savedAt: savedAt,
+            locationCapturedAt: DateTime.parse('2026-10-04T01:00:00Z'),
+          );
+          expect(api.scan['captured_at'], '2026-10-04T14:30:00.000Z');
+          expect(api.scan['latitude'], hasLocation ? 10.1 : null);
+          expect(api.calls.contains('/measurements'), measurements != 'none');
+          if (measurements != 'complete') {
+            expect(api.scan.containsKey('height_m'), isFalse);
+          }
+
+          expect(
+            api.calls.contains('/scan-records/1/validate-location'),
+            hasLocation,
+          );
+        },
+      );
+    }
   }
 }

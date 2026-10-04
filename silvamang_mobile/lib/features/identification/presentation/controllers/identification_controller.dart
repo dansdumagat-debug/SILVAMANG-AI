@@ -208,7 +208,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     required String scientificName,
     required String commonName,
     required List<CapturedPlantPartImage> capturedImages,
-    required double heightM,
+    double? heightM,
     required double canopyWidthM,
     String? transectLocalId,
     double? gbhCm,
@@ -230,12 +230,12 @@ class IdentificationController extends StateNotifier<IdentificationState> {
   }) async {
     final name = scientificName.trim();
     if (name.isEmpty ||
-        !heightM.isFinite ||
-        heightM <= 0 ||
+        (heightM != null && (!heightM.isFinite || heightM <= 0)) ||
         (!canopyWidthM.isNaN &&
             (!canopyWidthM.isFinite || canopyWidthM <= 0))) {
       state = state.copyWith(
-        errorMessage: 'Species and a valid height are required.',
+        errorMessage:
+            'Select a species and enter positive measurements, or leave them blank.',
       );
       return;
     }
@@ -253,7 +253,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         address: address ?? '',
         barangay: barangay,
         predictions: const [],
-        heightM: heightM,
+        heightM: heightM ?? double.nan,
         canopyWidthM: canopyWidthM,
         gbhCm: gbhCm,
         dbhCm: dbhCm,

@@ -10,6 +10,32 @@ import 'package:silvamang_mobile/features/offline_sync/data/models/offline_sync_
 import 'package:silvamang_mobile/features/identification/data/models/mock_identification_result.dart';
 
 void main() {
+  testWidgets(
+    'optional measurements allow empty and partial forms but reject invalid values',
+    (tester) async {
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: StructuralMeasurementFields(onChanged: (_) {}),
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(formKey.currentState!.validate(), isTrue);
+      await tester.enterText(find.byType(TextFormField).at(1), '174');
+      expect(formKey.currentState!.validate(), isTrue);
+      await tester.enterText(find.byType(TextFormField).at(2), '-1');
+      expect(formKey.currentState!.validate(), isFalse);
+      await tester.enterText(find.byType(TextFormField).at(2), '');
+      expect(formKey.currentState!.validate(), isTrue);
+    },
+  );
+
   test(
     'girth conversion matches backend and survives offline JSON round trip',
     () {

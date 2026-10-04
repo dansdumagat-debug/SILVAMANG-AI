@@ -36,7 +36,6 @@ class _ManualSpeciesMeasurementPageState
   Map<String, double?> _structural = {};
   final _plot = TextEditingController();
   bool _saving = false;
-  bool _measurementsConfirmed = false;
   bool _usedCamera = false;
 
   @override
@@ -65,10 +64,6 @@ class _ManualSpeciesMeasurementPageState
 
   Future<void> _save() async {
     if (_saving || !(_formKey.currentState?.validate() ?? false)) return;
-    if (!_measurementsConfirmed || _structural['height_m'] == null) {
-      _showError('Confirm your structural measurements before saving.');
-      return;
-    }
     final location = ref.read(locationControllerProvider);
     final latText = _latitude.text.trim();
     final lonText = _longitude.text.trim();
@@ -106,7 +101,7 @@ class _ManualSpeciesMeasurementPageState
             canopy1M: _structural['canopy_1_m'],
             canopy2M: _structural['canopy_2_m'],
             plotNo: _plot.text.trim().isEmpty ? null : _plot.text.trim(),
-            heightM: _structural['height_m']!,
+            heightM: _structural['height_m'],
             canopyWidthM: double.nan,
             measurementMethod: _usedCamera
                 ? 'camera_pointing_and_manual'
@@ -201,10 +196,7 @@ class _ManualSpeciesMeasurementPageState
                       ),
                     ),
                     StructuralMeasurementFields(
-                      requireHeight: true,
                       onChanged: (values) => _structural = values,
-                      onConfirmed: (value) =>
-                          setState(() => _measurementsConfirmed = value),
                       onCameraUsed: () => _usedCamera = true,
                     ),
                   ],

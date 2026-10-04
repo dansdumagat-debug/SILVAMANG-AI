@@ -17,7 +17,6 @@ class MeasurementPage extends ConsumerStatefulWidget {
 
 class _MeasurementPageState extends ConsumerState<MeasurementPage> {
   final _formKey = GlobalKey<FormState>();
-  bool _confirmed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +55,6 @@ class _MeasurementPageState extends ConsumerState<MeasurementPage> {
                 onChanged: (values) => ref
                     .read(identificationControllerProvider.notifier)
                     .setStructuralMeasurements(values),
-                onConfirmed: (value) => setState(() => _confirmed = value),
               ),
             ),
             const SizedBox(height: 16),
@@ -65,16 +63,6 @@ class _MeasurementPageState extends ConsumerState<MeasurementPage> {
               icon: Icons.location_on_outlined,
               onPressed: () {
                 if (!_formKey.currentState!.validate()) return;
-                if (!_confirmed) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Confirm your structural measurements first.',
-                      ),
-                    ),
-                  );
-                  return;
-                }
                 context.pushNamed(RouteNames.locationValidation);
               },
             ),
