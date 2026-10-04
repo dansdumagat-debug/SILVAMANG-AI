@@ -137,7 +137,7 @@ void main() {
       routes: [
         GoRoute(
           path: '/',
-          builder: (_, __) => Scaffold(
+          builder: (_, _) => Scaffold(
             body: SingleChildScrollView(
               child: StructuralMeasurementFields(onChanged: (v) => values = v),
             ),
