@@ -40,7 +40,7 @@ class SilvamangButton extends StatelessWidget {
               strokeWidth: 2,
               color: type == SilvamangButtonType.outline
                   ? AppColors.actionBlue
-                  : AppColors.primaryDarkGreen,
+                  : AppColors.white,
             ),
           )
         : Row(
@@ -77,7 +77,11 @@ class SilvamangButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           minimumSize: size,
-          foregroundColor: AppColors.primaryDarkGreen,
+          foregroundColor:
+              type == SilvamangButtonType.warning ||
+                  type == SilvamangButtonType.neutral
+              ? AppColors.primaryDarkGreen
+              : AppColors.white,
           backgroundColor: switch (type) {
             SilvamangButtonType.primary => AppColors.primaryDarkGreen,
             SilvamangButtonType.secondary => AppColors.actionBlue,

@@ -81,22 +81,22 @@ void main() {
           ),
         ),
       );
-      expect(find.byType(TextFormField), findsNWidgets(3));
+      expect(find.byType(TextFormField), findsNWidgets(4));
       expect(find.textContaining('measured diameter (optional)'), findsNothing);
       expect(find.text('Measure Canopy 1 (m)'), findsOneWidget);
       expect(find.text('Measure Canopy 2 (m)'), findsOneWidget);
-      await tester.enterText(find.byType(TextFormField).at(1), '5');
-      await tester.enterText(find.byType(TextFormField).at(2), '3.5');
+      await tester.enterText(find.byType(TextFormField).at(2), '5');
+      await tester.enterText(find.byType(TextFormField).at(3), '3.5');
       expect(values['canopy_1_m'], 5);
       expect(values['canopy_2_m'], 3.5);
       expect(values['dbh_cm'], isNull);
-      await tester.enterText(find.byType(TextFormField).first, '174');
+      await tester.enterText(find.byType(TextFormField).at(1), '174');
       await tester.pump();
       expect(values['gbh_cm'], 174);
       expect(find.textContaining('1.7400 m'), findsOneWidget);
       expect(find.textContaining('55.39 cm'), findsOneWidget);
       expect(key.currentState!.validate(), isTrue);
-      await tester.enterText(find.byType(TextFormField).first, '-1');
+      await tester.enterText(find.byType(TextFormField).at(1), '-1');
       await tester.pump();
       expect(key.currentState!.validate(), isFalse);
       expect(values['gbh_cm'], isNull);
@@ -162,5 +162,42 @@ void main() {
     expect(values['canopy_2_m'], 3.5);
     expect(values['canopy_width_m'], isNull);
     router.dispose();
+  });
+  testWidgets('confirmation validates height and resets after editing', (
+    tester,
+  ) async {
+    bool confirmed = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: StructuralMeasurementFields(
+              requireHeight: true,
+              onChanged: (_) {},
+              onConfirmed: (value) => confirmed = value,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.ensureVisible(find.text('Confirm Measurements'));
+    await tester.tap(find.text('Confirm Measurements'));
+    await tester.pump();
+    expect(confirmed, isFalse);
+    expect(
+      find.text('Enter height or measure it with the camera.'),
+      findsOneWidget,
+    );
+    await tester.enterText(find.byType(TextFormField).at(0), '9');
+    await tester.ensureVisible(find.text('Confirm Measurements'));
+    await tester.tap(find.text('Confirm Measurements'));
+    await tester.pump();
+    expect(confirmed, isTrue);
+    expect(find.text('Measurements confirmed'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).at(2), '5');
+    await tester.pump();
+    expect(confirmed, isFalse);
+    expect(find.text('Confirm Measurements'), findsOneWidget);
+    expect(find.textContaining('Canopy Width'), findsNothing);
   });
 }

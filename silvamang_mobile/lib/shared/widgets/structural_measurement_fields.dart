@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/routing/route_names.dart';
+import '../../core/widgets/silvamang_button.dart';
 import '../../features/measurements/data/models/camera_measurement_result.dart';
 
 /// Manual field measurements; canopy axes never imply a calculated width.
@@ -10,9 +11,15 @@ class StructuralMeasurementFields extends StatefulWidget {
     super.key,
     required this.onChanged,
     this.initial = const {},
+    this.requireHeight = false,
+    this.onConfirmed,
+    this.onCameraUsed,
   });
   final ValueChanged<Map<String, double?>> onChanged;
   final Map<String, double?> initial;
+  final bool requireHeight;
+  final ValueChanged<bool>? onConfirmed;
+  final VoidCallback? onCameraUsed;
   @override
   State<StructuralMeasurementFields> createState() =>
       _StructuralMeasurementFieldsState();
@@ -21,7 +28,12 @@ class StructuralMeasurementFields extends StatefulWidget {
 class _StructuralMeasurementFieldsState
     extends State<StructuralMeasurementFields> {
   late final values = Map<String, double?>.from(widget.initial);
+  bool confirmed = false;
+  late final fieldKeys = {
+    for (final key in labels.keys) key: GlobalKey<FormFieldState<String>>(),
+  };
   static const labels = {
+    'height_m': 'Height (m)',
     'gbh_cm': 'GBH (cm) — trunk circumference',
     'canopy_1_m': 'Canopy 1 (m)',
     'canopy_2_m': 'Canopy 2 (m)',
@@ -43,15 +55,16 @@ class _StructuralMeasurementFieldsState
     final result = await context.pushNamed<CameraMeasurementResult>(
       RouteNames.cameraPointingMeasurement,
       queryParameters: {
-        'type': 'canopy_width',
+        'type': key == 'height_m' ? 'tree_height' : 'canopy_width',
         'result_only': 'true',
-        'axis': key == 'canopy_1_m' ? '1' : '2',
+        if (key != 'height_m') 'axis': key == 'canopy_1_m' ? '1' : '2',
       },
     );
     if (!mounted ||
         result == null ||
         !result.qualityAccepted ||
-        result.measurementType != 'canopy_width' ||
+        result.measurementType !=
+            (key == 'height_m' ? 'tree_height' : 'canopy_width') ||
         !result.estimatedValueM.isFinite ||
         result.estimatedValueM < .01 ||
         result.estimatedValueM > 100000) {
@@ -59,10 +72,13 @@ class _StructuralMeasurementFieldsState
     }
     final value = double.parse(result.estimatedValueM.toStringAsFixed(2));
     setState(() {
+      confirmed = false;
       values[key] = value;
       controllers[key]!.text = value.toString();
     });
     widget.onChanged(Map.from(values));
+    widget.onConfirmed?.call(false);
+    widget.onCameraUsed?.call();
   }
 
   @override
@@ -83,6 +99,7 @@ class _StructuralMeasurementFieldsState
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: TextFormField(
+              key: fieldKeys[entry.key],
               controller: controllers[entry.key],
               decoration: InputDecoration(labelText: entry.value),
               keyboardType: const TextInputType.numberWithOptions(
@@ -90,7 +107,11 @@ class _StructuralMeasurementFieldsState
               ),
               autovalidateMode: AutovalidateMode.onUserInteraction,
               validator: (text) {
-                if (text == null || text.trim().isEmpty) return null;
+                if (text == null || text.trim().isEmpty) {
+                  return entry.key == 'height_m' && widget.requireHeight
+                      ? 'Enter height or measure it with the camera.'
+                      : null;
+                }
                 final n = double.tryParse(text);
                 return n == null || !n.isFinite || n < .01 || n > 100000
                     ? 'Enter a value from 0.01 to 100000.'
@@ -104,14 +125,17 @@ class _StructuralMeasurementFieldsState
                       ? n
                       : null,
                 );
+                setState(() => confirmed = false);
+                widget.onConfirmed?.call(false);
                 widget.onChanged(Map.from(values));
               },
             ),
           ),
         Wrap(
           spacing: 12,
+          runSpacing: 8,
           children: [
-            for (final key in ['canopy_1_m', 'canopy_2_m'])
+            for (final key in ['height_m', 'canopy_1_m', 'canopy_2_m'])
               OutlinedButton.icon(
                 onPressed: () => measureCanopy(key),
                 icon: const Icon(Icons.camera_alt_outlined),
@@ -131,8 +155,20 @@ class _StructuralMeasurementFieldsState
             'Basal Area: ${(math.pi * math.pow(dbh / 200, 2)).toStringAsFixed(6)} m²',
           ),
         ],
-        const Text(
-          'Canopy Width is recorded separately; neither axis is substituted for it.',
+        const SizedBox(height: 16),
+        SilvamangButton(
+          text: confirmed ? 'Measurements confirmed' : 'Confirm Measurements',
+          icon: Icons.check_rounded,
+          onPressed: () {
+            final valid = fieldKeys.values
+                .map((key) => key.currentState!.validate())
+                .toList()
+                .every((valid) => valid);
+            if (!valid) return;
+            FocusScope.of(context).unfocus();
+            setState(() => confirmed = true);
+            widget.onConfirmed?.call(true);
+          },
         ),
       ],
     );

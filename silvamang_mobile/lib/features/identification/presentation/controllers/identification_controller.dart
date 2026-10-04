@@ -194,6 +194,8 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     state = state.copyWith(
       result: r.copyWith(
         replaceStructural: true,
+        heightM: values['height_m'] ?? double.nan,
+        canopyWidthM: double.nan,
         gbhCm: values['gbh_cm'],
         dbhCm: values['dbh_cm'],
         canopy1M: values['canopy_1_m'],
