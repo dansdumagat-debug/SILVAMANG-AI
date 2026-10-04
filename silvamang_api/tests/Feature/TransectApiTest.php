@@ -134,7 +134,7 @@ class TransectApiTest extends TestCase
             ->assertOk();
         $path = $response->baseResponse->getFile()->getPathname();
         $book = IOFactory::load($path);
-        $this->assertNull($book->getSheetByName('Vegetation Data')->getCell('F2')->getValue());
+        $this->assertNull($book->getSheetByName('VEGETATION DATA DAY 1')->getCell('F2')->getValue());
         $this->assertNull($book->getSheetByName('Raw Scans')->getCell('C2')->getValue());
         $book->disconnectWorksheets();
         @unlink($path);
@@ -202,20 +202,20 @@ class TransectApiTest extends TestCase
 
         $path = $response->baseResponse->getFile()->getPathname();
         $book = IOFactory::load($path);
-        $sheet = $book->getSheetByName('Vegetation Data');
+        $sheet = $book->getSheetByName('VEGETATION DATA DAY 1');
         $this->assertNotNull($sheet);
-        $this->assertSame('Date', $sheet->getCell('A1')->getValue());
+        $this->assertSame('Date', (string) $sheet->getCell('A1')->getValue());
         $this->assertSame('Rhizophora apiculata', $sheet->getCell('F2')->getValue());
         $this->assertSame('SC-EXPORT-001', $book->getSheetByName('Raw Scans')->getCell('C2')->getValue());
         $this->assertSame(20.0, $book->getSheetByName('Raw Scans')->getCell('H2')->getValue());
         $this->assertNull($sheet->getCell('J2')->getValue()); // No measured girth on a legacy DBH-only record.
-        $this->assertEqualsWithDelta(100, $sheet->getCell('I2')->getValue(), 0.0001);
-        $this->assertEqualsWithDelta(20, $sheet->getCell('L2')->getValue(), 0.0001);
-        $this->assertEqualsWithDelta(0.2, $sheet->getCell('M2')->getValue(), 0.0001);
-        $this->assertEqualsWithDelta(pi() * 0.1 * 0.1, $sheet->getCell('N2')->getValue(), 0.0001);
-        $this->assertEqualsWithDelta(pi() * 0.1 * 0.1 * 5.2 * 0.5, $sheet->getCell('Q2')->getValue(), 0.0001);
-        $this->assertNull($sheet->getCell('S2')->getValue());
-        $this->assertEquals(3.4, $sheet->getCell('U2')->getValue());
+        $this->assertEqualsWithDelta(100, $sheet->getCell('I2')->getCalculatedValue(), 0.0001);
+        foreach (['K', 'L', 'M', 'N', 'P', 'Q'] as $column) {
+            $this->assertSame('f', $sheet->getCell($column.'2')->getDataType());
+            $this->assertSame('', $sheet->getCell($column.'2')->getCalculatedValue());
+        }
+        $this->assertNull($sheet->getCell('R2')->getValue());
+        $this->assertEquals(3.4, $book->getSheetByName('Raw Scans')->getCell('J2')->getValue());
         $book->disconnectWorksheets();
         @unlink($path);
 
@@ -224,7 +224,7 @@ class TransectApiTest extends TestCase
             ->assertOk();
         $blankAreaPath = $withoutArea->baseResponse->getFile()->getPathname();
         $blankAreaBook = IOFactory::load($blankAreaPath);
-        $this->assertNull($blankAreaBook->getSheetByName('Vegetation Data')->getCell('I2')->getValue());
+        $this->assertSame('', $blankAreaBook->getSheetByName('VEGETATION DATA DAY 1')->getCell('I2')->getCalculatedValue());
         $blankAreaBook->disconnectWorksheets();
         @unlink($blankAreaPath);
     }

@@ -27,9 +27,16 @@ enum _CameraMeasurementType { treeHeight, canopyWidth }
 enum _CameraCaptureMode { normal, extendedSweep }
 
 class CameraPointingMeasurementPage extends ConsumerStatefulWidget {
-  const CameraPointingMeasurementPage({super.key, this.initialType});
+  const CameraPointingMeasurementPage({
+    super.key,
+    this.initialType,
+    this.resultOnly = false,
+    this.axisLabel,
+  });
 
   final String? initialType;
+  final bool resultOnly;
+  final String? axisLabel;
 
   @override
   ConsumerState<CameraPointingMeasurementPage> createState() =>
@@ -187,7 +194,10 @@ class _CameraPointingMeasurementPageState
         leading: const SilvamangBackButton(
           fallbackRouteName: RouteNames.measurement,
         ),
-        title: Text('Camera Measurement', style: AppTextStyles.titleMedium),
+        title: Text(
+          widget.axisLabel ?? 'Camera Measurement',
+          style: AppTextStyles.titleMedium,
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.md),
@@ -1219,7 +1229,7 @@ class _CameraPointingMeasurementPageState
       });
       return;
     }
-    useCameraMeasurementResult(ref, result);
+    if (!widget.resultOnly) useCameraMeasurementResult(ref, result);
     context.pop(result);
   }
 

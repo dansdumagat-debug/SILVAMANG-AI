@@ -23,8 +23,8 @@ class VegetationWorkbookExportService
 
     public function create(Collection $transects, ?float $plotAreaM2 = null): string
     {
-        $book = new Spreadsheet;
-        $vegetation = $book->getActiveSheet()->setTitle('Vegetation Data');
+        $book = \PhpOffice\PhpSpreadsheet\IOFactory::load(resource_path('export-templates/mangrove-monitoring.xlsx'));
+        $vegetation = $book->createSheet()->setTitle('Vegetation Data');
         $raw = $book->createSheet()->setTitle('Raw Scans');
         $summary = $book->createSheet()->setTitle('Transect Summary');
         $speciesSheet = $book->createSheet()->setTitle('Species Summary');
@@ -46,8 +46,8 @@ class VegetationWorkbookExportService
             ['Existing workbook relationship: DBH_cm = GBH_cm / PI(); DBH_m = DBH_cm / 100.'],
             ['Existing basal-area calculation: PI() * (DBH_m / 2)^2, in square meters.'],
             ['Separate canopy axes and recorded canopy width are exported independently; no width is inferred from either axis.'],
-            ['Legacy DBH-only records retain DBH; measured GBH is blank when absent.'],
-            ['Existing tree-volume calculation: basal area * height * 0.5 (source-workbook form factor).'],
+            ['Legacy DBH-only records retain DBH in Raw Scans; measured GBH is blank when absent.'],
+            ['Existing tree-volume calculation: basal area * height * 0.5 (reference-workbook form factor).'],
             ['Density and stand values require a supplied positive plot area, applied uniformly to exported observations.'],
             ['Averages use available positive finite values only; all-missing groups are blank. Missing measurements are not zero.'],
             ['One row per observation within each transect; recorder is the observation user, not the transect owner.'],
@@ -56,13 +56,23 @@ class VegetationWorkbookExportService
         ], null, 'A1');
         $notes->getColumnDimension('A')->setWidth(120);
         $notes->getStyle('A1:A12')->getAlignment()->setWrapText(true);
+        $seenScans = [];
+        $plotKeys = [];
         $row = 2;
         $summaryRow = 2;
         $speciesRow = 2;
         foreach ($transects->unique('id') as $transect) {
-            $scans = $transect->observations->unique('id');
+            $scans = $transect->observations->unique('id')->filter(function ($scan) use (&$seenScans) {
+                if (isset($seenScans[$scan->id])) {
+                    return false;
+                }
+                $seenScans[$scan->id] = true;
+
+                return true;
+            });
             $groups = collect();
             foreach ($scans as $scan) {
+                $plotKeys[$row] = $scan->plot_no !== null && $scan->plot_no !== '' ? json_encode([$transect->id, $scan->plot_no]) : null;
                 $m = $scan->measurement;
                 $height = $this->positive($m?->height_m ?? $scan->height_m);
                 $width = $this->positive($m?->canopy_width_m ?? $scan->canopy_width_m);
@@ -125,6 +135,8 @@ class VegetationWorkbookExportService
         $raw->getStyle("H2:S$last")->getNumberFormat()->setFormatCode('0.0000');
         $summary->getStyle('E2:H'.max(2, $summaryRow - 1))->getNumberFormat()->setFormatCode('0.0000000');
         $speciesSheet->getStyle('G2:L'.max(2, $speciesRow - 1))->getNumberFormat()->setFormatCode('0.0000');
+        $this->populateReference($book, $vegetation, $plotKeys, $plotAreaM2);
+        $book->removeSheetByIndex($book->getIndex($vegetation));
         $book->setActiveSheetIndex(0);
         $path = tempnam(sys_get_temp_dir(), 'silvamang-vegetation-');
         if ($path === false) {
@@ -140,6 +152,130 @@ class VegetationWorkbookExportService
         }
 
         return $path;
+    }
+
+    private function populateReference(Spreadsheet $book, $source, array $plotKeys, ?float $area): void
+    {
+        $rows = [];
+        for ($r = 2; $r <= $source->getHighestDataRow(); $r++) {
+            $rows[] = ['row' => $r, 'date' => $source->getCell('A'.$r)->getValue()];
+        }
+        $days = collect($rows)->groupBy(fn ($record) => $record['date'] === null ? 'undated' : (string) floor((float) $record['date']))->sortKeys();
+        $number = 1;
+        foreach ($days as $records) {
+            $name = 'VEGETATION DATA DAY '.$number++;
+            $sheet = $book->getSheetByName($name);
+            if (! $sheet) {
+                $sheet = clone $book->getSheetByName('VEGETATION DATA DAY 4');
+                $sheet->setTitle($name);
+                $book->addSheet($sheet);
+                foreach ($sheet->getCellCollection()->getCoordinates() as $coord) {
+                    if ($sheet->getCell($coord)->getRow() > 1) {
+                        $sheet->setCellValue($coord, null);
+                    }
+                }
+            }
+            $this->fillReferenceSheet($sheet, $source, $records->values()->all(), $plotKeys, $area, false);
+        }
+        // Retain all four daily layouts, even when fewer survey dates were selected.
+        for ($day = $number; $day <= 4; $day++) {
+            $this->fillReferenceSheet($book->getSheetByName('VEGETATION DATA DAY '.$day), $source, [], $plotKeys, $area, false);
+        }
+        $this->fillReferenceSheet($book->getSheetByName('VEGETATION DATA '), $source, $rows, $plotKeys, $area, true);
+        $notes = $book->getSheetByName('Export Notes');
+        $notes->setCellValue('A13', 'Reference daily and combined layouts retained. DBH units corrected to meters. Formula results are blank when source data is absent.');
+        $notes->setCellValue('A14', 'Stand totals use selected observations grouped by physical transect and plot, with supplied uniform plot area. Partial selections are not a complete plot census.');
+        $notes->setCellValue('A15', 'Original pivot/IVI/RF/relative dominance/density report layouts are retained blank: category, census counts and complete sampling effort are not collected. Original survey records and cached analyses are excluded.');
+        $notes->setCellValue('A16', 'Combined-sheet canopy calculations preserve reference methodology: corrected second dimension = Canopy 2 / 2; average diameter = mean(Canopy 1, corrected dimension); crown cover = 0.7854 * average diameter squared. These do not overwrite recorded canopy width.');
+        $notes->setCellValue('A17', 'Count-MG is one individual observation per scan; grouped seedling/sapling census counts are not collected. Historical DBH remains available in Raw Scans; the vegetation DBH formula requires measured GBH.');
+        $notes->getStyle('A1:A17')->getAlignment()->setWrapText(true);
+        $sampling = $book->getSheetByName('Sampling Areas');
+        $raw = $book->getSheetByName('Raw Scans');
+        foreach ($rows as $index => $record) {
+            $r = $record['row'];
+            $target = $index + 2;
+            foreach (['A' => 'C', 'B' => 'D', 'C' => 'E'] as $to => $from) {
+                $sampling->setCellValueExplicit($to.$target, (string) $source->getCell($from.$r)->getValue(), DataType::TYPE_STRING);
+            }
+            foreach (['D' => 'F', 'E' => 'G'] as $to => $from) {
+                $sampling->setCellValue($to.$target, $raw->getCell($from.$r)->getValue());
+            }
+        }
+        $composition = $book->getSheetByName('Species Composition');
+        $speciesSummary = $book->getSheetByName('Species Summary');
+        $seenSpecies = [];
+        $speciesRow = 2;
+        for ($r = 2; $r <= $speciesSummary->getHighestDataRow(); $r++) {
+            $name = (string) $speciesSummary->getCell('A'.$r)->getValue();
+            if ($name === '' || isset($seenSpecies[$name])) {
+                continue;
+            }
+            $seenSpecies[$name] = true;
+            foreach (['A' => 'C', 'B' => 'A', 'C' => 'B'] as $to => $from) {
+                $composition->setCellValueExplicit($to.$speciesRow, (string) $speciesSummary->getCell($from.$r)->getValue(), DataType::TYPE_STRING);
+            }
+            $speciesRow++;
+        }
+        $composition->freezePane('A2');
+        $composition->setAutoFilter('A1:E'.max(2, $speciesRow - 1));
+        $sampling->freezePane('A2');
+        $sampling->setAutoFilter('A1:G'.max(2, count($rows) + 1));
+    }
+
+    private function fillReferenceSheet($sheet, $source, array $records, array $plotKeys, ?float $area, bool $combined): void
+    {
+        usort($records, fn ($a, $b) => strcmp($plotKeys[$a['row']] ?? '', $plotKeys[$b['row']] ?? '') ?: ($a['row'] <=> $b['row']));
+        $end = $combined ? 'AC' : 'Y';
+        $groups = [];
+        foreach ($records as $index => $record) {
+            $key = $plotKeys[$record['row']] ?? null;
+            if ($key !== null) {
+                $groups[$key][] = $index + 2;
+            }
+        }
+        foreach ($records as $index => $record) {
+            $r = $index + 2;
+            $old = $record['row'];
+            $sheet->duplicateStyle($sheet->getStyle('A2:'.$end.'2'), 'A'.$r.':'.$end.$r);
+            $map = $combined
+                ? ['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E', 'F' => 'F', 'G' => 'G', 'H' => 'H', 'J' => 'J', 'P' => 'P', 'S' => 'S', 'T' => 'T', 'X' => 'V', 'Y' => 'W', 'Z' => 'X', 'AA' => 'Y', 'AB' => 'Z', 'AC' => 'AA']
+                : ['A' => 'A', 'B' => 'B', 'C' => 'C', 'D' => 'D', 'E' => 'E', 'F' => 'F', 'G' => 'G', 'H' => 'H', 'J' => 'J', 'O' => 'P', 'R' => 'S', 'S' => 'T', 'T' => 'V', 'U' => 'W', 'V' => 'X', 'W' => 'Y', 'X' => 'Z', 'Y' => 'AA'];
+            foreach ($map as $to => $from) {
+                $cell = $source->getCell($from.$old);
+                $sheet->setCellValueExplicit($to.$r, $cell->getValue(), $cell->getDataType());
+            }
+            $sheet->getStyle('A'.$r)->getNumberFormat()->setFormatCode('mmmm dd, yyyy');
+            $formula = fn ($column, $value) => $sheet->setCellValue($column.$r, $value);
+            $formula('K', '=IF(J'.$r.'="","",J'.$r.'/100)');
+            $formula('L', '=IF(J'.$r.'="","",J'.$r.'/PI()/100)');
+            $formula('M', '=IF(L'.$r.'="","",PI()*(L'.$r.'/2)^2)');
+            $height = $combined ? 'P' : 'O';
+            $volume = $combined ? 'Q' : 'P';
+            $stand = $combined ? 'O' : 'N';
+            $standVolume = $combined ? 'R' : 'Q';
+            $formula($volume, '=IF(OR(M'.$r.'="",'.$height.$r.'=""),"",M'.$r.'*'.$height.$r.'*0.5)');
+            $factor = $area !== null && $area > 0 ? 10000 / $area : null;
+            $formula('I', $factor === null ? '=""' : '=IF(H'.$r.'="","",H'.$r.'*'.$factor.')');
+            $key = $plotKeys[$old] ?? null;
+            $members = $key !== null ? ($groups[$key] ?? []) : [];
+            foreach ([$stand => 'M', $standVolume => $volume] as $to => $from) {
+                $cells = $members ? $from.min($members).':'.$from.max($members) : '';
+                $formula($to, $factor === null || ! $members ? '=""' : '=IF(COUNT('.$cells.')<'.count($members).',"",SUM('.$cells.')*'.$factor.')');
+            }
+            if ($combined) {
+                $formula('N', $factor === null ? '=""' : '=IF(M'.$r.'="","",M'.$r.'*'.$factor.')');
+                $formula('U', '=IF(T'.$r.'="","",T'.$r.'/2)');
+                $formula('V', '=IF(OR(S'.$r.'="",U'.$r.'=""),"",AVERAGE(S'.$r.',U'.$r.'))');
+                $formula('W', '=IF(V'.$r.'="","",0.7854*V'.$r.'^2)');
+            }
+            $sheet->getStyle('I'.$r.':'.($combined ? 'W' : 'S').$r)->getNumberFormat()->setFormatCode('0.0000');
+        }
+        $last = max(2, count($records) + 1);
+        if ($sheet->getHighestRow() > $last) {
+            $sheet->removeRow($last + 1, $sheet->getHighestRow() - $last);
+        }
+        $sheet->freezePane('A2');
+        $sheet->setAutoFilter('A1:'.$end.max(2, count($records) + 1));
     }
 
     private function positive(mixed $value): ?float

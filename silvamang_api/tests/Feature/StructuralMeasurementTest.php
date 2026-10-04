@@ -71,16 +71,18 @@ class StructuralMeasurementTest extends TestCase
         $path = app(VegetationWorkbookExportService::class)->create(collect([$t, $t]));
         try {
             $book = IOFactory::load($path);
-            $sheet = $book->getSheetByName('Vegetation Data');
-            $this->assertSame(3, $sheet->getHighestDataRow());
+            $sheet = $book->getSheetByName('VEGETATION DATA DAY 1');
+            $this->assertSame(3, $sheet->getHighestDataRow('B'));
             $this->assertSame('Recorder A', $sheet->getCell('B2')->getValue());
             $this->assertSame('Recorder B', $sheet->getCell('B3')->getValue());
             $this->assertEquals(174, $sheet->getCell('J2')->getValue());
-            $this->assertEquals(1.74, $sheet->getCell('K2')->getValue());
-            $this->assertEquals(55.39, $sheet->getCell('L2')->getValue());
-            $this->assertEquals(.5539, $sheet->getCell('M2')->getValue());
-            $this->assertEquals(4, $sheet->getCell('S2')->getValue());
-            $this->assertEquals(3.5, $sheet->getCell('T2')->getValue());
+            $this->assertEquals(1.74, $sheet->getCell('K2')->getCalculatedValue());
+            $this->assertEqualsWithDelta(174 / pi() / 100, $sheet->getCell('L2')->getCalculatedValue(), .000001);
+            $this->assertSame('f', $sheet->getCell('L2')->getDataType());
+            $this->assertSame('', $sheet->getCell('L3')->getCalculatedValue());
+            $this->assertEqualsWithDelta(pi() * (174 / pi() / 200) ** 2, $sheet->getCell('M2')->getCalculatedValue(), .000001);
+            $this->assertEquals(4, $sheet->getCell('R2')->getValue());
+            $this->assertEquals(3.5, $sheet->getCell('S2')->getValue());
             $this->assertNull($sheet->getCell('U2')->getValue());
             $this->assertNull($sheet->getCell('J3')->getValue());
             $this->assertNull($sheet->getCell('V2')->getValue());
@@ -95,5 +97,45 @@ class StructuralMeasurementTest extends TestCase
         } finally {
             @unlink($path);
         }
+    }
+
+    public function test_selected_export_deduplicates_records_and_scopes_plot_formulas(): void
+    {
+        $role = \App\Models\Role::create(['name' => 'admin', 'display_name' => 'Admin', 'status' => 'active']);
+        $admin = User::factory()->create();
+        $admin->roles()->attach($role);
+        $other = User::factory()->create();
+        $t = Transect::create(['user_id' => $admin->id, 'transect_code' => 'SELECT-T1', 'transect_name' => 'Shared', 'start_latitude' => 10, 'start_longitude' => 125, 'end_latitude' => 10.1, 'end_longitude' => 125.1]);
+        $scans = collect();
+        foreach ([$admin, $other, $other] as $i => $user) {
+            $scan = ScanRecord::create(['user_id' => $user->id, 'record_code' => 'SELECT-'.$i, 'plot_no' => $i < 2 ? '1' : '2', 'captured_at' => '2026-10-04 10:00:00']);
+            Measurement::create(['scan_record_id' => $scan->id, 'gbh_cm' => 174, 'height_m' => 9, 'canopy_1_m' => 5, 'canopy_2_m' => 3.5]);
+            $scans->push($scan);
+        }
+        $t->observations()->sync($scans->pluck('id'));
+        $this->actingAs($admin)->get('/admin/transects/export-selection')->assertOk()->assertSee('Add to Export')->assertSee('Selected Export Records');
+        $selection = $scans->map(fn ($s) => $t->id.':'.$s->id)->all();
+        $response = $this->post('/admin/transects/export-selected', ['selection' => [...$selection, $selection[0]], 'plot_area_m2' => 100])->assertOk();
+        $path = $response->baseResponse->getFile()->getPathname();
+        try {
+            $book = IOFactory::load($path);
+            $sheet = $book->getSheetByName('VEGETATION DATA DAY 1');
+            $basal = pi() * (174 / pi() / 200) ** 2;
+            $this->assertEqualsWithDelta(2 * $basal * 100, $sheet->getCell('N2')->getCalculatedValue(), .00001);
+            $this->assertEqualsWithDelta($basal * 100, $sheet->getCell('N4')->getCalculatedValue(), .00001);
+            $this->assertEqualsWithDelta(2 * $basal * 9 * .5 * 100, $sheet->getCell('Q2')->getCalculatedValue(), .00001);
+            $this->assertSame(4, $sheet->getHighestDataRow('B'));
+            $this->assertEquals(5, $sheet->getCell('R2')->getValue());
+            $this->assertEquals(3.5, $sheet->getCell('S2')->getValue());
+            $this->assertSame(' GBH ( cm)', (string) $sheet->getCell('J1')->getValue());
+            $this->assertSame('Other Observations', (string) $sheet->getCell('Y1')->getValue());
+            $this->assertSame('', $book->getSheetByName('VEGETATION DATA DAY 2')->getCell('B2')->getFormattedValue());
+            $this->assertNotNull($book->getSheetByName('IVI'));
+            $book->disconnectWorksheets();
+        } finally {
+            @unlink($path);
+        }
+        $this->post('/admin/transects/export-selected', ['selection' => [$t->id.':99999999']])->assertStatus(422);
+        $this->actingAs($other)->post('/admin/transects/export-selected', ['selection' => [$selection[0]]])->assertForbidden();
     }
 }

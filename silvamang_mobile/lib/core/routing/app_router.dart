@@ -121,6 +121,12 @@ class AppRouter {
             name: RouteNames.cameraPointingMeasurement,
             builder: (context, state) => CameraPointingMeasurementPage(
               initialType: state.uri.queryParameters['type'],
+              resultOnly: state.uri.queryParameters['result_only'] == 'true',
+              axisLabel: state.uri.queryParameters['axis'] == '1'
+                  ? 'Canopy 1 (m)'
+                  : state.uri.queryParameters['axis'] == '2'
+                  ? 'Canopy 2 (m)'
+                  : null,
             ),
           ),
           GoRoute(

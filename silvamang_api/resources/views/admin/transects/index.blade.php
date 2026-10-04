@@ -13,6 +13,9 @@
             <p>GPS-based survey paths, field observations, and ecological monitoring summaries.</p>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
+            @if($canViewAll)
+                <a class="primary-action" href="{{ route('admin.transects.export-selection') }}">Select Export Records</a>
+            @endif
             <form method="GET" action="{{ route('admin.transects.export-excel') }}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
                 @foreach(request()->except('plot_area_m2') as $key => $value)
                     @if(is_scalar($value))

@@ -73,7 +73,13 @@ class TransectController extends Controller
 
     public function export(Request $request): StreamedResponse
     {
+        $selected = collect($validated['selection'] ?? [])->unique();
+        if ($request->isMethod('post')) {
+            abort_unless(ApiAccess::canViewAllRecords($request->user()), 403);
+            abort_if($selected->isEmpty(), 422, 'Select at least one export group.');
+        }
         $transects = $this->filteredQuery($request)
+            ->when($selected->isNotEmpty(), fn ($query) => $query->whereIn('id', $selected->map(fn ($key) => explode(':', $key)[0])))
             ->with(['user:id,name,email', 'observations.species'])
             ->withCount(['points', 'observations'])
             ->orderByRaw('COALESCE(recorded_at, created_at) desc')
@@ -134,12 +140,45 @@ class TransectController extends Controller
         ]);
     }
 
+    public function exportSelection(Request $request): View
+    {
+        abort_unless(ApiAccess::canViewAllRecords($request->user()), 403);
+        $groups = collect();
+        $transects = Transect::with(['observations.user:id,name'])->get();
+        foreach ($transects as $transect) {
+            foreach ($transect->observations->unique('id')->groupBy(fn ($scan) => json_encode([
+                $scan->user_id, $scan->plot_no, $scan->captured_at?->format('Y-m-d'),
+                $scan->location_name ?: $transect->location_name,
+            ])) as $scans) {
+                $first = $scans->first();
+                $groups->push([
+                    'recorder' => $first->user?->name ?? '', 'user' => (string) $first->user_id,
+                    'transect' => $transect->transect_code ?: $transect->transect_name,
+                    'transect_id' => (string) $transect->id, 'plot' => $first->plot_no ?? '',
+                    'date' => $first->captured_at?->format('Y-m-d') ?? '',
+                    'location' => $first->location_name ?: ($transect->location_name ?? ''),
+                    'records' => $scans->map(fn ($scan) => $transect->id.':'.$scan->id)->values(),
+                ]);
+            }
+        }
+
+        return view('admin.transects.export-selection', ['groups' => $groups]);
+    }
+
     public function exportExcel(Request $request, VegetationWorkbookExportService $exporter): BinaryFileResponse
     {
         $validated = $request->validate([
             'plot_area_m2' => ['nullable', 'numeric', 'gt:0', 'max:1000000'],
+            'selection' => ['sometimes', 'required', 'array', 'min:1', 'max:5000'],
+            'selection.*' => ['required', 'string', 'regex:/^[0-9]+:[0-9]+$/'],
         ]);
+        $selected = collect($validated['selection'] ?? [])->unique();
+        if ($request->isMethod('post')) {
+            abort_unless(ApiAccess::canViewAllRecords($request->user()), 403);
+            abort_if($selected->isEmpty(), 422, 'Select at least one export group.');
+        }
         $transects = $this->filteredQuery($request)
+            ->when($selected->isNotEmpty(), fn ($query) => $query->whereIn('id', $selected->map(fn ($key) => explode(':', $key)[0])))
             ->with([
                 'user:id,name,email',
                 'observations.user:id,name,email',
@@ -149,6 +188,21 @@ class TransectController extends Controller
             ->orderByRaw('COALESCE(recorded_at, created_at) desc')
             ->get();
 
+        if ($selected->isNotEmpty()) {
+            $matched = collect();
+            foreach ($transects as $transect) {
+                $transect->setRelation('observations', $transect->observations->filter(function ($scan) use ($selected, $transect, $matched) {
+                    $key = $transect->id.':'.$scan->id;
+                    if (! $selected->contains($key)) {
+                        return false;
+                    }
+                    $matched->push($key);
+
+                    return true;
+                })->values());
+            }
+            abort_unless($selected->diff($matched)->isEmpty(), 422, 'Some selected observations are no longer available. Refresh the selection.');
+        }
         $path = $exporter->create(
             $transects,
             isset($validated['plot_area_m2']) ? (float) $validated['plot_area_m2'] : null
@@ -206,7 +260,7 @@ class TransectController extends Controller
             'id' => $transect->id,
             'code' => $transect->transect_code,
             'name' => $transect->transect_name,
-            'map_label' => 'T' . (int) $transectNumber,
+            'map_label' => 'T'.(int) $transectNumber,
             'location' => $transect->location_name,
             'researcher' => $transect->user?->name,
             'mode' => $transect->mode,
@@ -226,6 +280,7 @@ class TransectController extends Controller
                     if (count($points) < 2) {
                         return null;
                     }
+
                     return [
                         ['latitude' => (float) $points[0]['latitude'], 'longitude' => (float) $points[0]['longitude']],
                         ['latitude' => (float) $points[array_key_last($points)]['latitude'], 'longitude' => (float) $points[array_key_last($points)]['longitude']],
