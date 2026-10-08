@@ -148,7 +148,7 @@ class VegetationWorkbookExportService
             throw new \RuntimeException('Unable to create Excel export.');
         }
         try {
-            (new Xlsx($book))->save($path);
+            (new Xlsx($book))->setPreCalculateFormulas(true)->setForceFullCalc(true)->save($path);
         } catch (\Throwable $error) {
             @unlink($path);
             throw $error;
@@ -281,26 +281,11 @@ class VegetationWorkbookExportService
         if ($sheet->getHighestRow() > $last) {
             $sheet->removeRow($last + 1, $sheet->getHighestRow() - $last);
         }
-        // Keep template headers/sheets, but make recorded rows readable in Excel and WPS.
-        $sheet->getStyle('A2:'.$end.$last)->getFont()->setBold(false)->setSize(11);
-        $sheet->getStyle('A2:'.$end.$last)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('F2:F'.$last)->getFont()->setItalic(true);
-        $sheet->getStyle('H2:H'.$last)->getNumberFormat()->setFormatCode('0');
-        $sheet->getStyle('I2:I'.$last)->getNumberFormat()->setFormatCode('0.####');
-        $sheet->getStyle('A1:'.$end.'1')->getAlignment()->setWrapText(true);
-        $sheet->getRowDimension(1)->setRowHeight(34);
-        foreach (range(1, Coordinate::columnIndexFromString($end)) as $col) {
-            $letter = Coordinate::stringFromColumnIndex($col);
-            $sheet->getColumnDimension($letter)->setWidth(19);
-        }
-        foreach (['A' => 23, 'B' => 26, 'C' => 30, 'D' => 27, 'E' => 12, 'F' => 33, 'G' => 14, 'H' => 12] as $col => $width) {
-            $sheet->getColumnDimension($col)->setWidth($width);
-        }
-        $sheet->getColumnDimension($combined ? 'O' : 'N')->setWidth(26);
-        for ($col = Coordinate::columnIndexFromString($combined ? 'X' : 'T'); $col <= Coordinate::columnIndexFromString($end); $col++) {
-            $letter = Coordinate::stringFromColumnIndex($col);
-            $sheet->getColumnDimension($letter)->setWidth(30);
-            $sheet->getStyle($letter.'2:'.$letter.$last)->getAlignment()->setWrapText(true);
+        // Keep the reference workbook's widths, fonts, header height and colors.
+        // Extend its data-row height when an export exceeds the template's styled rows.
+        $rowHeight = $sheet->getRowDimension(2)->getRowHeight();
+        for ($row = 3; $row <= $last; $row++) {
+            $sheet->getRowDimension($row)->setRowHeight($rowHeight);
         }
         $sheet->freezePane('A2');
         $sheet->setAutoFilter('A1:'.$end.max(2, count($records) + 1));

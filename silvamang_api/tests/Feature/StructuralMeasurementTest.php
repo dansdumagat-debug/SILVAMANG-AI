@@ -142,8 +142,25 @@ class StructuralMeasurementTest extends TestCase
         $response = $this->post('/admin/transects/export-selected', ['selection' => [...$selection, $selection[0]], 'plot_area_m2' => 100])->assertOk();
         $path = $response->baseResponse->getFile()->getPathname();
         try {
+            if ($preview = getenv('EXPORT_PREVIEW_PATH')) {
+                copy($path, $preview);
+            }
             $book = IOFactory::load($path);
             $sheet = $book->getSheetByName('VEGETATION DATA DAY 1');
+            $template = IOFactory::load(resource_path('export-templates/mangrove-monitoring.xlsx'));
+            $reference = $template->getSheetByName('VEGETATION DATA DAY 1');
+            foreach (range('A', 'Y') as $column) {
+                $this->assertEquals($reference->getColumnDimension($column)->getWidth(), $sheet->getColumnDimension($column)->getWidth());
+                $this->assertSame((string) $reference->getCell($column.'1')->getValue(), (string) $sheet->getCell($column.'1')->getValue());
+                $this->assertSame($reference->getStyle($column.'1')->getFont()->getHashCode(), $sheet->getStyle($column.'1')->getFont()->getHashCode());
+            }
+            $template->disconnectWorksheets();
+            $zip = new \ZipArchive();
+            $zip->open($path);
+            $calculation = simplexml_load_string($zip->getFromName('xl/workbook.xml'))->calcPr;
+            $this->assertSame('auto', (string) $calculation['calcMode']);
+            $this->assertSame('1', (string) $calculation['forceFullCalc']);
+            $zip->close();
             $basal = pi() * (174 / pi() / 200) ** 2;
             $this->assertEqualsWithDelta(2 * $basal * 100, $sheet->getCell('N2')->getCalculatedValue(), .00001);
             $this->assertEqualsWithDelta($basal * 100, $sheet->getCell('N4')->getCalculatedValue(), .00001);
