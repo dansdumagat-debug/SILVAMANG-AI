@@ -1,0 +1,9 @@
+[Unit]
+Description=Check approved SILVAMANG training photos hourly
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=300
+Unit=silvamang-reviewed-training.service
+[Install]
+WantedBy=timers.target

@@ -46,6 +46,8 @@ class DatasetVerificationController extends Controller
             'datasetStatuses' => self::DATASET_STATUSES,
             'imageQualities' => self::IMAGE_QUALITIES,
             'plantParts' => self::PLANT_PARTS,
+            'trainingStatus' => is_file(storage_path('app/retraining-status.json'))
+                ? (json_decode(file_get_contents(storage_path('app/retraining-status.json')), true) ?: []) : [],
             'pendingCount' => ScanImage::where('dataset_status', 'pending')->count(),
             'verifiedCount' => ScanImage::where('dataset_status', 'verified')->count(),
             'exportedCount' => ScanImage::where('dataset_status', 'exported')->count(),

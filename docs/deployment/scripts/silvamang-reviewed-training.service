@@ -1,0 +1,8 @@
+[Unit]
+Description=SILVAMANG researcher-approved species retraining
+After=docker.service
+Requires=docker.service
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/silvamang-reviewed-training/run_reviewed_training.sh
+TimeoutStartSec=infinity

@@ -11,6 +11,41 @@
         </div>
     </div>
 
+    <article class="panel" style="margin-bottom:20px">
+        <h3>Automatic species training</h3>
+        <p>Approved leaves, bark, roots and flower photos are checked hourly. Training starts with at least 20 new unique photos, including 5 photos each from at least 2 species. New models require accuracy review before publication.</p>
+        @php
+            $trainingLabels = [
+                'waiting_for_resources' => 'Waiting for server capacity',
+                'waiting_for_baseline' => 'Preparing reference dataset',
+                'waiting_for_approved_photos' => 'Waiting for more approved photos',
+                'waiting_for_unique_approved_photos' => 'Waiting for more unique approved photos',
+                'extracting_features' => 'Preparing training images',
+                'training' => 'Training a candidate model',
+                'candidate_ready_for_review' => 'Candidate ready for accuracy review',
+                'no_improvement' => 'Candidate did not improve accuracy; current model retained',
+                'source_changed_retry_required' => 'Approved photos changed; retry scheduled',
+                'error' => 'Training needs attention; current model retained',
+            ];
+        @endphp
+        <strong>{{ $trainingLabels[$trainingStatus['state'] ?? ''] ?? 'Worker not yet reporting' }}</strong>
+        @if(isset($trainingStatus['approved']))
+            <p>Eligible approved photos: {{ $trainingStatus['approved'] }}</p>
+        @endif
+        @if(isset($trainingStatus['report']['baseline']['accuracy']))
+            <p>Current model validation accuracy: {{ number_format($trainingStatus['report']['baseline']['accuracy'] * 100, 2) }}%</p>
+            @if(isset($trainingStatus['report']['candidate_metrics']['accuracy']))
+                <p>Candidate validation accuracy: {{ number_format($trainingStatus['report']['candidate_metrics']['accuracy'] * 100, 2) }}%. Requires independent evaluation before publication.</p>
+            @endif
+        @endif
+        @if($trainingStatus['previous_candidate_needs_review'] ?? false)
+            <p>A previous candidate used photos whose approvals changed. Review it again before publication.</p>
+        @endif
+        @if(isset($trainingStatus['updated_at']))
+            <p>Last check: {{ \Carbon\Carbon::parse($trainingStatus['updated_at'])->timezone('Asia/Manila')->format('M d, Y g:i A') }} PHT</p>
+        @endif
+    </article>
+
     <section class="dataset-export-panel">
         <article class="export-action-card">
             <div>

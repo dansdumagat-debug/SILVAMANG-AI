@@ -20,6 +20,8 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
+        // Also support containers whose optimized class map predates this command.
+        require_once __DIR__.'/Commands/PrepareTrainingSnapshot.php';
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
