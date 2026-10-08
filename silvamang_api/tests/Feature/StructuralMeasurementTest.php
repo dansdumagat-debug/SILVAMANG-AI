@@ -131,6 +131,31 @@ class StructuralMeasurementTest extends TestCase
             $this->assertSame('Other Observations', (string) $sheet->getCell('Y1')->getValue());
             $this->assertSame('', $book->getSheetByName('VEGETATION DATA DAY 2')->getCell('B2')->getFormattedValue());
             $this->assertNotNull($book->getSheetByName('IVI'));
+            $combined = $book->getSheetByName('VEGETATION DATA ');
+            foreach (['I', 'K', 'L', 'M', 'N', 'O', 'Q', 'R', 'U', 'V', 'W'] as $column) {
+                $this->assertSame('f', $combined->getCell($column.'2')->getDataType());
+            }
+            $this->assertEqualsWithDelta(1.75, $combined->getCell('U2')->getCalculatedValue(), .00001);
+            $this->assertEqualsWithDelta(3.375, $combined->getCell('V2')->getCalculatedValue(), .00001);
+            $this->assertEqualsWithDelta(.7854 * 3.375 ** 2, $combined->getCell('W2')->getCalculatedValue(), .00001);
+            $notes = $book->getSheetByName('Export Notes');
+            foreach ([null, 0, -1, 'unknown'] as $missingArea) {
+                $notes->setCellValue('B19', $missingArea);
+                $book->getCalculationEngine()->clearCalculationCache();
+                foreach (['I', 'N', 'Q'] as $column) {
+                    $this->assertSame('', $sheet->getCell($column.'2')->getCalculatedValue());
+                }
+            }
+            $notes->setCellValue('B19', 200);
+            $book->getCalculationEngine()->clearCalculationCache();
+            $this->assertEqualsWithDelta(50, $sheet->getCell('I2')->getCalculatedValue(), .00001);
+            $this->assertEqualsWithDelta(2 * $basal * 50, $sheet->getCell('N2')->getCalculatedValue(), .00001);
+            $sheet->setCellValue('J2', null);
+            $book->getCalculationEngine()->clearCalculationCache();
+            foreach (['K', 'L', 'M', 'N', 'P', 'Q'] as $column) {
+                $this->assertSame('', $sheet->getCell($column.'2')->getCalculatedValue());
+            }
+
             $book->disconnectWorksheets();
         } finally {
             @unlink($path);

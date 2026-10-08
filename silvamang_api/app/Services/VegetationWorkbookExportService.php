@@ -54,6 +54,11 @@ class VegetationWorkbookExportService
             ['Plot No is a field identifier on the observation; no separate Plot entity existed in this system.'],
             ['Survey fields are exported from recorded ecological details; unknown values remain blank. System-generated scan notes are not field observations.'],
         ], null, 'A1');
+        $notes->setCellValue('A19', 'Plot area (m2); applies uniformly to selected plots; enter a positive measured area to calculate density and stand values.');
+        $notes->setCellValue('B19', $plotAreaM2);
+        $notes->getStyle('B19')->getNumberFormat()->setFormatCode('0.########');
+        $notes->getColumnDimension('B')->setWidth(22);
+        $notes->getStyle('B19')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFFCC');
         $notes->getColumnDimension('A')->setWidth(120);
         $notes->getStyle('A1:A12')->getAlignment()->setWrapText(true);
         $seenScans = [];
@@ -188,7 +193,7 @@ class VegetationWorkbookExportService
         $notes->setCellValue('A15', 'Original pivot/IVI/RF/relative dominance/density report layouts are retained blank: complete census coverage and sampling effort are not established. Original survey records and cached analyses are excluded.');
         $notes->setCellValue('A16', 'Combined-sheet canopy calculations preserve reference methodology: corrected second dimension = Canopy 2 / 2; average diameter = mean(Canopy 1, corrected dimension); crown cover = 0.7854 * average diameter squared. These do not overwrite recorded canopy width.');
         $notes->setCellValue('A17', 'Count-MG uses the recorded census count, otherwise one individual observation per scan. Historical DBH remains available in Raw Scans; the vegetation DBH formula requires measured GBH.');
-        $notes->getStyle('A1:A17')->getAlignment()->setWrapText(true);
+        $notes->getStyle('A1:A19')->getAlignment()->setWrapText(true);
         $sampling = $book->getSheetByName('Sampling Areas');
         $raw = $book->getSheetByName('Raw Scans');
         foreach ($rows as $index => $record) {
@@ -254,16 +259,18 @@ class VegetationWorkbookExportService
             $stand = $combined ? 'O' : 'N';
             $standVolume = $combined ? 'R' : 'Q';
             $formula($volume, '=IF(OR(M'.$r.'="",'.$height.$r.'=""),"",M'.$r.'*'.$height.$r.'*0.5)');
-            $factor = $area !== null && $area > 0 ? 10000 / $area : null;
-            $formula('I', $factor === null ? '=""' : '=IF(H'.$r.'="","",H'.$r.'*'.$factor.')');
+            $areaCell = "'Export Notes'!\$B\$19";
+            $areaMissing = 'OR(NOT(ISNUMBER('.$areaCell.')),'.$areaCell.'<=0)';
+            $factor = '10000/'.$areaCell;
+            $formula('I', '=IF(OR('.$areaMissing.',H'.$r.'=""),"",H'.$r.'*'.$factor.')');
             $key = $plotKeys[$old] ?? null;
             $members = $key !== null ? ($groups[$key] ?? []) : [];
             foreach ([$stand => 'M', $standVolume => $volume] as $to => $from) {
                 $cells = $members ? $from.min($members).':'.$from.max($members) : '';
-                $formula($to, $factor === null || ! $members ? '=""' : '=IF(COUNT('.$cells.')<'.count($members).',"",SUM('.$cells.')*'.$factor.')');
+                $formula($to, ! $members ? '=""' : '=IF(OR('.$areaMissing.',COUNT('.$cells.')<'.count($members).'),"",SUM('.$cells.')*'.$factor.')');
             }
             if ($combined) {
-                $formula('N', $factor === null ? '=""' : '=IF(M'.$r.'="","",M'.$r.'*'.$factor.')');
+                $formula('N', '=IF(OR('.$areaMissing.',M'.$r.'=""),"",M'.$r.'*'.$factor.')');
                 $formula('U', '=IF(T'.$r.'="","",T'.$r.'/2)');
                 $formula('V', '=IF(OR(S'.$r.'="",U'.$r.'=""),"",AVERAGE(S'.$r.',U'.$r.'))');
                 $formula('W', '=IF(V'.$r.'="","",0.7854*V'.$r.'^2)');
