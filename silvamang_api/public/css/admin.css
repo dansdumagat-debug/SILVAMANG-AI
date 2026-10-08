@@ -4668,3 +4668,55 @@ a:focus-visible, button:focus-visible { outline: 3px solid #245d85; outline-offs
     .admin-settings .form-card { padding: 14px; }
     .admin-topbar .profile-chip { max-width: 160px; }
 }
+/* Six-panel administration workspace. */
+.settings-heading { justify-content: flex-start; align-items: center; gap: 18px; }
+.settings-icon { flex: 0 0 42px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; color: #07553e; }
+.settings-icon svg { width: 34px; height: 34px; }
+.settings-heading > .settings-icon { width: 52px; height: 52px; flex-basis: 52px; background: #e1eee7; border-radius: 14px; }
+.settings-workspace { gap: 18px; align-items: stretch; }
+.settings-workspace .form-card { display: flex; flex-direction: column; height: auto; margin: 0; padding: 22px; border: 1px solid #d6e3dd; border-radius: 14px; box-shadow: 0 5px 18px rgba(18, 61, 44, .035); }
+.settings-card-heading { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+.settings-card-heading > div { min-width: 0; }
+.settings-workspace .settings-card-heading h3 { margin: 0 0 5px; font-size: 18px; line-height: 1.35; }
+.settings-workspace .settings-card-heading p { margin: 0; font-size: 13px; line-height: 1.5; color: #5b6c65; }
+.settings-workspace .form-grid { gap: 16px; margin: 0; }
+.settings-workspace .form-group { gap: 7px; font-size: 13px; }
+.settings-workspace input, .settings-workspace select { min-width: 0; width: 100%; min-height: 44px; padding: 10px 12px; border-radius: 8px; font-size: 14px; }
+.settings-workspace small { color: #68776f; font-size: 12px; font-weight: 400; }
+.settings-workspace .form-actions { margin-top: auto; padding-top: 20px; border: 0; gap: 10px; }
+.settings-workspace .primary-action, .settings-workspace .secondary-action { min-height: 44px; padding: 10px 16px; font-size: 14px; border-radius: 7px; }
+.settings-workspace .primary-action { background: #0b6549; }
+.settings-workspace .primary-action:hover { background: #084e39; }
+.settings-fixed-value { display: flex; align-items: center; min-height: 44px; padding: 10px 12px; border: 1px solid #d8e1dc; border-radius: 8px; background: #f7faf8; font-size: 14px; font-weight: 400; overflow-wrap: anywhere; }
+.settings-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; }
+.settings-facts dt { font-size: 12px; font-weight: 600; color: #63736a; margin-bottom: 5px; }
+.settings-facts dd { margin: 0; font-size: 14px; font-weight: 600; }
+.settings-workspace .settings-note { margin: 16px 0 0; font-size: 12px; line-height: 1.6; color: #62746a; }
+.settings-feature-list, .settings-export-fields { list-style: none; margin: 0; padding: 0; }
+.settings-feature-list { display: grid; gap: 14px; }
+.settings-feature-list li, .settings-export-fields li { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.settings-check { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 18px; width: 18px; height: 18px; border-radius: 4px; background: #e0eee7; color: #086047; font-size: 12px; font-weight: 700; }
+.settings-unit { margin-left: auto; color: #697b71; font-size: 12px; }
+.settings-inline-value { display: grid; grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: 12px; font-size: 13px; }
+.settings-field-label { margin: 14px 0 10px; font-size: 13px; }
+.settings-export-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 16px; margin-bottom: 16px; }
+.settings-export-fields li { font-size: 13px; }
+.settings-footer-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; margin-top: 22px; font-size: 13px; }
+.settings-footer-links a { color: #0b6549; text-decoration: underline; text-underline-offset: 3px; }
+.settings-footer-links span { margin-left: auto; color: #62746a; }
+.settings-workspace :is(input, select, button, a):focus-visible, .settings-footer-links a:focus-visible { outline: 3px solid #80b99b; outline-offset: 3px; }
+@media (min-width: 1101px) and (max-width: 1350px) {
+    .settings-workspace .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+    .settings-heading { gap: 10px; }
+    .settings-workspace .form-card { padding: 18px; }
+    .settings-card-heading { gap: 10px; }
+    .settings-facts, .settings-workspace .form-grid { grid-template-columns: minmax(0, 1fr); }
+    .settings-workspace input, .settings-workspace select { font-size: 16px; }
+    .settings-inline-value { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+    .settings-footer-links span { margin-left: 0; width: 100%; }
+}
+@media (max-width: 380px) {
+    .settings-export-fields { grid-template-columns: minmax(0, 1fr); }
+}
