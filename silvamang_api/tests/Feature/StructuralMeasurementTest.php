@@ -17,6 +17,19 @@ class StructuralMeasurementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_export_date_uses_philippine_capture_time_then_record_creation_time(): void
+    {
+        $scan = new ScanRecord();
+        $scan->captured_at = '2026-10-08 17:30:00';
+        $scan->created_at = '2026-10-10 00:00:00';
+        $this->assertSame('2026-10-09 01:30', VegetationWorkbookExportService::observationDate($scan)->format('Y-m-d H:i'));
+        $this->assertSame('17:30', $scan->captured_at->format('H:i'));
+        $scan->captured_at = null;
+        $this->assertSame('2026-10-10 08:00', VegetationWorkbookExportService::observationDate($scan)->format('Y-m-d H:i'));
+        $scan->created_at = null;
+        $this->assertNull(VegetationWorkbookExportService::observationDate($scan));
+    }
+
     public function test_migration_is_repeatable_and_backfills_only_missing_legacy_conversions(): void
     {
         $user = User::factory()->create();
@@ -150,11 +163,14 @@ class StructuralMeasurementTest extends TestCase
             $template = IOFactory::load(resource_path('export-templates/mangrove-monitoring.xlsx'));
             $reference = $template->getSheetByName('VEGETATION DATA DAY 1');
             foreach (range('A', 'Y') as $column) {
-                $this->assertEquals($reference->getColumnDimension($column)->getWidth(), $sheet->getColumnDimension($column)->getWidth());
+                $this->assertEquals($column === 'A' ? 23 : $reference->getColumnDimension($column)->getWidth(), $sheet->getColumnDimension($column)->getWidth());
                 $this->assertSame((string) $reference->getCell($column.'1')->getValue(), (string) $sheet->getCell($column.'1')->getValue());
                 $this->assertSame($reference->getStyle($column.'1')->getFont()->getHashCode(), $sheet->getStyle($column.'1')->getFont()->getHashCode());
             }
             $template->disconnectWorksheets();
+            $this->assertSame('October 04, 2026', $sheet->getCell('A2')->getFormattedValue());
+            $this->assertSame('Capture date', $book->getSheetByName('Raw Scans')->getCell('T2')->getValue());
+            $this->assertNotEmpty($book->getSheetByName('Export Notes')->getCell('B21')->getValue());
             $zip = new \ZipArchive();
             $zip->open($path);
             $calculation = simplexml_load_string($zip->getFromName('xl/workbook.xml'))->calcPr;

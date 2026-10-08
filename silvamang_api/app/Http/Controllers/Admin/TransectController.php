@@ -156,7 +156,7 @@ class TransectController extends Controller
         $transects = Transect::with(['observations.user:id,name'])->get();
         foreach ($transects as $transect) {
             foreach ($transect->observations->unique('id')->groupBy(fn ($scan) => json_encode([
-                $scan->user_id, $scan->plot_no, $scan->captured_at?->format('Y-m-d'),
+                $scan->user_id, $scan->plot_no, VegetationWorkbookExportService::observationDate($scan)?->format('Y-m-d'),
                 $scan->location_name ?: $transect->location_name,
             ])) as $scans) {
                 $first = $scans->first();
@@ -165,7 +165,7 @@ class TransectController extends Controller
                     'transect' => $transect->transect_number !== null ? (string) $transect->transect_number : 'Not recorded',
                     'transect_number' => $transect->transect_number !== null ? (string) $transect->transect_number : 'unrecorded',
                     'transect_id' => (string) $transect->id, 'plot' => $first->plot_no ?? '',
-                    'date' => $first->captured_at?->format('Y-m-d') ?? '',
+                    'date' => VegetationWorkbookExportService::observationDate($first)?->format('Y-m-d') ?? '',
                     'location' => $first->location_name ?: ($transect->location_name ?? ''),
                     'records' => $scans->map(fn ($scan) => $transect->id.':'.$scan->id)->values(),
                 ]);
@@ -220,7 +220,7 @@ class TransectController extends Controller
 
         return response()->download(
             $path,
-            'silvamang-vegetation-'.now()->format('Y-m-d').'.xlsx',
+            'silvamang-vegetation-'.now()->timezone('Asia/Manila')->format('Y-m-d').'.xlsx',
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
         )->deleteFileAfterSend(true);
     }

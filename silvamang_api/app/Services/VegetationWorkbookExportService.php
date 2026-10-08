@@ -12,6 +12,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class VegetationWorkbookExportService
 {
+    public static function observationDate($scan): ?\Carbon\CarbonInterface
+    {
+        return ($scan->captured_at ?? $scan->created_at)?->copy()->timezone('Asia/Manila');
+    }
+
     private const HEADERS = [
         'Date', 'Recorder', 'Location', 'Transect', 'Plot No', 'Species', 'Category',
         'Count-MG', 'Density', 'GBH (cm)', 'GBH (m)', 'DBH (cm)', 'DBH (m)',
@@ -33,7 +38,7 @@ class VegetationWorkbookExportService
         $raw->fromArray(['Transect ID', 'Transect Name', 'Scan ID', 'Recorder', 'Captured At',
             'Latitude', 'Longitude', 'DBH (cm)', 'Height (m)', 'Canopy Width (m)',
             'Confidence', 'Capture Mode', 'Plot No', 'GBH (cm)', 'GBH (m)', 'DBH (m)',
-            'Basal Area (m2)', 'Canopy 1 (m)', 'Canopy 2 (m)'], null, 'A1');
+            'Basal Area (m2)', 'Canopy 1 (m)', 'Canopy 2 (m)', 'Date Source'], null, 'A1');
         $summary->fromArray(['Transect ID', 'Transect Name', 'Location', 'Date', 'Start Latitude',
             'Start Longitude', 'End Latitude', 'End Longitude', 'Total Transect Distance (m)',
             'Number of Plots', 'Number of Observations', 'Number of Species', 'Recorded Users'], null, 'A1');
@@ -56,6 +61,10 @@ class VegetationWorkbookExportService
         ], null, 'A1');
         $notes->setCellValue('A19', 'Plot area (m2); applies uniformly to selected plots; enter a positive measured area to calculate density and stand values.');
         $notes->setCellValue('B19', $plotAreaM2);
+        $notes->setCellValue('A21', 'Exported at (Asia/Manila, UTC+8)');
+        $notes->setCellValue('B21', now()->timezone('Asia/Manila')->format('Y-m-d H:i:s'));
+        $notes->setCellValue('A22', 'Dates use Philippine time. If capture time is missing, the record creation date is used; see Date Source in Raw Scans. This fallback is not a verified field capture date.');
+        $notes->getStyle('A22')->getAlignment()->setWrapText(true);
         $notes->getStyle('B19')->getNumberFormat()->setFormatCode('0.########');
         $notes->getColumnDimension('B')->setWidth(22);
         $notes->getStyle('B19')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFFCC');
@@ -89,7 +98,7 @@ class VegetationWorkbookExportService
                 $c2 = $this->positive($m?->canopy_2_m);
                 $volume = $basal !== null && $height !== null ? $basal * $height * 0.5 : null;
                 $factor = $plotAreaM2 !== null && $plotAreaM2 > 0 ? 10000 / $plotAreaM2 : null;
-                $date = $scan->captured_at;
+                $date = self::observationDate($scan);
                 $name = $scan->top_scientific_name ?: $scan->species?->scientific_name;
                 $this->writeRow($vegetation, $row, [
                     $date, $scan->user?->name, $scan->survey_location ?: ($scan->location_name ?: $transect->location_name),
@@ -103,14 +112,15 @@ class VegetationWorkbookExportService
                     $scan->record_code, $scan->user?->name, $date, $this->positiveOrZero($scan->latitude),
                     $this->positiveOrZero($scan->longitude), $dbh, $height, $width,
                     $this->positiveOrZero($scan->confidence), $scan->capture_mode, $scan->plot_no,
-                    $gbh, $gbh !== null ? $gbh / 100 : null, $dbhM, $basal, $c1, $c2]);
+                    $gbh, $gbh !== null ? $gbh / 100 : null, $dbhM, $basal, $c1, $c2,
+                    $scan->captured_at !== null ? 'Capture date' : ($scan->created_at !== null ? 'Record creation date (capture date unavailable)' : 'Date unavailable')]);
                 $groups->push(['name' => $name, 'common' => $scan->species?->common_name ?? $scan->top_common_name,
                     'family' => $scan->species?->family, 'plot' => $scan->plot_no,
                     'height' => $height, 'gbh' => $gbh, 'dbh' => $dbh, 'c1' => $c1, 'c2' => $c2, 'width' => $width]);
                 $row++;
             }
             $this->writeRow($summary, $summaryRow++, [$transect->transect_code, $transect->transect_name,
-                $transect->location_name, $transect->recorded_at,
+                $transect->location_name, ($transect->recorded_at ?? $transect->created_at)?->copy()->timezone('Asia/Manila'),
                 $this->positiveOrZero($transect->start_latitude), $this->positiveOrZero($transect->start_longitude),
                 $this->positiveOrZero($transect->end_latitude), $this->positiveOrZero($transect->end_longitude),
                 $this->positiveOrZero($transect->total_distance_m),
@@ -130,7 +140,7 @@ class VegetationWorkbookExportService
         }
         $last = max(2, $row - 1);
         $this->styleSheet($vegetation, 'AA', $last);
-        $this->styleSheet($raw, 'S', $last);
+        $this->styleSheet($raw, 'T', $last);
         $this->styleSheet($summary, 'M', max(2, $summaryRow - 1));
         $this->styleSheet($speciesSheet, 'L', max(2, $speciesRow - 1));
         $vegetation->getColumnDimension('F')->setWidth(30);
@@ -282,6 +292,7 @@ class VegetationWorkbookExportService
             $sheet->removeRow($last + 1, $sheet->getHighestRow() - $last);
         }
         // Keep the reference workbook's widths, fonts, header height and colors.
+        $sheet->getColumnDimension('A')->setWidth(23); // Show the full date instead of Excel overflow marks.
         // Extend its data-row height when an export exceeds the template's styled rows.
         $rowHeight = $sheet->getRowDimension(2)->getRowHeight();
         for ($row = 3; $row <= $last; $row++) {
