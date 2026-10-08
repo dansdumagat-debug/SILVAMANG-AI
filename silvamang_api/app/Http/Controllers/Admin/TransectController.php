@@ -48,6 +48,15 @@ class TransectController extends Controller
         ]);
     }
 
+    public function updateNumber(Request $request, Transect $transect)
+    {
+        $this->abortUnlessCanAccess($transect, $request->user());
+        $data = $request->validate(['transect_number' => ['required', 'integer', 'min:1', 'max:1000000']]);
+        $transect->update($data);
+
+        return back()->with('success', 'Field transect number saved.');
+    }
+
     public function show(Request $request, Transect $transect): View
     {
         $this->abortUnlessCanAccess($transect, $request->user());

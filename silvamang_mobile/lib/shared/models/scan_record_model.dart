@@ -10,6 +10,9 @@ class ScanRecordModel {
     required this.recordCode,
     this.userId,
     this.plotNo,
+    this.surveyLocation,
+    this.ecologicalCategory,
+    this.countMg,
     this.speciesId,
     required this.topScientificName,
     required this.topCommonName,
@@ -43,6 +46,9 @@ class ScanRecordModel {
   final String recordCode;
   final String? userId;
   final String? plotNo;
+  final String? surveyLocation;
+  final String? ecologicalCategory;
+  final int? countMg;
   final int? speciesId;
   final String topScientificName;
   final String topCommonName;
@@ -76,6 +82,9 @@ class ScanRecordModel {
       id: _asString(json['id']),
       recordCode: _asString(json['record_code'] ?? json['recordCode']),
       plotNo: _asNullableString(json['plot_no']),
+      surveyLocation: _asNullableString(json['survey_location']),
+      ecologicalCategory: _asNullableString(json['ecological_category']),
+      countMg: int.tryParse('${json['count_mg'] ?? ''}'),
       userId: _asNullableString(json['user_id'] ?? json['userId']),
       speciesId: _asNullableInt(json['species_id'] ?? json['speciesId']),
       topScientificName: canonicalSpeciesName(
@@ -131,6 +140,9 @@ class ScanRecordModel {
       'id': id,
       'record_code': recordCode,
       'plot_no': plotNo,
+      'survey_location': surveyLocation,
+      'ecological_category': ecologicalCategory,
+      'count_mg': countMg,
       'user_id': userId,
       'species_id': speciesId,
       'top_scientific_name': topScientificName,

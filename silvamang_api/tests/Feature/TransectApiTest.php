@@ -204,6 +204,7 @@ class TransectApiTest extends TestCase
         $book = IOFactory::load($path);
         $sheet = $book->getSheetByName('VEGETATION DATA DAY 1');
         $this->assertNotNull($sheet);
+        $this->assertEquals(4, $sheet->getCell('D2')->getValue());
         $this->assertSame('Date', (string) $sheet->getCell('A1')->getValue());
         $this->assertSame('Rhizophora apiculata', $sheet->getCell('F2')->getValue());
         $this->assertSame('SC-EXPORT-001', $book->getSheetByName('Raw Scans')->getCell('C2')->getValue());
@@ -267,6 +268,7 @@ class TransectApiTest extends TestCase
     private function payload(array $observationReferences = []): array
     {
         return [
+            'transect_number' => 4,
             'transect_name' => 'Coastal Baseline T1',
             'location_name' => 'San Roque Mangrove Stand',
             'description' => 'GPS-assisted field documentation transect.',

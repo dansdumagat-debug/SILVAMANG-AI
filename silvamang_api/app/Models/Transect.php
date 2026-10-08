@@ -14,6 +14,7 @@ class Transect extends Model
         'user_id',
         'transect_code',
         'transect_name',
+        'transect_number',
         'location_name',
         'description',
         'mode',
@@ -36,6 +37,7 @@ class Transect extends Model
     ];
 
     protected $casts = [
+        'transect_number' => 'integer',
         'start_latitude' => 'decimal:7',
         'start_longitude' => 'decimal:7',
         'end_latitude' => 'decimal:7',

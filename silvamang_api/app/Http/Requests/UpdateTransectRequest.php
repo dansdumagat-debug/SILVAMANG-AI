@@ -15,6 +15,7 @@ class UpdateTransectRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'transect_number' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'transect_name' => ['sometimes', 'required', 'string', 'max:255'],
             'location_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string', 'max:5000'],

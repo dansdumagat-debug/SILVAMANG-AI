@@ -14,6 +14,7 @@ class TransectResource extends JsonResource
             'id' => ApiId::encode($this->id),
             'user_id' => ApiId::encode($this->user_id),
             'transect_code' => $this->transect_code,
+            'transect_number' => $this->transect_number,
             'transect_name' => $this->transect_name,
             'location_name' => $this->location_name,
             'description' => $this->description,
@@ -70,7 +71,7 @@ class TransectResource extends JsonResource
                             ?: $record->address,
                         'notes' => $record->notes,
                         'image_url' => $image?->image_path
-                            ? $request->getSchemeAndHttpHost() . '/storage/' . ltrim($image->image_path, '/')
+                            ? $request->getSchemeAndHttpHost().'/storage/'.ltrim($image->image_path, '/')
                             : null,
                         'captured_at' => $record->captured_at,
                     ];

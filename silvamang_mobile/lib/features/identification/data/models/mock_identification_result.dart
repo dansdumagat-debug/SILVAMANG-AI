@@ -23,6 +23,7 @@ class MockIdentificationResult {
     this.canopy1M,
     this.canopy2M,
     this.plotNo,
+    this.surveyDetails = const {},
     this.measurementMethod = 'not_estimated',
     required this.measurementConfidence,
     required this.validationResult,
@@ -49,6 +50,7 @@ class MockIdentificationResult {
   final double? canopy1M;
   final double? canopy2M;
   final String? plotNo;
+  final Map<String, dynamic> surveyDetails;
   double? get effectiveDbhCm =>
       gbhCm != null ? (gbhCm! / math.pi * 100).round() / 100 : dbhCm;
   double? get gbhM => gbhCm != null ? gbhCm! / 100 : null;
@@ -81,6 +83,7 @@ class MockIdentificationResult {
     double? canopy1M,
     double? canopy2M,
     String? plotNo,
+    Map<String, dynamic>? surveyDetails,
     String? measurementMethod,
     double? measurementConfidence,
     String? validationResult,
@@ -108,6 +111,7 @@ class MockIdentificationResult {
       canopy1M: replaceStructural ? canopy1M : canopy1M ?? this.canopy1M,
       canopy2M: replaceStructural ? canopy2M : canopy2M ?? this.canopy2M,
       plotNo: plotNo ?? this.plotNo,
+      surveyDetails: surveyDetails ?? this.surveyDetails,
       measurementMethod: measurementMethod ?? this.measurementMethod,
       measurementConfidence:
           measurementConfidence ?? this.measurementConfidence,

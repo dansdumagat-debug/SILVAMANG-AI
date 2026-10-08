@@ -213,6 +213,7 @@ class TransectRepository {
       researcherName: synced.researcherName,
       transectCode: synced.transectCode,
       transectName: synced.transectName,
+      transectNumber: synced.transectNumber ?? local.transectNumber,
       locationName: synced.locationName,
       description: synced.description,
       mode: synced.mode,

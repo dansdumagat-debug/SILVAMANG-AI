@@ -93,6 +93,7 @@ Route::prefix('admin')
         Route::get('/transects/export-selection', [TransectController::class, 'exportSelection'])->name('transects.export-selection');
         Route::post('/transects/export-selected', [TransectController::class, 'exportExcel'])->name('transects.export-selected');
         Route::get('/transects', [TransectController::class, 'index'])->name('transects.index');
+        Route::patch('/transects/{transect}/number', [TransectController::class, 'updateNumber'])->name('transects.number');
         Route::get('/transects/{transect}', [TransectController::class, 'show'])->name('transects.show');
         Route::middleware('role:super_admin,admin,researcher')->group(function () {
         Route::get('/species', [SpeciesManagementController::class, 'index'])->name('species.index');

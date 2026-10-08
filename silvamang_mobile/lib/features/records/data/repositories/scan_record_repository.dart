@@ -73,10 +73,17 @@ class ScanRecordRepository {
     return ScanRecordModel.fromJson(response.data ?? {});
   }
 
-  Future<void> updateObservationSavedAt(String id, DateTime savedAt) async {
+  Future<void> updateObservationSavedAt(
+    String id,
+    DateTime savedAt, {
+    Map<String, dynamic> surveyDetails = const {},
+  }) async {
     await apiClient.put<Map<String, dynamic>>(
       '/scan-records/$id',
-      data: {'captured_at': savedAt.toUtc().toIso8601String()},
+      data: {
+        'captured_at': savedAt.toUtc().toIso8601String(),
+        ...surveyDetails,
+      },
     );
   }
 
@@ -149,6 +156,7 @@ class ScanRecordRepository {
     final hasMeasurementEstimate = _hasMeasurementEstimate(result);
     final scanData = <String, dynamic>{
       'plot_no': result.plotNo,
+      ...result.surveyDetails,
       'top_scientific_name': result.scientificName,
       'top_common_name': result.commonName,
       'species_id': result.speciesId,

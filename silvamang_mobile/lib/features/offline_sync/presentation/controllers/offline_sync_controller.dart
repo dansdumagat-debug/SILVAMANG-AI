@@ -378,7 +378,7 @@ class OfflineSyncController extends StateNotifier<OfflineSyncState> {
 
     return scan['top_scientific_name'] != null &&
         scan['top_common_name'] != null &&
-        scan['confidence'] != null &&
+        (scan['capture_mode'] == 'manual_species' || scan['confidence'] != null) &&
         scan['captured_at'] != null;
   }
 

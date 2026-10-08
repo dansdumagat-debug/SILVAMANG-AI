@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/ecological_survey_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,6 +33,12 @@ class _MeasurementPageState extends ConsumerState<MeasurementPage> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 160),
           children: [
+            EcologicalSurveyFields(
+              initial: result.surveyDetails,
+              onChanged: (values) => ref
+                  .read(identificationControllerProvider.notifier)
+                  .setSurveyDetails(values),
+            ),
             TextFormField(
               initialValue: result.plotNo,
               maxLength: 50,

@@ -13,6 +13,7 @@ void main() {
       ownerUserEmail: 'student@example.test',
       researcherName: 'Field Student',
       transectName: 'River Edge T1',
+      transectNumber: 4,
       locationName: 'Barangay Test',
       mode: TransectRecordModel.modeGpsTracking,
       status: TransectRecordModel.statusCompleted,
@@ -64,6 +65,9 @@ void main() {
     final original = buildRecord();
     final decoded = TransectRecordModel.fromJson(original.toJson());
 
+    expect(decoded.transectNumber, 4);
+    expect(decoded.copyWith().transectNumber, 4);
+    expect(decoded.toApiPayload()['transect_number'], 4);
     expect(decoded.localId, original.localId);
     expect(decoded.ownerUserId, '42');
     expect(decoded.ownerUserEmail, 'student@example.test');

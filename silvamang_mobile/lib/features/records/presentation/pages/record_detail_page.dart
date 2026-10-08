@@ -165,6 +165,18 @@ class _RecordDetailPageState extends ConsumerState<RecordDetailPage> {
                   child: Column(
                     children: [
                       _DetailRow(
+                        label: 'Survey location',
+                        value: record?.surveyLocation ?? '',
+                      ),
+                      _DetailRow(
+                        label: 'Category',
+                        value: record?.ecologicalCategory ?? '',
+                      ),
+                      _DetailRow(
+                        label: 'Count-MG',
+                        value: record?.countMg?.toString() ?? '1',
+                      ),
+                      _DetailRow(
                         label: 'Latitude',
                         value: record?.latitude?.toStringAsFixed(6) ?? '',
                       ),

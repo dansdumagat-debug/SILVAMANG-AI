@@ -53,6 +53,30 @@ class FakeApi extends Fake implements ApiClient {
 class FakeImages extends Fake implements ScanImageRepository {}
 
 void main() {
+  test('offline payload keeps category, location and group count', () async {
+    final api = FakeApi();
+    final repository = ScanRecordRepository(
+      apiClient: api,
+      scanImageRepository: FakeImages(),
+    );
+    final record = await repository.createScanRecordFromOfflinePayload({
+      'scan_record': {
+        'top_scientific_name': 'Rhizophora stylosa',
+        'top_common_name': '',
+        'capture_mode': 'manual_species',
+        'confidence': null,
+        'captured_at': '2026-10-08T01:00:00Z',
+        'survey_location': 'Inside',
+        'ecological_category': 'Seedling',
+        'count_mg': 56,
+      },
+    });
+    expect(record.countMg, 56);
+    expect(record.surveyLocation, 'Inside');
+    expect(record.ecologicalCategory, 'Seedling');
+    expect(api.scan['count_mg'], 56);
+  });
+
   test(
     'existing predicted record receives the save instant without another create',
     () async {
@@ -64,7 +88,15 @@ void main() {
       await repository.updateObservationSavedAt(
         '1',
         DateTime.parse('2026-10-04T22:30:00+08:00'),
+        surveyDetails: {
+          'survey_location': 'Inside',
+          'ecological_category': 'Tree',
+          'count_mg': 1,
+        },
       );
+      expect(api.scan['survey_location'], 'Inside');
+      expect(api.scan['ecological_category'], 'Tree');
+      expect(api.scan['count_mg'], 1);
       expect(api.calls, ['/scan-records/1']);
       expect(api.scan['captured_at'], '2026-10-04T14:30:00.000Z');
     },
@@ -81,6 +113,11 @@ void main() {
             scanImageRepository: FakeImages(),
           );
           final result = MockIdentificationResult(
+            surveyDetails: {
+              'survey_location': 'Inside',
+              'ecological_category': 'Sapling',
+              'count_mg': 41,
+            },
             scientificName: 'Rhizophora stylosa',
             commonName: '',
             confidence: double.nan,
@@ -108,6 +145,9 @@ void main() {
             locationCapturedAt: DateTime.parse('2026-10-04T01:00:00Z'),
           );
           expect(api.scan['captured_at'], '2026-10-04T14:30:00.000Z');
+          expect(api.scan['survey_location'], 'Inside');
+          expect(api.scan['ecological_category'], 'Sapling');
+          expect(api.scan['count_mg'], 41);
           expect(api.scan['latitude'], hasLocation ? 10.1 : null);
           expect(api.calls.contains('/measurements'), measurements != 'none');
           if (measurements != 'complete') {

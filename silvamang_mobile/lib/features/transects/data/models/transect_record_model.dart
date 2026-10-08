@@ -6,6 +6,7 @@ class TransectRecordModel {
   const TransectRecordModel({
     required this.localId,
     required this.transectName,
+    this.transectNumber,
     required this.mode,
     required this.status,
     required this.points,
@@ -47,6 +48,7 @@ class TransectRecordModel {
   final String? researcherName;
   final String? transectCode;
   final String transectName;
+  final int? transectNumber;
   final String? locationName;
   final String? description;
   final String mode;
@@ -146,6 +148,7 @@ class TransectRecordModel {
       transectCode: _nullableText(
         json['transect_code'] ?? json['transectCode'],
       ),
+      transectNumber: int.tryParse('${json['transect_number'] ?? ''}'),
       transectName: _text(
         json['transect_name'] ?? json['transectName'],
         fallback: 'Unnamed Transect',
@@ -198,6 +201,7 @@ class TransectRecordModel {
       'researcher_name': researcherName,
       'transect_code': transectCode,
       'transect_name': transectName,
+      if (transectNumber != null) 'transect_number': transectNumber,
       'location_name': locationName,
       'description': description,
       'mode': mode,
@@ -234,6 +238,7 @@ class TransectRecordModel {
 
     return {
       'transect_name': transectName,
+      if (transectNumber != null) 'transect_number': transectNumber,
       'location_name': locationName,
       'description': description,
       'mode': mode,
@@ -283,6 +288,7 @@ class TransectRecordModel {
       researcherName: researcherName ?? this.researcherName,
       transectCode: transectCode ?? this.transectCode,
       transectName: transectName,
+      transectNumber: transectNumber,
       locationName: locationName,
       description: description,
       mode: mode,

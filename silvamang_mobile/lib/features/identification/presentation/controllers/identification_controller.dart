@@ -204,6 +204,12 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     );
   }
 
+  void setSurveyDetails(Map<String, dynamic> values) {
+    state = state.copyWith(
+      result: state.result.copyWith(surveyDetails: values),
+    );
+  }
+
   Future<void> saveManualObservation({
     required String scientificName,
     required String commonName,
@@ -216,6 +222,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
     double? canopy1M,
     double? canopy2M,
     String? plotNo,
+    Map<String, dynamic> surveyDetails = const {},
     String measurementMethod = 'manual_input',
     double? latitude,
     double? longitude,
@@ -260,6 +267,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         canopy1M: canopy1M,
         canopy2M: canopy2M,
         plotNo: plotNo,
+        surveyDetails: surveyDetails,
         measurementMethod: measurementMethod,
         measurementConfidence: double.nan,
         validationResult: 'not_checked',
@@ -381,6 +389,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
         await scanRecordRepository.updateObservationSavedAt(
           serverScanRecordId,
           savedAt,
+          surveyDetails: resultWithLocation.surveyDetails,
         );
         final uploadedCount = await scanRecordRepository
             .uploadCapturedImagesToRecord(
@@ -904,6 +913,7 @@ class IdentificationController extends StateNotifier<IdentificationState> {
           : 'Image upload requires internet connection and will be finalized during sync.',
       'scan_record': {
         'plot_no': result.plotNo,
+        ...result.surveyDetails,
         'top_scientific_name': result.scientificName,
         'top_common_name': result.commonName,
         'species_id': result.speciesId,

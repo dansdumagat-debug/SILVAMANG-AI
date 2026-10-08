@@ -88,7 +88,7 @@ class VegetationWorkbookExportService
                 $name = $scan->top_scientific_name ?: $scan->species?->scientific_name;
                 $this->writeRow($vegetation, $row, [
                     $date, $scan->user?->name, $scan->survey_location ?: ($scan->location_name ?: $transect->location_name),
-                    $transect->transect_code ?: $transect->transect_name, $scan->plot_no, $name,
+                    $transect->transect_number ?? ($transect->transect_code ?: $transect->transect_name), $scan->plot_no, $name,
                     $scan->ecological_category, $scan->count_mg ?? 1, $factor, $gbh, $gbh !== null ? $gbh / 100 : null, $dbh, $dbhM,
                     $basal, $factor !== null && $basal !== null ? $basal * $factor : null, $height,
                     $volume, $factor !== null && $volume !== null ? $volume * $factor : null,
@@ -120,7 +120,7 @@ class VegetationWorkbookExportService
                     $averages[] = $values->isEmpty() ? null : $values->avg();
                 }
                 $this->writeRow($speciesSheet, $speciesRow++, [$first['name'], $first['common'], $first['family'],
-                    $transect->transect_code ?: $transect->transect_name, $first['plot'], $members->count(), ...$averages]);
+                    $transect->transect_number ?? ($transect->transect_code ?: $transect->transect_name), $first['plot'], $members->count(), ...$averages]);
             }
         }
         $last = max(2, $row - 1);

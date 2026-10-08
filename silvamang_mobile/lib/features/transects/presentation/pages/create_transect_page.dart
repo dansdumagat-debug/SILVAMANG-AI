@@ -44,6 +44,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _numberController = TextEditingController();
   final _locationController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _targetController = TextEditingController();
@@ -73,6 +74,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
     final record = widget.continueRecord;
     if (record != null) {
       _nameController.text = record.transectName;
+      _numberController.text = record.transectNumber?.toString() ?? '';
       _locationController.text = record.locationName ?? '';
       _descriptionController.text = record.description ?? '';
       _targetController.text = record.targetDistanceM?.toString() ?? '';
@@ -88,6 +90,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
     _locationSubscription?.cancel();
     _targetController.removeListener(_refreshTargetActions);
     _nameController.dispose();
+    _numberController.dispose();
     _locationController.dispose();
     _descriptionController.dispose();
     _targetController.dispose();
@@ -550,6 +553,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
       ownerUserEmail: auth.user?.email,
       researcherName: auth.user?.name,
       transectName: _nameController.text.trim(),
+      transectNumber: int.tryParse(_numberController.text.trim()),
       locationName: _emptyAsNull(_locationController.text),
       description: _emptyAsNull(_descriptionController.text),
       mode: _mode,
@@ -710,6 +714,25 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                           Text(
                             'Field Record',
                             style: AppTextStyles.titleMedium,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          TextFormField(
+                            controller: _numberController,
+                            readOnly: widget.continueRecord != null,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Transect number (e.g. 1, 2, 4)',
+                            ),
+                            validator: (v) {
+                              if ((v ?? '').trim().isEmpty &&
+                                  widget.continueRecord != null) {
+                                return null;
+                              }
+                              final n = int.tryParse((v ?? '').trim());
+                              return n == null || n < 1 || n > 1000000
+                                  ? 'Enter the field transect number.'
+                                  : null;
+                            },
                           ),
                           const SizedBox(height: AppSpacing.md),
                           TextFormField(

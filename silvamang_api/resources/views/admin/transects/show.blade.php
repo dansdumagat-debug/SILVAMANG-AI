@@ -7,6 +7,19 @@
 @endpush
 
 @section('content')
+    <section class="detail-card">
+        <h3>Field Transect Number</h3>
+        <p>Enter the recorded field number (for example 1, 2, or 4) used in the Excel workbook.</p>
+        <form method="POST" action="{{ route('admin.transects.number', $transect) }}">
+            @csrf @method('PATCH')
+            <div class="admin-form-grid">
+                <label>Transect number<input type="number" name="transect_number" min="1" max="1000000" required value="{{ old('transect_number', $transect->transect_number) }}"></label>
+            </div>
+            @error('transect_number')<p>{{ $message }}</p>@enderror
+            <button class="primary-action" type="submit">Save Transect Number</button>
+        </form>
+    </section>
+
     @php
         $observedAt = $transect->recorded_at ?? $transect->created_at;
         $directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];

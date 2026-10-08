@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/ecological_survey_fields.dart';
 import '../../../../shared/widgets/structural_measurement_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +35,7 @@ class _ManualSpeciesMeasurementPageState
   final _latitude = TextEditingController();
   final _longitude = TextEditingController();
   Map<String, double?> _structural = {};
+  Map<String, dynamic> _survey = {};
   final _plot = TextEditingController();
   bool _saving = false;
   bool _usedCamera = false;
@@ -93,6 +95,7 @@ class _ManualSpeciesMeasurementPageState
       await ref
           .read(identificationControllerProvider.notifier)
           .saveManualObservation(
+            surveyDetails: _survey,
             scientificName: widget.scientificName,
             commonName: widget.commonName,
             transectLocalId: widget.transectLocalId,
@@ -163,6 +166,7 @@ class _ManualSpeciesMeasurementPageState
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 150),
           children: [
+            EcologicalSurveyFields(onChanged: (values) => _survey = values),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(18),
