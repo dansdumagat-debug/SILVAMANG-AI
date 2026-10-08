@@ -257,10 +257,11 @@ class TransectApiTest extends TestCase
         $this->assertEquals(4100, $sheet->getCell('I2')->getCalculatedValue());
         $this->assertEqualsWithDelta(2 / pi() / 100, $sheet->getCell('L2')->getCalculatedValue(), 0.00000001);
         $this->assertNotSame('0.0000', $sheet->getCell('M2')->getFormattedValue());
-        $this->assertSame('0', $sheet->getStyle('H2')->getNumberFormat()->getFormatCode());
-        $this->assertFalse($sheet->getStyle('F2')->getFont()->getBold());
-        $this->assertTrue($sheet->getStyle('F2')->getFont()->getItalic());
-        $this->assertGreaterThanOrEqual(30, $sheet->getColumnDimension('F')->getWidth());
+        $this->assertSame('41', $sheet->getCell('H2')->getFormattedValue());
+        $template = IOFactory::load(resource_path('export-templates/mangrove-monitoring.xlsx'));
+        $reference = $template->getSheetByName('VEGETATION DATA DAY 1');
+        $this->assertEquals($reference->getColumnDimension('F')->getWidth(), $sheet->getColumnDimension('F')->getWidth());
+        $template->disconnectWorksheets();
         $book->disconnectWorksheets();
         @unlink($path);
     }

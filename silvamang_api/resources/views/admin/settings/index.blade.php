@@ -31,25 +31,33 @@
             </div>
             <div class="form-actions"><button class="primary-action" type="submit">Save Changes</button></div>
         </form>
-        <article class="form-card">
+        <form method="POST" action="{{ route('admin.settings.fieldwork') }}" class="form-card">
+            @csrf @method('PUT')
             <header class="settings-card-heading">
                 @include('admin.settings.icon', ['icon' => 'map'])
-                <div><h3>Transect &amp; Fieldwork Settings</h3><p>Current recording options in the Android app.</p></div>
+                <div><h3>Transect &amp; Fieldwork Settings</h3><p>Control GPS recording in updated Android apps.</p></div>
             </header>
-            <dl class="settings-facts">
-                <div><dt>Transect naming</dt><dd>Field number and name</dd></div>
-                <div><dt>Maximum GPS error for tracking</dt><dd>50 meters</dd></div>
-                <div><dt>GPS tracking</dt><dd>Movement-based (1 meter)</dd></div>
-                <div><dt>Offline recording</dt><dd>Available</dd></div>
-                <div><dt>GPS before saving a scan</dt><dd>Optional</dd></div>
-                <div><dt>Manual transect points</dt><dd>Available</dd></div>
-            </dl>
-            <p class="settings-note">These app options are read-only here. Manage recorded transects and review their locations below.</p>
-            <div class="form-actions">
-                <a class="secondary-action" href="{{ route('admin.transects.index') }}">Manage Transects</a>
-                <a class="secondary-action" href="{{ route('admin.observation-map.index') }}">Observation Map</a>
+            <div class="form-grid">
+                <label class="form-group">Maximum GPS error
+                    <select name="gps_max_error_m">
+                        @foreach ([10, 15, 25, 50] as $meters)
+                            <option value="{{ $meters }}" @selected((int) old('gps_max_error_m', $preferences['gps_max_error_m']) === $meters)>{{ $meters }} meters</option>
+                        @endforeach
+                    </select>
+                    <small>Less accurate GPS fixes are ignored while tracking.</small>
+                </label>
+                <label class="form-group">GPS tracking distance
+                    <select name="gps_distance_m">
+                        @foreach ([1, 2, 5, 10] as $meters)
+                            <option value="{{ $meters }}" @selected((int) old('gps_distance_m', $preferences['gps_distance_m']) === $meters)>{{ $meters }} meters</option>
+                        @endforeach
+                    </select>
+                    <small>Movement required between location updates.</small>
+                </label>
             </div>
-        </article>
+            <p class="settings-note">Updated apps load these settings when opening a transect online and keep them for offline use. Active recording keeps its starting settings. Offline saving, optional scan GPS, and manual points remain available.</p>
+            <div class="form-actions"><button class="primary-action" type="submit">Save Fieldwork Settings</button></div>
+        </form>
         <article class="form-card">
             <header class="settings-card-heading">
                 @include('admin.settings.icon', ['icon' => 'ruler'])

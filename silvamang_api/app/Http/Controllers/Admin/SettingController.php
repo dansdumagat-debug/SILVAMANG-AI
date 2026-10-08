@@ -13,7 +13,7 @@ class SettingController extends Controller
 {
     public static function preferences(): array
     {
-        $defaults = ['console_name' => 'SILVAMANG AI', 'support_email' => '', 'records_per_page' => 15];
+        $defaults = ['console_name' => 'SILVAMANG AI', 'support_email' => '', 'records_per_page' => 15, 'gps_max_error_m' => 50, 'gps_distance_m' => 1];
         if (! Schema::hasTable('system_settings')) {
             return $defaults;
         }
@@ -40,6 +40,22 @@ class SettingController extends Controller
             }
         });
         return back()->with('success', 'System preferences saved.');
+    }
+
+    public function fieldwork(Request $request)
+    {
+        $data = $request->validate([
+            'gps_max_error_m' => ['required', 'integer', Rule::in([10, 15, 25, 50])],
+            'gps_distance_m' => ['required', 'integer', Rule::in([1, 2, 5, 10])],
+        ]);
+        DB::transaction(function () use ($data, $request) {
+            foreach ($data as $key => $value) {
+                DB::table('system_settings')->updateOrInsert(['key' => $key], [
+                    'value' => (string) $value, 'updated_by' => $request->user()->id, 'updated_at' => now(),
+                ]);
+            }
+        });
+        return back()->with('success', 'Fieldwork settings saved. Updated apps apply them when opening a new transect.');
     }
 
     public function account(Request $request)

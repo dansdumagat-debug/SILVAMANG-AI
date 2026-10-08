@@ -169,6 +169,7 @@ Route::prefix('admin')
         Route::middleware('role:super_admin,admin')->group(function () {
             Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
             Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::put('/settings/fieldwork', [SettingController::class, 'fieldwork'])->name('settings.fieldwork');
             Route::patch('/settings/account', [SettingController::class, 'account'])->name('settings.account');
             Route::patch('/settings/password', [SettingController::class, 'password'])->name('settings.password');
         });

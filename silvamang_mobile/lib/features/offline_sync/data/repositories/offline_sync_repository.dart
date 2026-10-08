@@ -19,6 +19,20 @@ class OfflineSyncRepository {
 
   final LocalStorageService storage;
 
+  // All repository instances share the same persistent queue. Serialize the
+  // entire read/modify/write operation, including changes to deleted history.
+  static Future<void> _pendingMutation = Future<void>.value();
+
+  Future<void> _mutate(Future<void> Function() operation) {
+    final result = _pendingMutation.then((_) => operation());
+    // Report the error to this caller without preventing subsequent saves.
+    _pendingMutation = result.then<void>(
+      (_) {},
+      onError: (Object error, StackTrace stack) {},
+    );
+    return result;
+  }
+
   Future<List<OfflineSyncItem>> getItems() async {
     return _readItems(_storageKey);
   }
@@ -44,20 +58,20 @@ class OfflineSyncRepository {
         .toList();
   }
 
-  Future<void> addItem(OfflineSyncItem item) async {
+  Future<void> addItem(OfflineSyncItem item) => _mutate(() async {
     final items = await getItems();
     await _saveItems([...items, item]);
-  }
+  });
 
-  Future<void> updateItem(OfflineSyncItem item) async {
+  Future<void> updateItem(OfflineSyncItem item) => _mutate(() async {
     final items = await getItems();
     await _saveItems([
       for (final existing in items)
         if (existing.id == item.id) item else existing,
     ]);
-  }
+  });
 
-  Future<void> removeItem(String id) async {
+  Future<void> removeItem(String id) => _mutate(() async {
     final items = await getItems();
     final removedItems = items.where((item) => item.id == id).toList();
     await _archiveDeletedItems(removedItems);
@@ -65,12 +79,12 @@ class OfflineSyncRepository {
       for (final item in items)
         if (item.id != id) item,
     ]);
-  }
+  });
 
   Future<void> clearSynced({
     String? onlyType,
     bool Function(OfflineSyncItem item)? matches,
-  }) async {
+  }) => _mutate(() async {
     final items = await getItems();
     final syncedItems = items
         .where(
@@ -88,9 +102,9 @@ class OfflineSyncRepository {
             (matches != null && !matches(item)))
           item,
     ]);
-  }
+  });
 
-  Future<void> restoreRecentlyDeletedItem(String id) async {
+  Future<void> restoreRecentlyDeletedItem(String id) => _mutate(() async {
     final deletedItems = await getRecentlyDeletedItems();
     OfflineSyncItem? itemToRestore;
     final remainingDeletedItems = <OfflineSyncItem>[];
@@ -126,20 +140,21 @@ class OfflineSyncRepository {
 
     await _saveItems(restoredItems);
     await _saveRecentlyDeletedItems(remainingDeletedItems);
-  }
+  });
 
-  Future<void> permanentlyDeleteRecentlyDeletedItem(String id) async {
-    final deletedItems = await getRecentlyDeletedItems();
-    await _saveRecentlyDeletedItems([
-      for (final item in deletedItems)
-        if (item.id != id) item,
-    ]);
-  }
+  Future<void> permanentlyDeleteRecentlyDeletedItem(String id) =>
+      _mutate(() async {
+        final deletedItems = await getRecentlyDeletedItems();
+        await _saveRecentlyDeletedItems([
+          for (final item in deletedItems)
+            if (item.id != id) item,
+        ]);
+      });
 
   Future<void> clearRecentlyDeleted({
     String? onlyType,
     bool Function(OfflineSyncItem item)? matches,
-  }) async {
+  }) => _mutate(() async {
     if (onlyType == null && matches == null) {
       await _saveRecentlyDeletedItems(const []);
       return;
@@ -152,7 +167,7 @@ class OfflineSyncRepository {
             (matches != null && !matches(item)))
           item,
     ]);
-  }
+  });
 
   Future<int> pendingCount() async {
     final items = await getPendingItems();

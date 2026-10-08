@@ -14,6 +14,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/routing/route_names.dart';
 import '../../../../core/services/connectivity_service.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../../core/services/fieldwork_settings_service.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/silvamang_back_button.dart';
 import '../../../../core/widgets/silvamang_button.dart';
@@ -40,7 +41,9 @@ class CreateTransectPage extends ConsumerStatefulWidget {
 }
 
 class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
-  static const _maximumGpsAccuracyM = 50.0;
+  FieldworkSettings _fieldworkSettings = const FieldworkSettings();
+  double get _maximumGpsAccuracyM =>
+      _fieldworkSettings.maximumGpsError.toDouble();
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -103,6 +106,11 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
 
   Future<void> _initialize() async {
     final isOnline = await _connectivityService.hasNetworkConnection();
+    final settings = await FieldworkSettingsService.production().load(
+      online: isOnline,
+    );
+    if (!mounted) return;
+    _fieldworkSettings = settings;
     final locationResult = await _locationService.getCurrentLocationResult(
       timeout: const Duration(seconds: 12),
     );
@@ -175,7 +183,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
   }
 
   Future<void> _startTracking() async {
-    if (_isTracking) return;
+    if (_isTracking || _isInitializing) return;
     final result = await _locationService.getCurrentLocationResult(
       timeout: const Duration(seconds: 20),
     );
@@ -207,7 +215,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
     _moveMap(point, zoom: 18);
 
     _locationSubscription = _locationService
-        .watchLocations(distanceFilterMeters: 1)
+        .watchLocations(distanceFilterMeters: _fieldworkSettings.distanceMeters)
         .listen(_handleLocation, onError: _handleLocationError);
   }
 
@@ -264,7 +272,8 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
   Future<void> _resumeTracking() async {
     if (_isTracking || _points.isEmpty) return;
     final allowed = await _locationService.requestLocationPermission();
-    if (!allowed || !mounted) {
+    if (!mounted) return;
+    if (!allowed) {
       setState(() => _fieldMessage = 'Location permission is required.');
       return;
     }
@@ -273,7 +282,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
       _fieldMessage = 'GPS transect recording resumed.';
     });
     _locationSubscription = _locationService
-        .watchLocations(distanceFilterMeters: 1)
+        .watchLocations(distanceFilterMeters: _fieldworkSettings.distanceMeters)
         .listen(_handleLocation, onError: _handleLocationError);
   }
 

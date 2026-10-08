@@ -87,3 +87,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('admin/dashboard-summary', DashboardSummaryController::class)->middleware('role:super_admin,admin,researcher');
 });
+
+// Only non-sensitive recording preferences are exposed to offline-capable apps.
+Route::get('fieldwork-settings', function () {
+    $settings = \App\Http\Controllers\Admin\SettingController::preferences();
+    return response()->json(['data' => [
+        'gps_max_error_m' => (int) $settings['gps_max_error_m'],
+        'gps_distance_m' => (int) $settings['gps_distance_m'],
+    ]]);
+});

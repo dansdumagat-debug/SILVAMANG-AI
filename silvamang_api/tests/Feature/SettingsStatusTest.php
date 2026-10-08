@@ -59,6 +59,18 @@ class SettingsStatusTest extends TestCase
         $this->assertDatabaseCount('system_settings', 0);
     }
 
+    public function test_fieldwork_settings_are_validated_and_available_to_the_app(): void
+    {
+        $this->getJson('/api/fieldwork-settings')->assertOk()->assertExactJson(['data' => ['gps_max_error_m' => 50, 'gps_distance_m' => 1]]);
+        $this->actingAs($this->userWithRole('admin'));
+        $this->put(route('admin.settings.fieldwork'), ['gps_max_error_m' => 15, 'gps_distance_m' => 5])->assertSessionHasNoErrors();
+        $this->getJson('/api/fieldwork-settings')->assertExactJson(['data' => ['gps_max_error_m' => 15, 'gps_distance_m' => 5]]);
+        $this->put(route('admin.settings.fieldwork'), ['gps_max_error_m' => 0, 'gps_distance_m' => 999])->assertSessionHasErrors(['gps_max_error_m', 'gps_distance_m']);
+        $this->getJson('/api/fieldwork-settings')->assertJsonPath('data.gps_max_error_m', 15);
+        $this->actingAs($this->userWithRole('mobile_user'));
+        $this->putJson(route('admin.settings.fieldwork'), ['gps_max_error_m' => 50, 'gps_distance_m' => 1])->assertForbidden();
+    }
+
     public function test_account_and_password_changes_require_current_password(): void
     {
         $user = $this->userWithRole('admin');
