@@ -4627,3 +4627,44 @@ a:focus-visible, button:focus-visible { outline: 3px solid #245d85; outline-offs
     .observation-details-floating { max-height: 35%; }
     .observation-status-legend { flex-wrap: wrap; overflow: visible; }
 }
+
+/* Keep admin content usable at narrow widths and increased browser zoom. */
+.admin-topbar { flex-wrap: wrap; }
+.admin-topbar .search-box { min-width: 0; flex: 1 1 220px; }
+.admin-topbar .topbar-actions { min-width: 0; flex-wrap: wrap; }
+.admin-content .form-actions { flex-wrap: wrap; }
+.admin-content .form-actions > *, .admin-content .action-row > * {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+.admin-content .system-info-row { gap: 12px; flex-wrap: wrap; }
+.admin-content .system-info-row strong { min-width: 0; overflow-wrap: anywhere; }
+.admin-sidebar h1, .admin-content h2, .admin-content h3 { overflow-wrap: anywhere; }
+.admin-content .table-wrap { max-width: 100%; overscroll-behavior-x: contain; }
+.admin-settings { align-items: start; }
+.admin-settings .form-card { height: 100%; }
+.admin-settings .form-group { align-content: start; }
+.settings-password-control { display: flex; align-items: stretch; min-width: 0; }
+.settings-password-control input { min-width: 0; flex: 1 1 0; border-radius: 12px 0 0 12px; }
+.settings-password-control button {
+    flex: 0 0 auto; border: 1px solid var(--control-border); border-left: 0;
+    border-radius: 0 12px 12px 0; padding: 8px 10px;
+    background: var(--primary-soft); color: var(--primary-dark); cursor: pointer;
+}
+.settings-password-control button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@media (min-width: 1101px) and (max-width: 1350px) {
+    .admin-settings .form-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 820px) {
+    .admin-content input, .admin-content select, .admin-content textarea { font-size: 16px; }
+    .admin-content button, .admin-content .primary-action, .admin-content .secondary-action { min-height: 44px; }
+    .admin-sidebar { height: 100dvh; overflow-y: auto; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+    .admin-topbar .topbar-actions { max-width: 100%; }
+    .admin-settings .form-actions { margin-top: 20px; }
+}
+@media (max-width: 380px) {
+    .admin-content { padding: 12px; }
+    .admin-settings .form-card { padding: 14px; }
+    .admin-topbar .profile-chip { max-width: 160px; }
+}

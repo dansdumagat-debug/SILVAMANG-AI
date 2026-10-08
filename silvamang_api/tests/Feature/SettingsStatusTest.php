@@ -27,6 +27,14 @@ class SettingsStatusTest extends TestCase
         $this->assertDatabaseHas('system_settings', ['key' => 'records_per_page', 'value' => '25']);
         $this->get(route('admin.settings.index'))->assertOk()->assertSee('Field Admin')->assertSee('help@example.com')->assertSee('Change Password')->assertDontSee('CNN classifier');
         Http::assertNothingSent();
+        $this->get(route('admin.settings.index'))->assertSee(route('admin.users.index'))->assertSee(url('/download'));
+        $this->get(route('admin.transects.index'))->assertOk()->assertViewHas('transects', fn ($rows) => $rows->perPage() === 25);
+        $this->get(route('admin.scan-monitoring.index'))->assertOk()->assertViewHas('scanRecords', fn ($rows) => $rows->perPage() === 25);
+        if ($directory = getenv('SETTINGS_UI_ARTIFACTS')) {
+            file_put_contents($directory.'/settings.html', $this->get(route('admin.settings.index'))->getContent());
+            file_put_contents($directory.'/users.html', $this->get(route('admin.users.index'))->getContent());
+            file_put_contents($directory.'/transects.html', $this->get(route('admin.transects.index'))->getContent());
+        }
         $this->get(route('admin.users.index'))->assertOk()->assertViewHas('users', fn ($users) => $users->perPage() === 25);
     }
 

@@ -2,7 +2,7 @@
 @section('title', 'Settings')
 @section('content')
     <div class="page-heading"><div><h2>System Settings</h2><p>Manage your admin workspace, account, and security.</p></div></div>
-    <section class="settings-grid">
+    <section class="settings-grid admin-settings">
         <form method="POST" action="{{ route('admin.settings.update') }}" class="form-card">
             @csrf @method('PUT')
             <h3>General Preferences</h3>
@@ -33,7 +33,7 @@
                 <a class="secondary-action" href="{{ route('admin.users.index') }}">Manage Users &amp; Roles</a>
                 <a class="secondary-action" href="{{ url('/download') }}">App Download Page</a>
             </div>
-            <div class="system-info-row"><span>Local time</span><strong>{{ now()->timezone('Asia/Manila')->format('M j, Y g:i A') }} PHT</strong></div>
+            <div class="system-info-row"><span>Local time</span><strong data-philippine-clock>{{ now()->timezone('Asia/Manila')->format('M j, Y g:i A') }} PHT</strong></div>
             <p>Philippine time (UTC+8) is used for local display. Existing observation times remain unchanged.</p>
         </article>
         <form method="POST" action="{{ route('admin.settings.account') }}" class="form-card">
@@ -42,7 +42,7 @@
             <div class="form-grid">
                 <label class="form-group">Name<input name="name" value="{{ old('name', $user->name) }}" maxlength="255" autocomplete="name" required></label>
                 <label class="form-group">Email<input type="email" name="email" value="{{ old('email', $user->email) }}" maxlength="255" autocomplete="email" required></label>
-                <label class="form-group">Current password<input type="password" name="current_password" autocomplete="current-password" required></label>
+                <label class="form-group">Current password<input data-settings-password type="password" name="current_password" autocomplete="current-password" required></label>
             </div>
             <div class="form-actions"><button class="primary-action" type="submit">Save Account Details</button></div>
         </form>
@@ -51,11 +51,46 @@
             <h3>Change Password</h3>
             <p>Use at least 8 characters. Your current password is required.</p>
             <div class="form-grid">
-                <label class="form-group">Current password<input type="password" name="current_password" autocomplete="current-password" required></label>
-                <label class="form-group">New password<input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
-                <label class="form-group">Confirm new password<input type="password" name="password_confirmation" autocomplete="new-password" minlength="8" required></label>
+                <label class="form-group">Current password<input data-settings-password type="password" name="current_password" autocomplete="current-password" required></label>
+                <label class="form-group">New password<input data-settings-password type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+                <label class="form-group">Confirm new password<input data-settings-password type="password" name="password_confirmation" autocomplete="new-password" minlength="8" required></label>
             </div>
             <div class="form-actions"><button class="primary-action" type="submit">Change Password</button></div>
         </form>
     </section>
 @endsection
+
+@push('scripts')
+<script>
+    document.querySelectorAll('[data-settings-password]').forEach((input, index) => {
+        input.id = `settings-password-${index}`;
+        const wrapper = document.createElement('span');
+        wrapper.className = 'settings-password-control';
+        input.before(wrapper);
+        wrapper.append(input);
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.textContent = 'Show';
+        toggle.setAttribute('aria-controls', input.id);
+        toggle.setAttribute('aria-label', 'Show password');
+        toggle.setAttribute('aria-pressed', 'false');
+        toggle.addEventListener('click', () => {
+            const reveal = input.type === 'password';
+            input.type = reveal ? 'text' : 'password';
+            toggle.textContent = reveal ? 'Hide' : 'Show';
+            toggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+            toggle.setAttribute('aria-pressed', String(reveal));
+        });
+        wrapper.append(toggle);
+    });
+    const timeDisplay = document.querySelector('[data-philippine-clock]');
+    const updateTime = () => {
+        if (timeDisplay) timeDisplay.textContent = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Manila', year: 'numeric', month: 'short', day: 'numeric',
+            hour: 'numeric', minute: '2-digit',
+        }).format(new Date()) + ' PHT';
+    };
+    updateTime();
+    setInterval(updateTime, 30000);
+</script>
+@endpush
