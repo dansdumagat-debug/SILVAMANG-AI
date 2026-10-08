@@ -25,7 +25,6 @@
         'AI & System' => [
             ['label' => 'Chatbot Management', 'route' => 'admin.chatbot-management.index', 'match' => 'admin.chatbot-management.*', 'roles' => ['super_admin', 'admin']],
             ['label' => 'AI Assistant Logs', 'route' => 'admin.assistant-logs.index', 'match' => 'admin.assistant-logs.*', 'roles' => $adminConsoleRoles],
-            ['label' => 'AI Models', 'route' => 'admin.ai-models.index', 'match' => 'admin.ai-models.*', 'roles' => $adminConsoleRoles],
             ['label' => 'Alerts & Monitoring', 'route' => 'admin.alerts.index', 'match' => 'admin.alerts.*', 'roles' => $adminConsoleRoles],
             ['label' => 'Users', 'route' => 'admin.users.index', 'match' => 'admin.users.*', 'roles' => ['super_admin', 'admin']],
         ],
