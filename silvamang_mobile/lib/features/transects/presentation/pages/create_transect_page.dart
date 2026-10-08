@@ -376,6 +376,7 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
     final workingSelection = <String>{..._selectedObservations.keys};
     await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       useSafeArea: true,
       builder: (context) => StatefulBuilder(
@@ -455,8 +456,9 @@ class _CreateTransectPageState extends ConsumerState<CreateTransectPage> {
                           },
                         ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
+                SafeArea(
+                  top: false,
+                  minimum: const EdgeInsets.all(16),
                   child: SilvamangButton(
                     text: 'Attach ${workingSelection.length} Observation(s)',
                     icon: Icons.add_location_alt_rounded,
