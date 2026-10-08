@@ -16,18 +16,6 @@
             @if($canViewAll)
                 <a class="primary-action" href="{{ route('admin.transects.export-selection') }}">Select Export Records</a>
             @endif
-            <form method="GET" action="{{ route('admin.transects.export-excel') }}" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-                @foreach(request()->except('plot_area_m2') as $key => $value)
-                    @if(is_scalar($value))
-                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                    @endif
-                @endforeach
-                <label for="plot-area-m2">Plot area (m²)</label>
-                <input id="plot-area-m2" type="number" name="plot_area_m2" min="0.01" step="any" value="{{ request('plot_area_m2') }}" placeholder="Optional" style="width:100px" title="Enter the sampled plot area for density and per-hectare formulas">
-                <button type="submit" class="primary-action">Export Excel</button>
-            </form>
-            <a href="{{ route('admin.transects.export', request()->query()) }}" class="secondary-action">Export CSV</a>
-            <small>Excel uses linked scans. Enter plot area for density and per-hectare formulas.</small>
         </div>
     </div>
 
