@@ -55,3 +55,11 @@ curl -I https://silvamangai.online/download/android
 ```
 
 Expect HTTP 200, an APK content type and an attachment filename. Confirm file size/checksum after upload. iOS distribution is not configured by this page.
+
+## Release 1.0.1 (build 2)
+
+The October 8 release includes field transect numbers, survey location, category and Count-MG, structural measurement changes, and map improvements. The signed APK must be uploaded separately from a Git/Dokploy redeployment. A working `/download` page with a 404 from `/download/android` means there is no readable APK at the release path in the running application container.
+
+Use the same release signing certificate as the previous public APK. The USB development installation is debug-signed and cannot be updated in place with this release-signed APK. Do not uninstall a development installation while it contains unsynced field data. This release does not add automatic in-app update detection; the download page remains a manual update channel.
+
+Before publishing, deploy the matching backend and apply the October 8 ecological survey and transect-number migrations. Verify that observations and transects sync successfully.
