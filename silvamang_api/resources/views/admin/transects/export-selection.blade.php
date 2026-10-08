@@ -10,6 +10,7 @@
         <label>Location<select id="export-location"><option value="">All locations</option></select></label>
         <button type="button" class="primary-action" id="add-export">Add to Export</button>
     </div>
+    <p id="export-matches" role="status"></p>
     <p id="export-count" role="status"></p>
     <h3>Selected Export Records</h3>
     <form method="POST" action="{{ route('admin.transects.export-selected') }}">
@@ -26,14 +27,35 @@
 (() => {
     const groups = @json($groups);
     const selected = new Set();
-    for (const [id, key, label] of [['export-user','user','recorder'],['export-transect','transect_number','transect'],['export-location','location','location']]) {
+    function populateOptions(id, key, label, source) {
         const select = document.getElementById(id);
-        const options = new Map(groups.filter(g => g[key]).map(g => [g[key],g[label]]));
+        const previous = select.value;
+        while (select.options.length > 1) select.remove(1);
+        const options = new Map(source.filter(g => g[key]).map(g => [g[key],g[label]]));
         const entries = [...options];
         if (id === 'export-transect') entries.sort(([a], [b]) =>
             a === 'unrecorded' ? 1 : b === 'unrecorded' ? -1 : Number(a) - Number(b));
         for (const [value, text] of entries) select.add(new Option(text, value));
+        select.value = options.has(previous) ? previous : '';
     }
+    const filters = [['export-user','user'],['export-transect','transect_number'],['export-date','date'],['export-location','location']];
+    const matches = group => filters.every(([id, key]) => !document.getElementById(id).value || group[key] === document.getElementById(id).value);
+    function updateMatches() {
+        const count = new Set(groups.filter(matches).flatMap(g => g.records)).size;
+        document.getElementById('export-matches').textContent = count ? `${count} matching observations available to add.` : 'No records match these filters.';
+        document.getElementById('add-export').disabled = count === 0;
+    }
+    function updateUserOptions() {
+        const user = document.getElementById('export-user').value;
+        const userGroups = groups.filter(g => !user || g.user === user);
+        populateOptions('export-transect', 'transect_number', 'transect', userGroups);
+        populateOptions('export-location', 'location', 'location', userGroups);
+        updateMatches();
+    }
+    populateOptions('export-user', 'user', 'recorder', groups);
+    document.getElementById('export-user').addEventListener('change', updateUserOptions);
+    for (const id of ['export-transect', 'export-date', 'export-location']) document.getElementById(id).addEventListener('change', updateMatches);
+    updateUserOptions();
     function render() {
         const container = document.getElementById('export-records');
         container.replaceChildren();
@@ -59,8 +81,7 @@
         document.getElementById('export-submit').disabled = recordIds.size === 0;
     }
     document.getElementById('add-export').addEventListener('click', () => {
-        const filters = [['export-user','user'],['export-transect','transect_number'],['export-date','date'],['export-location','location']];
-        groups.forEach((g,i) => { if (filters.every(([id,key]) => !document.getElementById(id).value || g[key] === document.getElementById(id).value)) selected.add(i); });
+        groups.forEach((g,i) => { if (matches(g)) selected.add(i); });
         render();
     });
     render();
