@@ -13,6 +13,16 @@ class ScanRecord extends Model
     protected $fillable = [
         'record_code',
         'plot_no',
+        'survey_location',
+        'ecological_category',
+        'count_mg',
+        'substrate',
+        'associated_flora',
+        'associated_fauna',
+        'anthropogenic_activity',
+        'impact',
+        'other_observations',
+
         'user_id',
         'species_id',
         'top_scientific_name',
@@ -38,6 +48,7 @@ class ScanRecord extends Model
     ];
 
     protected $casts = [
+        'count_mg' => 'integer',
         'confidence' => 'decimal:2',
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',

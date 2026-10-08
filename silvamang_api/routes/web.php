@@ -107,6 +107,7 @@ Route::prefix('admin')
         Route::get('/scan-monitoring', [ScanRecordController::class, 'index'])->name('scan-monitoring.index');
         Route::get('/scan-records', [ScanRecordController::class, 'index'])->name('scan-records.index');
         Route::get('/scan-monitoring/{scanRecord}', [ScanRecordController::class, 'show'])->name('scan-monitoring.show');
+        Route::patch('/scan-records/{scanRecord}/survey', [ScanRecordController::class, 'updateSurvey'])->name('scan-records.survey');
         Route::get('/scan-records/{scanRecord}', [ScanRecordController::class, 'show'])->name('scan-records.show');
         Route::get('/dataset-verification', [DatasetVerificationController::class, 'index'])->name('dataset-verification.index');
         Route::get('/dataset-verification/{scanImage}', [DatasetVerificationController::class, 'show'])->name('dataset-verification.show');

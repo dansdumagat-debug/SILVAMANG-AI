@@ -52,7 +52,7 @@ class VegetationWorkbookExportService
             ['Averages use available positive finite values only; all-missing groups are blank. Missing measurements are not zero.'],
             ['One row per observation within each transect; recorder is the observation user, not the transect owner.'],
             ['Plot No is a field identifier on the observation; no separate Plot entity existed in this system.'],
-            ['Uncollected category, substrate, flora, fauna, anthropogenic activity and impact remain blank.'],
+            ['Survey fields are exported from recorded ecological details; unknown values remain blank. System-generated scan notes are not field observations.'],
         ], null, 'A1');
         $notes->getColumnDimension('A')->setWidth(120);
         $notes->getStyle('A1:A12')->getAlignment()->setWrapText(true);
@@ -87,12 +87,12 @@ class VegetationWorkbookExportService
                 $date = $scan->captured_at;
                 $name = $scan->top_scientific_name ?: $scan->species?->scientific_name;
                 $this->writeRow($vegetation, $row, [
-                    $date, $scan->user?->name, $scan->location_name ?: $transect->location_name,
+                    $date, $scan->user?->name, $scan->survey_location ?: ($scan->location_name ?: $transect->location_name),
                     $transect->transect_code ?: $transect->transect_name, $scan->plot_no, $name,
-                    null, 1, $factor, $gbh, $gbh !== null ? $gbh / 100 : null, $dbh, $dbhM,
+                    $scan->ecological_category, $scan->count_mg ?? 1, $factor, $gbh, $gbh !== null ? $gbh / 100 : null, $dbh, $dbhM,
                     $basal, $factor !== null && $basal !== null ? $basal * $factor : null, $height,
                     $volume, $factor !== null && $volume !== null ? $volume * $factor : null,
-                    $c1, $c2, $width, null, null, null, null, null, $scan->notes,
+                    $c1, $c2, $width, $scan->substrate, $scan->associated_flora, $scan->associated_fauna, $scan->anthropogenic_activity, $scan->impact, $scan->other_observations,
                 ]);
                 $this->writeRow($raw, $row, [$transect->transect_code, $transect->transect_name,
                     $scan->record_code, $scan->user?->name, $date, $this->positiveOrZero($scan->latitude),
@@ -185,9 +185,9 @@ class VegetationWorkbookExportService
         $notes = $book->getSheetByName('Export Notes');
         $notes->setCellValue('A13', 'Reference daily and combined layouts retained. DBH units corrected to meters. Formula results are blank when source data is absent.');
         $notes->setCellValue('A14', 'Stand totals use selected observations grouped by physical transect and plot, with supplied uniform plot area. Partial selections are not a complete plot census.');
-        $notes->setCellValue('A15', 'Original pivot/IVI/RF/relative dominance/density report layouts are retained blank: category, census counts and complete sampling effort are not collected. Original survey records and cached analyses are excluded.');
+        $notes->setCellValue('A15', 'Original pivot/IVI/RF/relative dominance/density report layouts are retained blank: complete census coverage and sampling effort are not established. Original survey records and cached analyses are excluded.');
         $notes->setCellValue('A16', 'Combined-sheet canopy calculations preserve reference methodology: corrected second dimension = Canopy 2 / 2; average diameter = mean(Canopy 1, corrected dimension); crown cover = 0.7854 * average diameter squared. These do not overwrite recorded canopy width.');
-        $notes->setCellValue('A17', 'Count-MG is one individual observation per scan; grouped seedling/sapling census counts are not collected. Historical DBH remains available in Raw Scans; the vegetation DBH formula requires measured GBH.');
+        $notes->setCellValue('A17', 'Count-MG uses the recorded census count, otherwise one individual observation per scan. Historical DBH remains available in Raw Scans; the vegetation DBH formula requires measured GBH.');
         $notes->getStyle('A1:A17')->getAlignment()->setWrapText(true);
         $sampling = $book->getSheetByName('Sampling Areas');
         $raw = $book->getSheetByName('Raw Scans');
@@ -268,11 +268,32 @@ class VegetationWorkbookExportService
                 $formula('V', '=IF(OR(S'.$r.'="",U'.$r.'=""),"",AVERAGE(S'.$r.',U'.$r.'))');
                 $formula('W', '=IF(V'.$r.'="","",0.7854*V'.$r.'^2)');
             }
-            $sheet->getStyle('I'.$r.':'.($combined ? 'W' : 'S').$r)->getNumberFormat()->setFormatCode('0.0000');
+            $sheet->getStyle('I'.$r.':'.($combined ? 'W' : 'S').$r)->getNumberFormat()->setFormatCode('0.########');
         }
         $last = max(2, count($records) + 1);
         if ($sheet->getHighestRow() > $last) {
             $sheet->removeRow($last + 1, $sheet->getHighestRow() - $last);
+        }
+        // Keep template headers/sheets, but make recorded rows readable in Excel and WPS.
+        $sheet->getStyle('A2:'.$end.$last)->getFont()->setBold(false)->setSize(11);
+        $sheet->getStyle('A2:'.$end.$last)->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('F2:F'.$last)->getFont()->setItalic(true);
+        $sheet->getStyle('H2:H'.$last)->getNumberFormat()->setFormatCode('0');
+        $sheet->getStyle('I2:I'.$last)->getNumberFormat()->setFormatCode('0.####');
+        $sheet->getStyle('A1:'.$end.'1')->getAlignment()->setWrapText(true);
+        $sheet->getRowDimension(1)->setRowHeight(34);
+        foreach (range(1, Coordinate::columnIndexFromString($end)) as $col) {
+            $letter = Coordinate::stringFromColumnIndex($col);
+            $sheet->getColumnDimension($letter)->setWidth(19);
+        }
+        foreach (['A' => 23, 'B' => 26, 'C' => 30, 'D' => 27, 'E' => 12, 'F' => 33, 'G' => 14, 'H' => 12] as $col => $width) {
+            $sheet->getColumnDimension($col)->setWidth($width);
+        }
+        $sheet->getColumnDimension($combined ? 'O' : 'N')->setWidth(26);
+        for ($col = Coordinate::columnIndexFromString($combined ? 'X' : 'T'); $col <= Coordinate::columnIndexFromString($end); $col++) {
+            $letter = Coordinate::stringFromColumnIndex($col);
+            $sheet->getColumnDimension($letter)->setWidth(30);
+            $sheet->getStyle($letter.'2:'.$letter.$last)->getAlignment()->setWrapText(true);
         }
         $sheet->freezePane('A2');
         $sheet->setAutoFilter('A1:'.$end.max(2, count($records) + 1));

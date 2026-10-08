@@ -119,6 +119,25 @@ class ScanRecordController extends Controller
         return view('admin.scan-records.show', compact('scanRecord'));
     }
 
+    public function updateSurvey(Request $request, ScanRecord $scanRecord)
+    {
+        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin', 'researcher']), 403);
+        $data = $request->validate([
+            'survey_location' => ['nullable', 'string', 'max:255'],
+            'ecological_category' => ['nullable', 'in:Tree,Sapling,Seedling'],
+            'count_mg' => ['nullable', 'integer', 'min:1', 'max:1000000'],
+            'substrate' => ['nullable', 'string', 'max:5000'],
+            'associated_flora' => ['nullable', 'string', 'max:5000'],
+            'associated_fauna' => ['nullable', 'string', 'max:5000'],
+            'anthropogenic_activity' => ['nullable', 'string', 'max:5000'],
+            'impact' => ['nullable', 'string', 'max:5000'],
+            'other_observations' => ['nullable', 'string', 'max:5000'],
+        ]);
+        $scanRecord->update($data);
+
+        return back()->with('success', 'Survey details saved for Excel export.');
+    }
+
     private function applySort(Builder $query, string $sort): void
     {
         match ($sort) {

@@ -26,6 +26,30 @@
         </div>
     </div>
 
+    @if(auth()->user()?->hasAnyRole(['super_admin','admin','researcher']))
+    <article class="detail-card">
+      <h3>Ecological Survey Details</h3>
+      <p>Optional recorded details for the vegetation workbook. Leave unknown values blank. Count defaults to one individual observation when not entered. Plot area is supplied on the export selection screen.</p>
+      <form method="POST" action="{{ route('admin.scan-records.survey', $scanRecord) }}">
+        @csrf @method('PATCH')
+        <div class="admin-form-grid">
+          <label>Survey location (e.g. Inside / Outside)<input name="survey_location" type="text" maxlength="255" value="{{ old('survey_location', $scanRecord->survey_location) }}">@error('survey_location')<span>{{ $message }}</span>@enderror</label>
+          <label>Category<select name="ecological_category"><option value="">Not recorded</option>
+            @foreach(['Tree','Sapling','Seedling'] as $category)
+            <option value="{{ $category }}" @selected(old('ecological_category', $scanRecord->ecological_category) === $category)>{{ $category }}</option>
+            @endforeach</select>@error('ecological_category')<span>{{ $message }}</span>@enderror</label>
+          <label>Count-MG<input name="count_mg" type="number" min="1" max="1000000" step="1" value="{{ old('count_mg', $scanRecord->count_mg) }}">@error('count_mg')<span>{{ $message }}</span>@enderror</label>
+          <label>Substrate<input name="substrate" type="text" maxlength="5000" value="{{ old('substrate', $scanRecord->substrate) }}">@error('substrate')<span>{{ $message }}</span>@enderror</label>
+          <label>Associated Flora<input name="associated_flora" type="text" maxlength="5000" value="{{ old('associated_flora', $scanRecord->associated_flora) }}">@error('associated_flora')<span>{{ $message }}</span>@enderror</label>
+          <label>Associated Fauna<input name="associated_fauna" type="text" maxlength="5000" value="{{ old('associated_fauna', $scanRecord->associated_fauna) }}">@error('associated_fauna')<span>{{ $message }}</span>@enderror</label>
+          <label>Anthropogenic Activity<input name="anthropogenic_activity" type="text" maxlength="5000" value="{{ old('anthropogenic_activity', $scanRecord->anthropogenic_activity) }}">@error('anthropogenic_activity')<span>{{ $message }}</span>@enderror</label>
+          <label>Impact<input name="impact" type="text" maxlength="5000" value="{{ old('impact', $scanRecord->impact) }}">@error('impact')<span>{{ $message }}</span>@enderror</label>
+          <label>Other Observations<input name="other_observations" type="text" maxlength="5000" value="{{ old('other_observations', $scanRecord->other_observations) }}">@error('other_observations')<span>{{ $message }}</span>@enderror</label>
+        </div><button class="primary-action" type="submit">Save Survey Details</button>
+      </form>
+    </article>
+    @endif
+
     <article class="detail-card">
         <h3>Observation Details</h3>
         <div class="detail-grid">

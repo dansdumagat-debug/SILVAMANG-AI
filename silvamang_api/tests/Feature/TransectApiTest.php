@@ -229,6 +229,41 @@ class TransectApiTest extends TestCase
         @unlink($blankAreaPath);
     }
 
+    public function test_survey_details_save_and_export_with_readable_formats(): void
+    {
+        $role = Role::create(['name' => 'researcher', 'display_name' => 'Researcher', 'status' => 'active']);
+        $user = User::factory()->create();
+        $user->roles()->attach($role);
+        $scan = $this->scanFor($user, 'SURVEY-EXPORT', 'survey-export');
+        Measurement::create(['scan_record_id' => $scan->id, 'gbh_cm' => 2, 'measurement_method' => 'manual_input']);
+        $data = ['survey_location' => 'Inside', 'ecological_category' => 'Seedling', 'count_mg' => 41,
+            'substrate' => 'Muddy', 'associated_flora' => 'Recorded flora', 'associated_fauna' => 'Recorded fauna',
+            'anthropogenic_activity' => 'Fishing', 'impact' => 'Observed impact', 'other_observations' => 'Field notes'];
+        $this->actingAs($user)->patch('/admin/scan-records/'.$scan->id.'/survey', $data)->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('Healthy mature tree.', $scan->fresh()->notes);
+        $this->assertSame(41, $scan->fresh()->count_mg);
+        $this->actingAs($user)->patch('/admin/scan-records/'.$scan->id.'/survey', ['count_mg' => 0])->assertSessionHasErrors('count_mg');
+        Sanctum::actingAs($user);
+        $this->postJson('/api/transects', $this->payload(['survey-export']))->assertCreated();
+        $response = $this->actingAs($user)->get('/admin/transects/export-excel?plot_area_m2=100')->assertOk();
+        $path = $response->baseResponse->getFile()->getPathname();
+        $book = IOFactory::load($path);
+        $sheet = $book->getSheetByName('VEGETATION DATA DAY 1');
+        foreach (['C2' => 'Inside', 'G2' => 'Seedling', 'H2' => 41, 'T2' => 'Muddy', 'U2' => 'Recorded flora',
+            'V2' => 'Recorded fauna', 'W2' => 'Fishing', 'X2' => 'Observed impact', 'Y2' => 'Field notes'] as $cell => $value) {
+            $this->assertEquals($value, $sheet->getCell($cell)->getValue());
+        }
+        $this->assertEquals(4100, $sheet->getCell('I2')->getCalculatedValue());
+        $this->assertEqualsWithDelta(2 / pi() / 100, $sheet->getCell('L2')->getCalculatedValue(), 0.00000001);
+        $this->assertNotSame('0.0000', $sheet->getCell('M2')->getFormattedValue());
+        $this->assertSame('0', $sheet->getStyle('H2')->getNumberFormat()->getFormatCode());
+        $this->assertFalse($sheet->getStyle('F2')->getFont()->getBold());
+        $this->assertTrue($sheet->getStyle('F2')->getFont()->getItalic());
+        $this->assertGreaterThanOrEqual(30, $sheet->getColumnDimension('F')->getWidth());
+        $book->disconnectWorksheets();
+        @unlink($path);
+    }
+
     private function payload(array $observationReferences = []): array
     {
         return [
