@@ -69,3 +69,9 @@ Before publishing, deploy the matching backend and apply the October 8 ecologica
 Preserves ONNX Runtime Java classes and members in R8 release builds using `android/app/proguard-rules.pro`. Native inference looks these up by name; stripping or renaming them can crash identification. See https://onnxruntime.ai/docs/build/android.html. Also includes the transect attachment sheet navigation fix.
 
 Before publishing, verify the signed APK and inspect `build/app/outputs/mapping/release/mapping.txt`: every original `ai.onnxruntime` class must retain its original name (compiler-generated synthetic lambdas may be renamed). Confirm identification on a device using the release APK; debug builds do not exercise R8.
+
+## Release 1.0.3 (build 4)
+
+Registration returns to Login without persisting an authenticated session. The capture screen adds Clear all photos below Continue. History provides confirmed deletion through the existing scan-record DELETE endpoint; failed requests leave the record visible. Deletion requires connectivity and also removes linked transect observation rows through the existing foreign key cascade.
+
+Validation: scoped Flutter analysis, authentication/navigation tests, history deletion success/failure tests, and camera/gallery selection plus clearing multiple photos. Signed APK verification and public download checks are performed before publication.

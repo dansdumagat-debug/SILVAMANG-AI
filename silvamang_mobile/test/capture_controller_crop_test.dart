@@ -37,7 +37,7 @@ void main() {
         );
         final selectedForCropping = <String>[];
         var cancelCrop = false;
-      final controller = _TestCaptureController(
+        final controller = _TestCaptureController(
           imagePicker: picker,
           cropImage: (sourcePath) async {
             selectedForCropping.add(sourcePath);
@@ -51,7 +51,7 @@ void main() {
         );
 
         await controller.pickFromCamera('leaves');
-      final cameraImage = controller.currentState.getImageFor('leaves');
+        final cameraImage = controller.currentState.getImageFor('leaves');
         expect(picker.lastSource, ImageSource.camera);
         expect(cameraImage?.imagePath, cameraCrop.path);
         expect(cameraImage?.fileName, 'camera_crop.jpg');
@@ -59,7 +59,7 @@ void main() {
         expect(cameraImage?.source, 'camera');
 
         await controller.pickFromGallery('leaves');
-      final galleryImage = controller.currentState.getImageFor('leaves');
+        final galleryImage = controller.currentState.getImageFor('leaves');
         expect(picker.lastSource, ImageSource.gallery);
         expect(galleryImage?.imagePath, galleryCrop.path);
         expect(galleryImage?.previewBytes, [20, 21, 22]);
@@ -68,8 +68,18 @@ void main() {
 
         cancelCrop = true;
         await controller.pickFromGallery('leaves');
-      expect(controller.currentState.getImageFor('leaves'), same(galleryImage));
-      expect(controller.currentState.isPicking, isFalse);
+        expect(
+          controller.currentState.getImageFor('leaves'),
+          same(galleryImage),
+        );
+        expect(controller.currentState.isPicking, isFalse);
+        cancelCrop = false;
+        await controller.pickFromCamera('bark');
+        expect(controller.currentState.capturedImages.length, 2);
+        controller.clearImages();
+        expect(controller.currentState.capturedImages, isEmpty);
+        expect(controller.currentState.isReadyForIdentification, isFalse);
+        expect(controller.currentState.successMessage, isNull);
         controller.dispose();
       } finally {
         await cameraSource.delete();
@@ -104,7 +114,10 @@ class _FakeImagePicker extends ImagePicker {
 }
 
 class _TestCaptureController extends CaptureController {
-  _TestCaptureController({required super.imagePicker, required super.cropImage});
+  _TestCaptureController({
+    required super.imagePicker,
+    required super.cropImage,
+  });
 
   CaptureState get currentState => state;
 }

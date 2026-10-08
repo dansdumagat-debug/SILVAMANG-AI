@@ -51,7 +51,7 @@ class AuthRepository {
     );
 
     final auth = AuthResponseModel.fromJson(response.data ?? {});
-    await _saveAuth(auth);
+    await storage.clearAuth();
     return auth;
   }
 

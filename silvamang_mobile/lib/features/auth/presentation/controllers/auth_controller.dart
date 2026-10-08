@@ -151,13 +151,13 @@ class AuthController extends StateNotifier<AuthState> {
   ) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final auth = await repository.register(
+      await repository.register(
         name: name,
         email: email,
         password: password,
         passwordConfirmation: passwordConfirmation,
       );
-      state = AuthState(user: auth.user, token: auth.token);
+      state = const AuthState();
       return true;
     } catch (error) {
       state = state.copyWith(isLoading: false, errorMessage: error.toString());

@@ -26,6 +26,52 @@ class RecordsPage extends ConsumerStatefulWidget {
 
 class _RecordsPageState extends ConsumerState<RecordsPage> {
   final _searchController = TextEditingController();
+  final _deleting = <String>{};
+
+  Future<void> _deleteRecord(ScanRecordModel record) async {
+    if (_deleting.contains(record.id)) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete this scan?'),
+        content: Text(
+          'Delete ${record.recordCode} from your history? This also removes the scan from online records and linked transect observations. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    setState(() => _deleting.add(record.id));
+    try {
+      await ref
+          .read(recordsControllerProvider.notifier)
+          .deleteRecord(record.id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Scan deleted.')));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not delete the scan. Check your connection and try again.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _deleting.remove(record.id));
+    }
+  }
 
   @override
   void initState() {
@@ -176,7 +222,12 @@ class _RecordsPageState extends ConsumerState<RecordsPage> {
             ...records.map(
               (record) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                child: _RecordCard(record: record),
+                child: _RecordCard(
+                  record: record,
+                  onDelete: _deleting.contains(record.id)
+                      ? null
+                      : () => _deleteRecord(record),
+                ),
               ),
             ),
         ],
@@ -212,9 +263,10 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _RecordCard extends StatelessWidget {
-  const _RecordCard({required this.record});
+  const _RecordCard({required this.record, required this.onDelete});
 
   final ScanRecordModel record;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +333,14 @@ class _RecordCard extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.mutedText),
+          IconButton(
+            tooltip: 'Delete scan',
+            onPressed: onDelete,
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              color: AppColors.dangerRed,
+            ),
+          ),
         ],
       ),
     );

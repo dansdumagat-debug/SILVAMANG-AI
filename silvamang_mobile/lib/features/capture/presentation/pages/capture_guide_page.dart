@@ -269,6 +269,16 @@ class _CaptureGuidePageState extends ConsumerState<CaptureGuidePage> {
                 : Icons.straighten_rounded,
             onPressed: _continueWithSpecies,
           ),
+          TextButton.icon(
+            onPressed:
+                captureState.capturedImages.isEmpty || captureState.isPicking
+                ? null
+                : () => ref
+                      .read(captureControllerProvider.notifier)
+                      .clearImages(),
+            icon: const Icon(Icons.delete_sweep_outlined),
+            label: const Text('Clear all photos'),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             _typedSpecies.trim().isEmpty

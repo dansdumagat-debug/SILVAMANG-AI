@@ -49,6 +49,10 @@ class ScanRecordRepository {
     return items.map(ScanRecordModel.fromJson).toList();
   }
 
+  Future<void> deleteScanRecord(String id) async {
+    await apiClient.delete<dynamic>('/scan-records/$id');
+  }
+
   Future<ScanRecordModel> getScanRecordById(String id) async {
     final response = await apiClient.get<Map<String, dynamic>>(
       '/scan-records/$id',

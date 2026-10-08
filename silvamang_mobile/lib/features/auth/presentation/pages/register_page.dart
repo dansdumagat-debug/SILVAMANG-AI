@@ -53,7 +53,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           _confirmPasswordController.text,
         );
     if (success && mounted) {
-      context.goNamed(RouteNames.home);
+      context.goNamed(RouteNames.login);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created. Please log in.')),
+      );
     }
   }
 

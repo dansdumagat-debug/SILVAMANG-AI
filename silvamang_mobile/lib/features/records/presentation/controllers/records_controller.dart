@@ -84,6 +84,15 @@ class RecordsController extends StateNotifier<RecordsState> {
     }
   }
 
+  Future<void> deleteRecord(String id) async {
+    await repository.deleteScanRecord(id);
+    if (!mounted) return;
+    state = state.copyWith(
+      records: state.records.where((record) => record.id != id).toList(),
+      clearSelectedRecord: state.selectedRecord?.id == id,
+    );
+  }
+
   Future<void> searchRecords(String query) async {
     state = state.copyWith(searchQuery: query);
     await loadRecords();
