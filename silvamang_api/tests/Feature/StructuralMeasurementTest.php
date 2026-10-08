@@ -99,6 +99,30 @@ class StructuralMeasurementTest extends TestCase
         }
     }
 
+    public function test_export_filter_uses_field_numbers_and_preserves_record_ids(): void
+    {
+        $role = \App\Models\Role::create(['name' => 'admin', 'display_name' => 'Admin', 'status' => 'active']);
+        $admin = User::factory()->create();
+        $admin->roles()->attach($role);
+        $expected = [];
+        foreach ([2, 1, 2, null] as $index => $number) {
+            $transect = Transect::create(['user_id' => $admin->id, 'transect_code' => 'INTERNAL-'.$index,
+                'transect_name' => 'Survey '.$index, 'transect_number' => $number,
+                'start_latitude' => 10, 'start_longitude' => 125, 'end_latitude' => 10.1, 'end_longitude' => 125.1]);
+            $scan = ScanRecord::create(['user_id' => $admin->id, 'record_code' => 'FILTER-'.$index]);
+            $transect->observations()->attach($scan);
+            $expected[$transect->id] = [$number === null ? 'Not recorded' : (string) $number,
+                $number === null ? 'unrecorded' : (string) $number, $transect->id.':'.$scan->id];
+        }
+        $this->actingAs($admin)->get('/admin/transects/export-selection')->assertOk()
+            ->assertViewHas('groups', function ($groups) use ($expected) {
+                foreach ($groups as $group) {
+                    $this->assertSame($expected[$group['transect_id']], [$group['transect'], $group['transect_number'], $group['records']->first()]);
+                }
+                return $groups->count() === 4;
+            });
+    }
+
     public function test_selected_export_deduplicates_records_and_scopes_plot_formulas(): void
     {
         $role = \App\Models\Role::create(['name' => 'admin', 'display_name' => 'Admin', 'status' => 'active']);

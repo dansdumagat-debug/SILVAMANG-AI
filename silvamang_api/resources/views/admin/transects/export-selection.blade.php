@@ -26,10 +26,13 @@
 (() => {
     const groups = @json($groups);
     const selected = new Set();
-    for (const [id, key, label] of [['export-user','user','recorder'],['export-transect','transect_id','transect'],['export-location','location','location']]) {
+    for (const [id, key, label] of [['export-user','user','recorder'],['export-transect','transect_number','transect'],['export-location','location','location']]) {
         const select = document.getElementById(id);
         const options = new Map(groups.filter(g => g[key]).map(g => [g[key],g[label]]));
-        for (const [value, text] of options) select.add(new Option(text, value));
+        const entries = [...options];
+        if (id === 'export-transect') entries.sort(([a], [b]) =>
+            a === 'unrecorded' ? 1 : b === 'unrecorded' ? -1 : Number(a) - Number(b));
+        for (const [value, text] of entries) select.add(new Option(text, value));
     }
     function render() {
         const container = document.getElementById('export-records');
@@ -56,7 +59,7 @@
         document.getElementById('export-submit').disabled = recordIds.size === 0;
     }
     document.getElementById('add-export').addEventListener('click', () => {
-        const filters = [['export-user','user'],['export-transect','transect_id'],['export-date','date'],['export-location','location']];
+        const filters = [['export-user','user'],['export-transect','transect_number'],['export-date','date'],['export-location','location']];
         groups.forEach((g,i) => { if (filters.every(([id,key]) => !document.getElementById(id).value || g[key] === document.getElementById(id).value)) selected.add(i); });
         render();
     });

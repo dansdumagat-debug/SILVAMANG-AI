@@ -162,7 +162,8 @@ class TransectController extends Controller
                 $first = $scans->first();
                 $groups->push([
                     'recorder' => $first->user?->name ?? '', 'user' => (string) $first->user_id,
-                    'transect' => $transect->transect_code ?: $transect->transect_name,
+                    'transect' => $transect->transect_number !== null ? (string) $transect->transect_number : 'Not recorded',
+                    'transect_number' => $transect->transect_number !== null ? (string) $transect->transect_number : 'unrecorded',
                     'transect_id' => (string) $transect->id, 'plot' => $first->plot_no ?? '',
                     'date' => $first->captured_at?->format('Y-m-d') ?? '',
                     'location' => $first->location_name ?: ($transect->location_name ?? ''),
