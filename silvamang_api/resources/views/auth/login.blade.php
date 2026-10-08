@@ -48,7 +48,7 @@
                 </div>
                 <button type="submit" class="login-submit">Sign In</button>
                 <div class="login-or"><span></span>or<span></span></div>
-                <button type="button" class="google-button">G Continue with Google</button>
+                <a href="{{ route('auth.google') }}" class="google-button" style="text-decoration:none;display:flex;align-items:center;justify-content:center">G Continue with Google</a>
                 <div class="staff-note"><strong>Admin and Field Staff Access</strong><span>Authorized personnel only.</span></div>
             </form>
         </section>

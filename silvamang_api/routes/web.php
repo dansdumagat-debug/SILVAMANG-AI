@@ -49,6 +49,9 @@ Route::get('/login', function () {
     return view('auth.login');
 })->middleware('guest')->name('login');
 
+Route::get('/auth/google', [\App\Http\Controllers\Api\AuthController::class, 'googleRedirect'])->middleware(['guest', 'throttle:10,1'])->name('auth.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Api\AuthController::class, 'googleCallback'])->middleware(['guest', 'throttle:10,1'])->name('auth.google.callback');
+
 Route::post('/login', function (Request $request) {
     $credentials = $request->validate([
         'email' => ['required', 'email'],
@@ -64,6 +67,13 @@ Route::post('/login', function (Request $request) {
         ])->onlyInput('email');
     }
 
+    $googleLink = $request->session()->pull('google.link');
+    if (is_array($googleLink) && ($googleLink['expires'] ?? 0) >= time()
+        && ($googleLink['user_id'] ?? null) === $user->id
+        && ($googleLink['email'] ?? null) === strtolower($user->email)
+        && ! $user->google_subject) {
+        $user->forceFill(['google_subject' => $googleLink['subject']])->save();
+    }
     Auth::login($user, $request->boolean('remember'));
     $request->session()->regenerate();
 
