@@ -147,6 +147,7 @@
 
 @push('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    @include('admin.partials.map-imagery')
     <script>
         const markers = @json($markers);
         const isPersonalMap = @json($isPersonalMap);
@@ -169,13 +170,13 @@
         map.getPane('labels').style.zIndex = 450;
         map.getPane('labels').style.pointerEvents = 'none';
 
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        L.silvaFallbackLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 24,
             maxNativeZoom: 19,
             attribution: 'Tiles &copy; Esri, Earthstar Geographics, and the GIS User Community',
         }).addTo(map);
 
-        L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        L.silvaFallbackLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 24,
             maxNativeZoom: 19,
             pane: 'labels',

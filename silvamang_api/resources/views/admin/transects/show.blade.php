@@ -172,6 +172,7 @@
 
 @push('scripts')
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    @include('admin.partials.map-imagery')
     <script>
         const transect = @json($mapTransect);
         const coordinates = transect.points.map((point) => [point.latitude, point.longitude]);
@@ -193,7 +194,7 @@
             maxNativeZoom: 19,
             attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        const satelliteLayer = L.silvaFallbackLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 24,
             maxNativeZoom: 19,
             attribution: 'Tiles &copy; Esri, Earthstar Geographics, and the GIS User Community',
