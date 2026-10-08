@@ -34,6 +34,10 @@ class SettingsStatusTest extends TestCase
             file_put_contents($directory.'/settings.html', $this->get(route('admin.settings.index'))->getContent());
             file_put_contents($directory.'/users.html', $this->get(route('admin.users.index'))->getContent());
             file_put_contents($directory.'/transects.html', $this->get(route('admin.transects.index'))->getContent());
+            foreach (['dashboard', 'reports', 'species', 'measurements', 'location-validations', 'observation-map', 'dataset-verification', 'ai-models', 'alerts', 'users/create'] as $page) {
+                $response = $this->get('/admin/'.$page)->assertOk();
+                file_put_contents($directory.'/'.str_replace('/', '-', $page).'.html', $response->getContent());
+            }
         }
         $this->get(route('admin.users.index'))->assertOk()->assertViewHas('users', fn ($users) => $users->perPage() === 25);
     }

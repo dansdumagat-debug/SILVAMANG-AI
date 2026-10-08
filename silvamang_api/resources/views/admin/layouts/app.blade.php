@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Console') - {{ $adminPreferences['console_name'] }}</title>
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ substr(hash_file('sha256', public_path('css/admin.css')), 0, 12) }}">
+    <link rel="stylesheet" href="{{ asset('css/admin-theme.css') }}?v={{ substr(hash_file('sha256', public_path('css/admin-theme.css')), 0, 12) }}">
     @stack('styles')
 </head>
 <body>
