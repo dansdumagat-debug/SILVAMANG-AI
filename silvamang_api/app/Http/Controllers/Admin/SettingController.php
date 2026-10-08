@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -16,17 +19,49 @@ class SettingController extends Controller
             DB::connection()->getPdo();
         } catch (\Throwable $exception) {
             $databaseStatus = 'error';
-            $databaseError = $exception->getMessage();
+            $databaseError = 'Database connection failed. Check the server logs.';
         }
 
+        // Read-only, bounded probe: a Settings request must never run inference or training.
+        $health = [];
+        try {
+            $response = Http::acceptJson()->connectTimeout(2)->timeout(3)
+                ->get(rtrim((string) config('services.ai_service.url'), '/').'/ai/health');
+            if ($response->successful() && is_array($response->json())) {
+                $health = $response->json();
+            }
+        } catch (\Throwable) {
+            // An unreachable service is reported below, without exposing connection details.
+        }
+        $online = ($health['service'] ?? null) === 'online'
+            && is_array($health['models'] ?? null);
+        $aiConfiguration = ['Python AI service' => $online ? 'Connected' : 'Unavailable'];
+        foreach (['cnn' => 'CNN classifier', 'yolov8' => 'YOLOv8 detector', 'segmentation' => 'YOLOv8-Seg segmenter'] as $key => $label) {
+            $aiConfiguration[$label] = ! $online ? 'Unverified'
+                : (data_get($health, "models.$key") === true ? 'Ready' : 'Unavailable');
+        }
+        $apk = storage_path('app/releases/silvamang-ai.apk');
+        $downloadAvailable = is_file($apk) && is_readable($apk) && filesize($apk) > 0;
+        $uploadRoute = Route::has('api.scan-images.store');
+        // API routes are unnamed in some deployments.
+        foreach (Route::getRoutes() as $route) {
+            if ($route->uri() === 'api/scan-images' && in_array('POST', $route->methods(), true)) {
+                $uploadRoute = true;
+            }
+        }
+        $uploadStorage = Storage::disk('public')->path('');
+        $uploadReady = $uploadRoute && is_dir($uploadStorage) && is_writable($uploadStorage);
+
         return view('admin.settings.index', [
+            'checkedAt' => now()->timezone('Asia/Manila')->format('M j, Y g:i:s A').' PHT',
             'systemInfo' => [
                 'App Name' => config('app.name'),
                 'Environment' => config('app.env'),
                 'App URL' => config('app.url'),
                 'Laravel Version' => app()->version(),
                 'PHP Version' => PHP_VERSION,
-                'Timezone' => config('app.timezone'),
+                'Server / storage timezone' => config('app.timezone'),
+                'Display timezone' => 'Asia/Manila (PHT, UTC+8)',
                 'Debug Mode' => config('app.debug') ? 'Enabled' : 'Disabled',
             ],
             'databaseInfo' => [
@@ -50,29 +85,18 @@ class SettingController extends Controller
                 '/api/ai-models',
                 '/api/admin/dashboard-summary',
             ],
-            'aiConfiguration' => [
-                'CNN classifier' => 'planned',
-                'YOLOv8 detector' => 'planned',
-                'YOLOv8-Seg segmenter' => 'planned',
-                'Python AI service' => 'not yet integrated',
-            ],
+            'aiConfiguration' => $aiConfiguration,
             'mobileReadiness' => [
-                'Local offline queue' => 'planned in Flutter phase',
-                'Cloud synchronization' => 'planned',
-                'GPS validation' => 'database/API ready',
+                'Local offline queue' => 'Implemented in the Android app',
+                'Cloud synchronization' => 'Implemented; individual records may still need retry',
+                'GPS validation' => 'Optional when saving observations',
             ],
             'buildStatus' => [
-                'Laravel initialization' => 'Completed',
-                'Database schema' => 'Completed',
-                'API structure' => 'Completed',
-                'Authentication and roles' => 'Completed',
-                'Admin dashboard foundation' => 'Completed',
-                'Admin CRUD and review pages' => 'Completed',
-                'Reports and analytics' => 'Completed',
-                'Flutter mobile app' => 'Pending',
-                'Image upload' => 'Pending',
-                'AI integration' => 'Pending',
-                'Deployment' => 'Pending',
+                'Database connection' => $databaseStatus === 'connected' ? 'Connected' : 'Unavailable',
+                'Android APK download' => $downloadAvailable ? 'Available' : 'Missing',
+                'Image upload route and storage' => $uploadReady ? 'Ready' : 'Needs attention',
+                'AI model readiness' => $online && ! in_array('Unavailable', $aiConfiguration, true) ? 'Ready' : 'Needs attention',
+                'Web application' => 'Running',
             ],
         ]);
     }

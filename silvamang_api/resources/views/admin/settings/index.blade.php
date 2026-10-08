@@ -3,7 +3,10 @@
 @section('title', 'Settings')
 
 @section('content')
-    <div class="page-heading"><div><h2>Settings</h2><p>Read-only backend configuration and build readiness overview.</p></div></div>
+    <div class="page-heading"><div><h2>Settings</h2><p>Read-only configuration and service checks. Checked {{ $checkedAt }}. Refresh to check again.</p></div></div>
+    @php
+        $badgeClass = fn ($status) => in_array($status, ['Connected', 'Ready', 'Available', 'Running'], true) ? 'completed' : 'pending';
+    @endphp
     <section class="settings-grid">
         <article class="settings-card">
             <h3>System Information</h3>
@@ -42,22 +45,24 @@
         <article class="settings-card">
             <h3>AI Configuration</h3>
             @foreach ($aiConfiguration as $label => $status)
-                <div class="system-info-row"><span>{{ $label }}</span><strong><span class="build-badge status-planned">{{ ucfirst($status) }}</span></strong></div>
+                <div class="system-info-row"><span>{{ $label }}</span><strong><span class="build-badge status-{{ $badgeClass($status) }}">{{ $status }}</span></strong></div>
             @endforeach
         </article>
 
         <article class="settings-card">
             <h3>Mobile Offline/Online Readiness</h3>
+            <p>These features are implemented. This page cannot inspect unsynced records stored on a phone.</p>
             @foreach ($mobileReadiness as $label => $status)
                 <div class="system-info-row"><span>{{ $label }}</span><strong>{{ $status }}</strong></div>
             @endforeach
         </article>
 
         <article class="settings-card full-width-card">
-            <h3>Backend Build Status</h3>
+            <h3>Deployment Checks</h3>
+            <p>Readiness checks do not replace testing a photo upload or identification. <a href="{{ url('/download') }}">Open Android download</a>. Review approved-photo training progress in Dataset Verification.</p>
             <div class="build-status-grid">
                 @foreach ($buildStatus as $label => $status)
-                    <div class="system-info-row"><span>{{ $label }}</span><strong><span class="build-badge status-{{ strtolower($status) }}">{{ $status }}</span></strong></div>
+                    <div class="system-info-row"><span>{{ $label }}</span><strong><span class="build-badge status-{{ $badgeClass($status) }}">{{ $status }}</span></strong></div>
                 @endforeach
             </div>
         </article>
