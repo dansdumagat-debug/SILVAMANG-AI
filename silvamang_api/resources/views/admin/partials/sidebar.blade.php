@@ -44,14 +44,14 @@
         </div>
         <div>
             <h1>{{ $adminPreferences['console_name'] }}</h1>
-            <p>{{ $isMobileUserOnly ? 'Field Dashboard' : 'Admin Console' }}</p>
+            <p>Mangroves for a Greener Tomorrow</p>
         </div>
     </div>
 
     <nav class="sidebar-nav">
         @foreach ($primaryLinks as $link)
             @continue(! $canSeeLink($link))
-            <a href="{{ route($link['route']) }}" class="{{ request()->routeIs($link['match']) ? 'active' : '' }}" @if(request()->routeIs($link['match'])) aria-current="page" @endif>{{ $link['label'] }}</a>
+            <a href="{{ route($link['route']) }}" class="{{ request()->routeIs($link['match']) ? 'active' : '' }}" @if(request()->routeIs($link['match'])) aria-current="page" @endif>@include('admin.partials.sidebar-icon', ['label' => $link['label']])<span>{{ $link['label'] }}</span></a>
         @endforeach
 
         @foreach ($groups as $groupLabel => $groupLinks)
@@ -61,7 +61,7 @@
             @endphp
             @if (count($visibleLinks))
                 <details class="sidebar-group" @if($groupActive) open @endif>
-                    <summary class="{{ $groupActive ? 'group-active' : '' }}">{{ $groupLabel }}<span class="sidebar-chevron" aria-hidden="true"></span></summary>
+                    <summary class="{{ $groupActive ? 'group-active' : '' }}">@include('admin.partials.sidebar-icon', ['label' => $groupLabel])<span class="sidebar-group-label">{{ $groupLabel }}</span><span class="sidebar-chevron" aria-hidden="true"></span></summary>
                     <div class="sidebar-group-links">
                         @foreach ($visibleLinks as $link)
                             <a href="{{ route($link['route']) }}" class="{{ request()->routeIs($link['match']) ? 'active' : '' }}" @if(request()->routeIs($link['match'])) aria-current="page" @endif>{{ $link['label'] }}</a>
@@ -72,16 +72,14 @@
         @endforeach
 
         @foreach ($utilityLinks as $link)
-            <a href="{{ route($link['route']) }}" class="{{ request()->routeIs($link['match']) ? 'active' : '' }}" @if(request()->routeIs($link['match'])) aria-current="page" @endif>{{ $link['label'] }}</a>
+            @continue(! $canSeeLink($link))
+            <a href="{{ route($link['route']) }}" class="{{ request()->routeIs($link['match']) ? 'active' : '' }}" @if(request()->routeIs($link['match'])) aria-current="page" @endif>@include('admin.partials.sidebar-icon', ['label' => $link['label']])<span>{{ $link['label'] }}</span></a>
         @endforeach
     </nav>
 
-    <div class="sidebar-card">
-        <div class="sprout-visual">
-            <span></span>
-            <span></span>
-        </div>
-        <strong>Smart Technology</strong>
-        <p>for Stronger Mangrove Ecosystems</p>
+    <div class="sidebar-card sidebar-mangrove-card">
+        <img src="{{ asset('images/sidebar-mangroves.png') }}" alt="" width="1672" height="941" decoding="async">
+        <strong>&ldquo;Healthy<br>Mangroves<br>Stronger<br>Communities&rdquo;</strong>
+        <span class="sidebar-card-leaf leaf-mark" aria-hidden="true"></span>
     </div>
 </aside>

@@ -28,7 +28,7 @@ class AdminSidebarTest extends TestCase
             ->assertSee('Species Management')
             ->assertDontSee('Chatbot Management');
         $this->assertMatchesRegularExpression(
-            '/<details class="sidebar-group"\s+open\s*>\s*<summary class="group-active">Species &amp; Learning/s',
+            '~<details class="sidebar-group"\s+open\s*>\s*<summary class="group-active">.*?<span class="sidebar-group-label">Species &amp; Learning</span>~s',
             $speciesPage->getContent()
         );
 
