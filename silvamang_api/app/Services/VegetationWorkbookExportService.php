@@ -65,7 +65,7 @@ class VegetationWorkbookExportService
         $notes->setCellValue('B21', now()->timezone('Asia/Manila')->format('Y-m-d H:i:s'));
         $notes->setCellValue('A22', 'Dates use Philippine time. If capture time is missing, the record creation date is used; see Date Source in Raw Scans. This fallback is not a verified field capture date.');
         $notes->getStyle('A22')->getAlignment()->setWrapText(true);
-        $notes->getStyle('B19')->getNumberFormat()->setFormatCode('0.########');
+        $notes->getStyle('B19')->getNumberFormat()->setFormatCode('General');
         $notes->getColumnDimension('B')->setWidth(22);
         $notes->getStyle('B19')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFFCC');
         $notes->getColumnDimension('A')->setWidth(120);
@@ -145,11 +145,11 @@ class VegetationWorkbookExportService
         $this->styleSheet($speciesSheet, 'L', max(2, $speciesRow - 1));
         $vegetation->getColumnDimension('F')->setWidth(30);
         $vegetation->getColumnDimension('AA')->setWidth(45);
-        $vegetation->getStyle("I2:U$last")->getNumberFormat()->setFormatCode('0.0000');
+        $vegetation->getStyle("I2:U$last")->getNumberFormat()->setFormatCode('General');
         $raw->getStyle("F2:G$last")->getNumberFormat()->setFormatCode('0.0000000');
-        $raw->getStyle("H2:S$last")->getNumberFormat()->setFormatCode('0.0000');
+        $raw->getStyle("H2:S$last")->getNumberFormat()->setFormatCode('General');
         $summary->getStyle('E2:H'.max(2, $summaryRow - 1))->getNumberFormat()->setFormatCode('0.0000000');
-        $speciesSheet->getStyle('G2:L'.max(2, $speciesRow - 1))->getNumberFormat()->setFormatCode('0.0000');
+        $speciesSheet->getStyle('G2:L'.max(2, $speciesRow - 1))->getNumberFormat()->setFormatCode('General');
         $this->populateReference($book, $vegetation, $plotKeys, $plotAreaM2);
         $book->removeSheetByIndex($book->getIndex($vegetation));
         $book->setActiveSheetIndex(0);
@@ -285,7 +285,7 @@ class VegetationWorkbookExportService
                 $formula('V', '=IF(OR(S'.$r.'="",U'.$r.'=""),"",AVERAGE(S'.$r.',U'.$r.'))');
                 $formula('W', '=IF(V'.$r.'="","",0.7854*V'.$r.'^2)');
             }
-            $sheet->getStyle('I'.$r.':'.($combined ? 'W' : 'S').$r)->getNumberFormat()->setFormatCode('0.########');
+            $sheet->getStyle('I'.$r.':'.($combined ? 'W' : 'S').$r)->getNumberFormat()->setFormatCode('General');
         }
         $last = max(2, count($records) + 1);
         if ($sheet->getHighestRow() > $last) {

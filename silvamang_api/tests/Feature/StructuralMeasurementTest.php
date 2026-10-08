@@ -96,6 +96,10 @@ class StructuralMeasurementTest extends TestCase
             $this->assertEqualsWithDelta(pi() * (174 / pi() / 200) ** 2, $sheet->getCell('M2')->getCalculatedValue(), .000001);
             $this->assertEquals(4, $sheet->getCell('R2')->getValue());
             $this->assertEquals(3.5, $sheet->getCell('S2')->getValue());
+            $this->assertSame('9', $sheet->getCell('O2')->getFormattedValue());
+            $this->assertSame('5', $sheet->getCell('R2')->getFormattedValue());
+            $this->assertSame('3.5', $sheet->getCell('S2')->getFormattedValue());
+            $this->assertSame('General', $sheet->getStyle('P2')->getNumberFormat()->getFormatCode());
             $this->assertNull($sheet->getCell('U2')->getValue());
             $this->assertNull($sheet->getCell('J3')->getValue());
             $this->assertNull($sheet->getCell('V2')->getValue());
