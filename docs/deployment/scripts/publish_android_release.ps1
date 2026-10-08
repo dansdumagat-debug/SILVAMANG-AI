@@ -7,14 +7,14 @@ if ($Server -notmatch '^[a-zA-Z0-9.-]+$' -or $Container -notmatch '^[a-zA-Z0-9_.
     throw 'Invalid server or container name.'
 }
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
-$releaseDir = Join-Path $projectRoot 'artifacts/mobile_release/1.0.1-build-2'
+$releaseDir = Join-Path $projectRoot 'artifacts/mobile_release/1.0.2-build-3'
 $apk = Join-Path $releaseDir 'silvamang-ai.apk'
 $metadata = Join-Path $releaseDir 'release.json'
-$expected = 'ff4ef37169d891041279c50fd8e33b84bdf980aba8a218a6d5cab8f56cfb9169'
+$expected = '7e72ffae673364b43af6ef18a6185983c841629b733e8c239f4a4cb658f3af71'
 if (!(Test-Path -LiteralPath $apk) -or !(Test-Path -LiteralPath $metadata)) { throw 'Release files are missing.' }
 if ((Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'APK checksum does not match the verified release.' }
 $release = Get-Content -LiteralPath $metadata -Raw | ConvertFrom-Json
-if ($release.version -ne '1.0.1' -or $release.build -ne '2' -or $release.sha256 -ne $expected) { throw 'Release metadata does not match the APK.' }
+if ($release.version -ne '1.0.2' -or $release.build -ne '3' -or $release.sha256 -ne $expected) { throw 'Release metadata does not match the APK.' }
 $tag = 'silvamang-publish-' + [guid]::NewGuid().ToString('N')
 $bundle = Join-Path ([IO.Path]::GetTempPath()) ($tag + '.tar')
 try {
@@ -53,7 +53,7 @@ echo 'Release installed in the website download folder.'
     if ($response.StatusCode -ne 200 -or [long]$response.Headers['Content-Length'] -ne (Get-Item -LiteralPath $apk).Length) {
         throw 'The public download did not match the APK size. Check the active app container.'
     }
-    Write-Host 'SUCCESS: https://silvamangai.online/download now serves version 1.0.1 (build 2).' -ForegroundColor Green
+    Write-Host 'SUCCESS: https://silvamangai.online/download now serves version 1.0.2 (build 3).' -ForegroundColor Green
 } finally {
     if (Test-Path -LiteralPath $bundle) { Remove-Item -LiteralPath $bundle }
 }

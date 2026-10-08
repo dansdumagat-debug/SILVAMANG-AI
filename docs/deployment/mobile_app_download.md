@@ -63,3 +63,9 @@ The October 8 release includes field transect numbers, survey location, category
 Use the same release signing certificate as the previous public APK. The USB development installation is debug-signed and cannot be updated in place with this release-signed APK. Do not uninstall a development installation while it contains unsynced field data. This release does not add automatic in-app update detection; the download page remains a manual update channel.
 
 Before publishing, deploy the matching backend and apply the October 8 ecological survey and transect-number migrations. Verify that observations and transects sync successfully.
+
+## Release 1.0.2 (build 3)
+
+Preserves ONNX Runtime Java classes and members in R8 release builds using `android/app/proguard-rules.pro`. Native inference looks these up by name; stripping or renaming them can crash identification. See https://onnxruntime.ai/docs/build/android.html. Also includes the transect attachment sheet navigation fix.
+
+Before publishing, verify the signed APK and inspect `build/app/outputs/mapping/release/mapping.txt`: every original `ai.onnxruntime` class must retain its original name (compiler-generated synthetic lambdas may be renamed). Confirm identification on a device using the release APK; debug builds do not exercise R8.
