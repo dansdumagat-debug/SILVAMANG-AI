@@ -26,7 +26,7 @@ class UserManagementController extends Controller
             ->when(request('role'), fn ($query, $role) => $query->whereHas('roles', fn ($query) => $query->where('name', $role)));
 
         return view('admin.users.index', [
-            'users' => $query->latest()->paginate(10)->withQueryString(),
+            'users' => $query->latest()->paginate((int) SettingController::preferences()['records_per_page'])->withQueryString(),
             'roles' => Role::orderBy('display_name')->get(['name', 'display_name']),
         ]);
     }

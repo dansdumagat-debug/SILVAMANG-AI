@@ -3,101 +3,68 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class SettingController extends Controller
 {
-    public function index()
+    public static function preferences(): array
     {
-        $databaseStatus = 'connected';
-        $databaseError = null;
+        $defaults = ['console_name' => 'SILVAMANG AI', 'support_email' => '', 'records_per_page' => 15];
+        if (! Schema::hasTable('system_settings')) {
+            return $defaults;
+        }
+        return array_replace($defaults, DB::table('system_settings')->whereIn('key', array_keys($defaults))->pluck('value', 'key')->all());
+    }
 
-        try {
-            DB::connection()->getPdo();
-        } catch (\Throwable $exception) {
-            $databaseStatus = 'error';
-            $databaseError = 'Database connection failed. Check the server logs.';
-        }
+    public function index(Request $request)
+    {
+        return view('admin.settings.index', ['preferences' => self::preferences(), 'user' => $request->user()]);
+    }
 
-        // Read-only, bounded probe: a Settings request must never run inference or training.
-        $health = [];
-        try {
-            $response = Http::acceptJson()->connectTimeout(2)->timeout(3)
-                ->get(rtrim((string) config('services.ai_service.url'), '/').'/ai/health');
-            if ($response->successful() && is_array($response->json())) {
-                $health = $response->json();
-            }
-        } catch (\Throwable) {
-            // An unreachable service is reported below, without exposing connection details.
-        }
-        $online = ($health['service'] ?? null) === 'online'
-            && is_array($health['models'] ?? null);
-        $aiConfiguration = ['Python AI service' => $online ? 'Connected' : 'Unavailable'];
-        foreach (['cnn' => 'CNN classifier', 'yolov8' => 'YOLOv8 detector', 'segmentation' => 'YOLOv8-Seg segmenter'] as $key => $label) {
-            $aiConfiguration[$label] = ! $online ? 'Unverified'
-                : (data_get($health, "models.$key") === true ? 'Ready' : 'Unavailable');
-        }
-        $apk = storage_path('app/releases/silvamang-ai.apk');
-        $downloadAvailable = is_file($apk) && is_readable($apk) && filesize($apk) > 0;
-        $uploadRoute = Route::has('api.scan-images.store');
-        // API routes are unnamed in some deployments.
-        foreach (Route::getRoutes() as $route) {
-            if ($route->uri() === 'api/scan-images' && in_array('POST', $route->methods(), true)) {
-                $uploadRoute = true;
-            }
-        }
-        $uploadStorage = Storage::disk('public')->path('');
-        $uploadReady = $uploadRoute && is_dir($uploadStorage) && is_writable($uploadStorage);
-
-        return view('admin.settings.index', [
-            'checkedAt' => now()->timezone('Asia/Manila')->format('M j, Y g:i:s A').' PHT',
-            'systemInfo' => [
-                'App Name' => config('app.name'),
-                'Environment' => config('app.env'),
-                'App URL' => config('app.url'),
-                'Laravel Version' => app()->version(),
-                'PHP Version' => PHP_VERSION,
-                'Server / storage timezone' => config('app.timezone'),
-                'Display timezone' => 'Asia/Manila (PHT, UTC+8)',
-                'Debug Mode' => config('app.debug') ? 'Enabled' : 'Disabled',
-            ],
-            'databaseInfo' => [
-                'Connection' => config('database.default'),
-                'Database Name' => config('database.connections.'.config('database.default').'.database'),
-                'Status' => $databaseStatus,
-                'Error' => $databaseError,
-            ],
-            'storageInfo' => [
-                'Default Disk' => config('filesystems.default'),
-                'Public Storage Path' => public_path('storage'),
-                'Storage Link' => is_link(public_path('storage')) || file_exists(public_path('storage')) ? 'linked' : 'missing',
-            ],
-            'apiGroups' => [
-                '/api/species',
-                '/api/scan-records',
-                '/api/predictions',
-                '/api/measurements',
-                '/api/location-validations',
-                '/api/assistant-logs',
-                '/api/ai-models',
-                '/api/admin/dashboard-summary',
-            ],
-            'aiConfiguration' => $aiConfiguration,
-            'mobileReadiness' => [
-                'Local offline queue' => 'Implemented in the Android app',
-                'Cloud synchronization' => 'Implemented; individual records may still need retry',
-                'GPS validation' => 'Optional when saving observations',
-            ],
-            'buildStatus' => [
-                'Database connection' => $databaseStatus === 'connected' ? 'Connected' : 'Unavailable',
-                'Android APK download' => $downloadAvailable ? 'Available' : 'Missing',
-                'Image upload route and storage' => $uploadReady ? 'Ready' : 'Needs attention',
-                'AI model readiness' => $online && ! in_array('Unavailable', $aiConfiguration, true) ? 'Ready' : 'Needs attention',
-                'Web application' => 'Running',
-            ],
+    public function update(Request $request)
+    {
+        $data = $request->validate([
+            'console_name' => ['required', 'string', 'max:60'],
+            'support_email' => ['nullable', 'email', 'max:255'],
+            'records_per_page' => ['required', 'integer', Rule::in([10, 15, 25, 50, 100])],
         ]);
+        DB::transaction(function () use ($data, $request) {
+            foreach ($data as $key => $value) {
+                DB::table('system_settings')->updateOrInsert(['key' => $key], [
+                    'value' => (string) $value, 'updated_by' => $request->user()->id, 'updated_at' => now(),
+                ]);
+            }
+        });
+        return back()->with('success', 'System preferences saved.');
+    }
+
+    public function account(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($request->user()->id)],
+            'current_password' => ['required', 'current_password:web'],
+        ]);
+        $user = $request->user();
+        if ($data['email'] !== $user->email) {
+            $user->email_verified_at = null;
+        }
+        $user->fill(['name' => $data['name'], 'email' => $data['email']])->save();
+        return back()->with('success', 'Your account details have been updated.');
+    }
+
+    public function password(Request $request)
+    {
+        $data = $request->validate([
+            'current_password' => ['required', 'current_password:web'],
+            'password' => ['required', 'confirmed', Password::min(8), 'different:current_password'],
+        ]);
+        $request->user()->update(['password' => $data['password']]);
+        $request->session()->regenerate();
+        return back()->with('success', 'Your password has been changed.');
     }
 }

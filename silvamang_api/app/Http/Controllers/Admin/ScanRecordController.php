@@ -76,7 +76,7 @@ class ScanRecordController extends Controller
         $this->applySort($query, $this->filterValue($request, 'sort') ?? 'latest_scan');
 
         return view('admin.scan-records.index', [
-            'scanRecords' => $query->paginate(15)->withQueryString(),
+            'scanRecords' => $query->paginate((int) SettingController::preferences()['records_per_page'])->withQueryString(),
             'totalScanRecords' => ScanRecord::count(),
             'mappedScanRecords' => ScanRecord::whereNotNull('latitude')->whereNotNull('longitude')->count(),
             'todayScanRecords' => ScanRecord::where(function (Builder $builder) {

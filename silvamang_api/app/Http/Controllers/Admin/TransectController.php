@@ -31,7 +31,7 @@ class TransectController extends Controller
             ->orderByRaw('COALESCE(recorded_at, created_at) desc');
         $query->orderByDesc('id');
         $totalsQuery = $this->filteredQuery($request);
-        $transects = $query->paginate(10)->withQueryString();
+        $transects = $query->paginate((int) SettingController::preferences()['records_per_page'])->withQueryString();
 
         return view('admin.transects.index', [
             'canViewAll' => $canViewAll,

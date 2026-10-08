@@ -31,7 +31,7 @@
         ],
     ];
     $utilityLinks = [
-        ['label' => 'Settings', 'route' => 'admin.settings.index', 'match' => 'admin.settings.*'],
+        ['label' => 'Settings', 'route' => 'admin.settings.index', 'match' => 'admin.settings.*', 'roles' => ['super_admin', 'admin']],
     ];
     $canSeeLink = fn ($link) => ! (($link['mobile_only'] ?? false) && ! $isMobileUserOnly)
         && (! isset($link['roles']) || $currentUser?->hasAnyRole($link['roles']));
@@ -43,7 +43,7 @@
             <span class="leaf-mark"></span>
         </div>
         <div>
-            <h1>SILVAMANG AI</h1>
+            <h1>{{ $adminPreferences['console_name'] }}</h1>
             <p>{{ $isMobileUserOnly ? 'Field Dashboard' : 'Admin Console' }}</p>
         </div>
     </div>

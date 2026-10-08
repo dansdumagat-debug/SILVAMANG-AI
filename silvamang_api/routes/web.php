@@ -165,5 +165,10 @@ Route::prefix('admin')
             Route::patch('/users/{user}/password', [UserManagementController::class, 'updatePassword'])->name('users.update-password');
         });
         });
-        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::middleware('role:super_admin,admin')->group(function () {
+            Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+            Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+            Route::patch('/settings/account', [SettingController::class, 'account'])->name('settings.account');
+            Route::patch('/settings/password', [SettingController::class, 'password'])->name('settings.password');
+        });
     });

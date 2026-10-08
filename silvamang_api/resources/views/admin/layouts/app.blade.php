@@ -1,9 +1,10 @@
+@php($adminPreferences = \App\Http\Controllers\Admin\SettingController::preferences())
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Admin Console') - SILVAMANG AI</title>
+    <title>@yield('title', 'Admin Console') - {{ $adminPreferences['console_name'] }}</title>
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ substr(hash_file('sha256', public_path('css/admin.css')), 0, 12) }}">
     @stack('styles')
 </head>
@@ -27,6 +28,9 @@
             <section class="admin-content">
                 @include('admin.partials.flash')
                 @yield('content')
+                @if ($adminPreferences['support_email'])
+                    <p class="muted" style="margin-top:24px">Need help? <a href="mailto:{{ $adminPreferences['support_email'] }}">{{ $adminPreferences['support_email'] }}</a></p>
+                @endif
             </section>
         </main>
     </div>
