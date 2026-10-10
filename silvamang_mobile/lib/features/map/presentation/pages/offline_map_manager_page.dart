@@ -1,3 +1,4 @@
+import '../widgets/confirm_delete_offline_maps.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -46,6 +47,7 @@ class _OfflineMapManagerPageState extends ConsumerState<OfflineMapManagerPage> {
   }
 
   Future<void> _clearCache() async {
+    if (!await confirmDeleteOfflineMaps(context) || !mounted) return;
     await ref.read(offlineMapDownloadControllerProvider.notifier).clearCache();
   }
 
@@ -308,6 +310,10 @@ class _OfflineMapManagerPageState extends ConsumerState<OfflineMapManagerPage> {
                       ),
                     ],
                     const SizedBox(height: AppSpacing.sm),
+                    const Text(
+                      'Downloaded maps stay on this device until you delete them. App updates and signing out keep your maps. Uninstalling or clearing app data removes them.',
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
                     OutlinedButton.icon(
                       onPressed:
                           downloadState.isDownloading ||
@@ -316,7 +322,7 @@ class _OfflineMapManagerPageState extends ConsumerState<OfflineMapManagerPage> {
                           ? null
                           : _clearCache,
                       icon: const Icon(Icons.delete_outline_rounded),
-                      label: const Text('Delete Offline Map'),
+                      label: const Text('Delete Downloaded Maps'),
                     ),
                   ],
                 ),

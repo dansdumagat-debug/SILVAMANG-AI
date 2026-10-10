@@ -1,3 +1,4 @@
+import '../widgets/confirm_delete_offline_maps.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -129,6 +130,7 @@ class _OfflineMapDownloadPageState
   }
 
   Future<void> _clearCache() async {
+    if (!await confirmDeleteOfflineMaps(context) || !mounted) return;
     setState(() {
       _isClearing = true;
       _statusMessage = 'Clearing downloaded maps...';
@@ -294,7 +296,7 @@ class _OfflineMapDownloadPageState
                 ),
                 const SizedBox(height: AppSpacing.md),
                 SilvamangButton(
-                  text: 'Clear Downloaded Maps',
+                  text: 'Delete Downloaded Maps',
                   icon: Icons.delete_outline_rounded,
                   type: SilvamangButtonType.outline,
                   isLoading: _isClearing,

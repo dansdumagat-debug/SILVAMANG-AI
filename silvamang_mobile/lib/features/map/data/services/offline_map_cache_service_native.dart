@@ -97,9 +97,12 @@ class OfflineMapCacheService {
 
     final isReady = await _store.manage.ready;
     if (!isReady) {
-      await _store.manage.create();
+      await _store.manage.create(maxLength: null);
     }
 
+    // Retain the existing store/path so app upgrades keep previously saved tiles.
+    // Downloads must never be evicted by a tile-count limit.
+    await _store.manage.setMaxLength(null);
     _initialized = true;
   }
 
@@ -109,8 +112,10 @@ class OfflineMapCacheService {
     }
 
     return ParentFallbackTileProvider(
-      legacyCacheFallback: !isOnline,
+      legacyCacheFallback: true,
       FMTCTileProvider(
+        // Zero means no expiration in FMTC, not immediate expiration.
+        cachedValidDuration: Duration.zero,
         stores: {
           storeName: isOnline
               ? BrowseStoreStrategy.readUpdateCreate
@@ -138,15 +143,10 @@ class OfflineMapCacheService {
       await initialize();
       final stats = await _store.stats.all;
       final metadata = await _store.metadata.read;
-      final recordedTileCount = int.tryParse(
-        metadata[_downloadedTileCountKey] ?? '',
-      );
       final maxDownloadedZoom = int.tryParse(
         metadata[_downloadMaxZoomKey] ?? '',
       );
-      final effectiveTileCount = stats.length > 0
-          ? stats.length
-          : recordedTileCount ?? 0;
+      final effectiveTileCount = stats.length;
 
       return OfflineMapCacheStatus(
         initialized: true,
@@ -155,7 +155,7 @@ class OfflineMapCacheService {
         sizeKiB: stats.size,
         maxDownloadedZoom: maxDownloadedZoom,
         message: effectiveTileCount > 0
-            ? 'Offline map cache ready.'
+            ? 'Saved maps stay on this device until you delete them.'
             : 'No offline map area downloaded yet.',
       );
     } catch (error) {
@@ -238,9 +238,18 @@ class OfflineMapCacheService {
         return;
       }
 
-      final recordedTileCount = downloadedTileCount > 0
-          ? downloadedTileCount
-          : totalTiles;
+      final recordedTileCount = downloadedTileCount;
+      if (recordedTileCount < totalTiles || recordedTileCount == 0) {
+        yield OfflineMapDownloadProgress(
+          progress: totalTiles > 0 ? recordedTileCount / totalTiles : 0,
+          downloadedTiles: recordedTileCount,
+          totalTiles: totalTiles,
+          statusMessage:
+              'Download incomplete. Saved tiles are kept. Retry to download missing tiles.',
+          hasError: true,
+        );
+        return;
+      }
       if (recordedTileCount > 0) {
         await _writeSuccessfulDownloadMetadata(
           center: center,
